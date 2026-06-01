@@ -164,6 +164,16 @@ Placeholder names such as `ALPACA_API_KEY_ID` and `ALPACA_API_SECRET_KEY` are sa
 - Paths follow the `/content` active-work and Google Drive persistence boundary.
 - Alpaca credentials use the approved Colab Secrets / hidden prompt fallback pattern.
 - Notebook cells use native app CLI commands whenever available.
+- Local validation guardrails pass:
+
+```bash
+python scripts/scan_for_secret_patterns.py .
+python scripts/check_notebooks_no_outputs.py notebooks
+python scripts/validate_repo_cleanliness.py .
+```
+
+These scripts are guardrails, not a replacement for manual review.
+
 - `git status` shows only the intended notebook and documentation changes.
 
 ## Import Blockers

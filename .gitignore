@@ -35,6 +35,7 @@ ENV/
 *secrets*
 *credential*
 *credentials*
+!scripts/scan_for_secret_patterns.py
 .pypirc
 .streamlit/secrets.toml
 
