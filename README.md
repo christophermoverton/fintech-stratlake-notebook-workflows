@@ -38,7 +38,7 @@ The workflows are designed for Colab sessions where active work happens under `/
 
 The notebooks will guide users through setup, Fintech extraction and backfill, session persistence, archive and restore flows, StratLake initialization, feature generation, validation, strategy smoke tests, backtest review, and research comparison.
 
-Actual notebooks should be imported only after the [secret-safe import checklist](docs/notebook_import_checklist.md) and `.gitignore` guardrails are in place.
+Actual notebooks should be imported only after the [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails are in place.
 
 ## Upstream App Repositories
 
@@ -56,6 +56,7 @@ Those repositories remain the source of truth for their native application logic
 - Secrets should be provided through safe runtime mechanisms and must not be committed.
 - Local app workspaces, generated data, notebook outputs, archive packs, restore packs, and artifacts should remain outside version control.
 - Imported notebooks should be reviewed for credentials, outputs, generated paths, and accidental data embeds before commit.
+- Notebook filenames, headers, path variables, and commit readiness should follow the [notebook standards](docs/notebook_standards.md).
 
 ## Native Command First
 

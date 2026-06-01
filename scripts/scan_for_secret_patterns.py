@@ -168,6 +168,10 @@ def looks_like_token(value: str) -> bool:
         return False
     if value.startswith(("http://", "https://")):
         return False
+    if value.startswith(("/content/", "content/")) or value.lower().endswith(".ipynb"):
+        return False
+    if value == value.lower():
+        return False
     has_letter = bool(re.search(r"[A-Za-z]", value))
     has_digit = bool(re.search(r"\d", value))
     has_mixed_case = bool(re.search(r"[a-z]", value)) and bool(re.search(r"[A-Z]", value))

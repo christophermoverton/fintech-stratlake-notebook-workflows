@@ -8,6 +8,8 @@ Follow this checklist before moving any Colab notebook from Google Drive into th
 
 Use this checklist for every notebook imported from Google Drive, copied from a local Colab download, restored from an archive, or adapted from a prior runtime session. Do not import Notebook 00 through Notebook 09, or any other notebook, until this review is complete and later `.gitignore` guardrails are in place.
 
+Use this checklist together with the [notebook naming, metadata, and commit standards](notebook_standards.md).
+
 ## Import Safety Principles
 
 - Existing notebooks currently live in Google Drive and should stay there until safety guardrails are documented and reviewed.
