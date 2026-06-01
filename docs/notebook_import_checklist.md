@@ -20,6 +20,10 @@ Use this checklist for every notebook imported from Google Drive, copied from a 
 - Notebook code should orchestrate, validate, parse, display, and review outputs.
 - Notebook code should not reimplement native ingestion, archive/restore, feature generation, backtesting, strategy logic, or artifact generation.
 
+The repository `.gitignore` is a safety boundary, not a substitute for review. Generated data, archives, artifacts, local workspaces, and secrets must not be committed even if an ignore rule is missing. Reviewed notebooks may be committed later, but only after outputs are cleared and safety checks pass. Active Colab work belongs under `/content`; Drive is for persistence, archive, and restore workflows, not Git source control.
+
+The ignore rules intentionally block files with names containing `secret`, `secrets`, `credential`, or `credentials`. Avoid those words in commit-worthy filenames unless a later issue explicitly adds a narrow unignore rule for a safe documentation file.
+
 ## Approved Import Workflow
 
 1. Copy the notebook from Google Drive into a temporary local staging folder.
