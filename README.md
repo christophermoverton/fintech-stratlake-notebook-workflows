@@ -68,6 +68,10 @@ Notebook code should orchestrate, validate, parse, display, and review outputs. 
 
 Do not commit generated data, parquet files, archive packs, restore packs, artifacts, secrets, local app workspaces, notebook outputs, or Google Drive exports. Generated files should be reproducible from native commands or preserved outside Git through the documented persistence and archive workflows.
 
+## GitHub Issue Templates
+
+This repository includes lightweight GitHub issue templates for notebook audits, milestone tasks, and upstream app triage. Use the upstream triage template when a notebook captures a failure that may belong in `fintech-market-ingestion` or `stratlake-trade-engine`, including Notebook 09-style cases where one strategy succeeds and other configured strategies fail.
+
 ## Planned Notebook Sequence
 
 - Notebook 00 - setup and storage overview
