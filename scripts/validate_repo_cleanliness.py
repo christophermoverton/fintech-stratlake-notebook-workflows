@@ -36,14 +36,16 @@ def main() -> int:
         return 2
 
     script_dir = Path(__file__).resolve().parent
-    checks = [
-        script_dir / "scan_for_secret_patterns.py",
-        script_dir / "check_notebooks_no_outputs.py",
-    ]
-
     failures = 0
-    for script in checks:
-        return_code = run_check(script, root)
+    checks = [
+        (script_dir / "scan_for_secret_patterns.py", root),
+        (
+            script_dir / "check_notebooks_no_outputs.py",
+            (root / "notebooks") if (root / "notebooks").exists() else root,
+        ),
+    ]
+    for script, target in checks:
+        return_code = run_check(script, target)
         if return_code != 0:
             failures += 1
 

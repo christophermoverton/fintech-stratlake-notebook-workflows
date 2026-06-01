@@ -6,7 +6,7 @@ Follow this checklist before moving any Colab notebook from Google Drive into th
 
 ## When to Use This Checklist
 
-Use this checklist for every notebook imported from Google Drive, copied from a local Colab download, restored from an archive, or adapted from a prior runtime session. Do not import Notebook 00 through Notebook 09, or any other notebook, until this review is complete and later `.gitignore` guardrails are in place.
+Use this checklist for every notebook imported from Google Drive, copied from a local Colab download, restored from an archive, or adapted from a prior runtime session. Do not import Notebook 00 through Notebook 09, or any other notebook, until this review is complete and repository `.gitignore` guardrails are confirmed in place.
 
 Use this checklist together with the [notebook naming, metadata, and commit standards](notebook_standards.md).
 
@@ -38,7 +38,7 @@ The ignore rules intentionally block files with names containing `secret`, `secr
 8. Confirm paths follow the `/content` active-work and Google Drive persistence boundary.
 9. Confirm notebook code uses native app CLIs rather than reimplementing upstream logic.
 10. Move the cleaned notebook into `notebooks/`.
-11. Run repository safety checks once they are available in later M1 issues.
+11. Run repository safety checks using the scripts in this repository.
 12. Review `git status` before commit.
 
 ## Secret Safety Checks
@@ -188,7 +188,7 @@ Do not import or commit the notebook if any of these are true:
 - The notebook depends on Google Drive as the active app workspace without documenting a safe reason.
 - The notebook reimplements native Fintech ingestion, StratLake feature normalization, archive/restore, strategy, backtesting, or artifact-generation logic.
 - The notebook cannot be reviewed without private local files or non-portable paths.
-- Safety checks from later M1 issues fail once those checks exist.
+- Local safety checks fail.
 
 ## Final Reviewer Checklist
 

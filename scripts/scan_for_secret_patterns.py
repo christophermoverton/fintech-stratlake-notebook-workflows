@@ -116,6 +116,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def is_text_like(path: Path) -> bool:
+    filename = path.name
+    if filename == ".env" or filename.startswith(".env."):
+        return True
     return path.suffix.lower() in TEXT_SUFFIXES
 
 
