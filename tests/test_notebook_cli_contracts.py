@@ -69,6 +69,31 @@ def test_parser_extracts_fintech_backup_pack_subcommand_and_flags():
     assert "--dry-run" in example.flags
 
 
+def test_parser_extracts_multiline_backfill_flags():
+    example = parse_shell(
+        "!fintech-backfill-daily \\\n"
+        "  --symbols {TICKERS_FILE_STR} \\\n"
+        "  --start 2024-10-01 \\\n"
+        "  --end 2025-04-15 \\\n"
+        "  --out {DAILY_BARS_ROOT_STR} \\\n"
+        "  --feed iex \\\n"
+        "  --source session_{SESSION_ID} \\\n"
+        "  --window month"
+    )
+
+    assert example.command == "fintech-backfill-daily"
+    assert example.subcommand is None
+    assert example.flags == {
+        "--symbols",
+        "--start",
+        "--end",
+        "--out",
+        "--feed",
+        "--source",
+        "--window",
+    }
+
+
 def test_parser_extracts_restore_preview_string_flags():
     source = """
 restore_command = (
@@ -109,6 +134,21 @@ def test_validator_accepts_notebook_00_contracts_without_installed_commands(monk
     )
 
     assert report.examples
+    assert report.help_checks == 0
+    assert report.warnings
+    assert not report.findings
+
+
+def test_validator_accepts_notebook_01_contracts_without_installed_commands(monkeypatch):
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
+
+    report = cli_contracts.validate_targets(
+        [REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb"],
+        CONFIG,
+    )
+
+    assert report.examples
+    assert any(example.command == "fintech-backfill-daily" for example in report.examples)
     assert report.help_checks == 0
     assert report.warnings
     assert not report.findings

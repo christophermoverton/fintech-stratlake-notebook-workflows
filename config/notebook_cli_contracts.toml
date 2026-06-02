@@ -1,5 +1,8 @@
 [notebook_cli_contracts]
-default_targets = ["notebooks/00_setup_and_storage_overview.ipynb"]
+default_targets = [
+  "notebooks/00_setup_and_storage_overview.ipynb",
+  "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"
+]
 require_installed_commands = false
 allow_missing_commands = true
 safe_help_only = true
@@ -10,9 +13,15 @@ subcommands = []
 required_flags = ["--root", "--notebooks", "--with-session", "--session-name"]
 
 [[commands]]
+name = "fintech-backfill-daily"
+subcommands = []
+required_flags = ["--symbols", "--start", "--end", "--out", "--feed", "--source", "--window"]
+
+[[commands]]
 name = "fintech-save-session"
 subcommands = []
 required_flags = ["--root", "--session-id", "--policy", "--adapter", "--destination", "--dry-run"]
+optional_flags = ["--include-curated-data"]
 
 [[commands]]
 name = "fintech-backup-data"

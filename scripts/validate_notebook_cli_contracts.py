@@ -122,6 +122,33 @@ def flags_from_parts(parts: list[str]) -> set[str]:
     return {part for part in parts if part.startswith("--")}
 
 
+def shell_command_blocks(source: str) -> list[str]:
+    blocks: list[str] = []
+    current: list[str] = []
+
+    for line in source.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("!"):
+            if current:
+                blocks.append(" ".join(current))
+            current = [stripped[1:].strip()]
+            if not stripped.rstrip().endswith("\\"):
+                blocks.append(" ".join(current))
+                current = []
+            continue
+
+        if current:
+            current.append(stripped.strip())
+            if not stripped.rstrip().endswith("\\"):
+                blocks.append(" ".join(current))
+                current = []
+
+    if current:
+        blocks.append(" ".join(current))
+
+    return [block.replace("\\", " ") for block in blocks]
+
+
 def parse_tokens(
     path: Path,
     cell_index: int,
@@ -156,11 +183,8 @@ def extract_shell_examples(
     contracts: dict[str, dict[str, Any]],
 ) -> list[CommandExample]:
     examples: list[CommandExample] = []
-    for line in source.splitlines():
-        stripped = line.lstrip()
-        if not stripped.startswith("!"):
-            continue
-        parts = tokenize_command(normalize_shell_line(stripped))
+    for block in shell_command_blocks(source):
+        parts = tokenize_command(normalize_shell_line(block))
         example = parse_tokens(path, cell_index, parts, "shell", known_commands, contracts)
         if example is not None:
             examples.append(example)
@@ -179,7 +203,16 @@ def extract_preview_examples(
         if command not in source:
             continue
 
-        command_position = source.find(command)
+        command_position = -1
+        for line in source.splitlines():
+            stripped = line.lstrip()
+            if stripped.startswith("#") or command not in line:
+                continue
+            command_position = source.find(command)
+            break
+        if command_position < 0:
+            continue
+
         after_command = source[command_position + len(command) :]
         parts = [command]
         for token in re.findall(r"[A-Za-z0-9_-]+|--[A-Za-z0-9-]+", after_command):
@@ -196,6 +229,9 @@ def extract_preview_examples(
             if text_after_command.startswith(candidate):
                 subcommand = candidate
                 break
+
+        if not flags and subcommand is None:
+            continue
 
         examples.append(
             CommandExample(
@@ -290,8 +326,11 @@ def validate_example(
         )
 
     known_flags = set(command_contract.get("required_flags", []))
+    known_flags.update(command_contract.get("optional_flags", []))
     if example.subcommand:
-        known_flags.update(subcontracts.get((example.command, example.subcommand), {}).get("required_flags", []))
+        subcommand_contract = subcontracts.get((example.command, example.subcommand), {})
+        known_flags.update(subcommand_contract.get("required_flags", []))
+        known_flags.update(subcommand_contract.get("optional_flags", []))
     unknown_flags = sorted(flag for flag in example.flags if flag != "--help" and flag not in known_flags)
     for flag in unknown_flags:
         findings.append(
