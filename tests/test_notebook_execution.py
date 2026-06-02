@@ -7,7 +7,14 @@ import sys
 from pathlib import Path
 
 import nbformat
+import pytest
 from nbclient import NotebookClient
+
+if sys.version_info < (3, 11):  # pragma: no cover - Python < 3.11
+    pytest.skip(
+        "Python 3.11+ is required for TOML-based notebook execution tests.",
+        allow_module_level=True,
+    )
 
 try:
     import tomllib
@@ -178,8 +185,6 @@ def test_notebook_00_sanitized_execution_does_not_mutate_source(tmp_path):
     assert_source_notebook_clean(SOURCE_NOTEBOOK)
 
     source_outputs = sum(len(cell.get("outputs", [])) for cell in notebook_code_cells(source_nb))
-    executed_outputs = sum(len(cell.get("outputs", [])) for cell in notebook_code_cells(executed))
     assert source_outputs == 0
-    assert executed_outputs >= 0
     assert sanitized_path.exists()
     assert executed_path.exists()

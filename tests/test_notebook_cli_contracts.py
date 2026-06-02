@@ -10,6 +10,9 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import validate_notebook_cli_contracts as cli_contracts  # noqa: E402
 
+if sys.version_info < (3, 11):  # pragma: no cover - Python < 3.11
+    pytest.skip("Python 3.11+ is required for TOML-based CLI contract tests.", allow_module_level=True)
+
 
 CONFIG = cli_contracts.load_config(REPO_ROOT / "config" / "notebook_cli_contracts.toml")
 CONTRACTS = cli_contracts.command_contracts(CONFIG)
