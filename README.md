@@ -40,7 +40,7 @@ The notebooks will guide users through setup, Fintech extraction and backfill, s
 
 Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. Imported and pending notebooks are tracked in the [notebook index](docs/notebook_index.md). The first pilot import is [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb), with its review trail recorded in the [Notebook 00 import audit](docs/notebook_00_import_audit.md).
 
-Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide.
+Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide. Final branch scope and merge readiness are summarized in the [Milestone 2 merge-readiness closeout](docs/milestone_2_merge_readiness.md).
 
 ## Upstream App Repositories
 
@@ -123,4 +123,5 @@ examples/
 ## Development Milestones
 
 - Milestone 1 - Repository Foundation and Secret-Safe Notebook Import.
-- Later milestones will import reviewed notebooks, add validation helpers, document restore workflows, and expand native-command-first StratLake review workflows.
+- Milestone 2 - Notebook Workflow Scaffolding and First Import Pilot.
+- Later milestones will import additional reviewed notebooks, expand native-command-first StratLake review workflows, and continue controlled Colab smoke validation.
