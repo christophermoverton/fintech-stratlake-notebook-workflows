@@ -38,7 +38,7 @@ The workflows are designed for Colab sessions where active work happens under `/
 
 The notebooks will guide users through setup, Fintech extraction and backfill, session persistence, archive and restore flows, StratLake initialization, feature generation, validation, strategy smoke tests, backtest review, and research comparison.
 
-Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. Imported and pending notebooks are tracked in the [notebook index](docs/notebook_index.md). The first pilot import is [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb), with its review trail recorded in the [Notebook 00 import audit](docs/notebook_00_import_audit.md).
+Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. Imported and pending notebooks are tracked in the [notebook index](docs/notebook_index.md). Current imported notebooks are [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb) and [Notebook 01 - Fintech daily bars extraction/backfill](notebooks/01_fintech_daily_bars_extraction_backfill.ipynb), with review trails recorded in the [Notebook 00 import audit](docs/notebook_00_import_audit.md) and [Notebook 01 import audit](docs/notebook_01_import_audit.md). Manual Colab smoke testing remains pending unless explicitly recorded in the notebook index or audit trail.
 
 Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide. Final branch scope and merge readiness are summarized in the [Milestone 2 merge-readiness closeout](docs/milestone_2_merge_readiness.md).
 
@@ -90,6 +90,8 @@ The notebook execution-readiness command performs static JSON, output/count, pat
 This repository includes lightweight GitHub issue templates for notebook audits, milestone tasks, and upstream app triage. Use the upstream triage template when a notebook captures a failure that may belong in `fintech-market-ingestion` or `stratlake-trade-engine`, including Notebook 09-style cases where one strategy succeeds and other configured strategies fail.
 
 ## Planned Notebook Sequence
+
+Notebook 00 and Notebook 01 are imported and tracked in the notebook index. Notebook 02 and later remain planned until they go through the same staged, cleaned, validated, and audited import workflow.
 
 - Notebook 00 - setup and storage overview
 - Notebook 01 - Fintech daily bars extraction/backfill

@@ -119,7 +119,7 @@ If the upstream app is not installed locally, help/contract checks for `fintech-
 | Local validation constraints documented. | Go |
 | Import deferred until cleanup, validation, audit, and review work is complete. | Go |
 
-Go result: Notebook 01 may proceed through M3.2 cleanup validation. The cleaned candidate may remain under `notebooks/` only if outputs are cleared, raw JSON is reviewed, source is made portable, and cleanup validation passes. Full validation expansion, import audit, and manual Colab smoke testing remain later follow-up work.
+Go result: Notebook 01 completed cleanup, validation expansion, pilot import confirmation, and import audit recording. Manual Colab smoke testing remains pending and should be recorded only after it is actually run.
 
 ## Future Staging Pattern
 
