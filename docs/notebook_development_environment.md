@@ -49,6 +49,7 @@ python scripts/scan_for_secret_patterns.py .
 python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
 pytest
 ```
 
@@ -96,6 +97,28 @@ The pytest harness does not execute the source notebook directly. It:
 - Confirms the source notebook remains output-free and has `null` execution counts.
 
 Temporary executed notebooks are test artifacts only and must not be committed.
+
+## CLI Contract Validation
+
+Run the CLI contract validator:
+
+```bash
+python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
+```
+
+To validate a specific notebook:
+
+```bash
+python scripts/validate_notebook_cli_contracts.py notebooks/00_setup_and_storage_overview.ipynb --config config/notebook_cli_contracts.toml
+```
+
+The CLI contract validator parses notebook shell command examples and conservative command-preview strings. It checks command names, configured subcommands, and expected flags against `config/notebook_cli_contracts.toml`. When upstream commands are installed locally, it may call safe `--help` forms only. Missing local commands are warnings by default.
+
+The validator never executes notebook command cells, real ingestion, archive writes, restore writes, Drive mounts, credential prompts, live API calls, or artifact-producing workflows.
+
+## Manual Colab Smoke Testing
+
+Local validation cannot fully replace a fresh Colab runtime check. Use the [Colab Smoke-Test Workflow](colab_smoke_test_workflow.md) after local guardrails pass and before treating a notebook as run-ready.
 
 ## What The Harness Checks
 
