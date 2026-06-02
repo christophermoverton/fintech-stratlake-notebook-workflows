@@ -8,7 +8,7 @@ Notebook 01 is classified as a Fintech daily bars extraction/backfill workflow.
 
 The reviewed source candidate is the attached Notebook 01 local download in the user's Downloads folder.
 
-This source notebook remains outside the repository. It must not be copied into `notebooks/` until the M3.2 cleanup, validation, and audit work is complete.
+The original runtime-captured source notebook remains outside the repository. A cleaned Notebook 01 copy was imported into `notebooks/` after M3.2 cleanup, validation, and audit work completed.
 
 ## Staging Decision
 

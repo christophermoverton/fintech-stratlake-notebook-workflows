@@ -125,6 +125,41 @@ restore_command = (
     }
 
 
+def test_parser_ignores_comment_occurrence_when_extracting_preview_flags():
+    source = """
+# fintech-backup-data restore --wrong-flag
+restore_command = " ".join(
+    [
+        "fintech-backup-data restore",
+        f"--workspace-root {LOCAL_WORKSPACE}",
+        f"--target-dataset-root {LOCAL_CURATED}",
+        f"--backup-root {DRIVE_BACKUP_ROOT}",
+        f"--backup-id {ARCHIVE_ID}",
+    ]
+)
+"""
+
+    examples = cli_contracts.extract_preview_examples(
+        Path("notebook.ipynb"),
+        0,
+        source,
+        KNOWN_COMMANDS,
+        CONTRACTS,
+    )
+
+    assert len(examples) == 1
+    example = examples[0]
+    assert example.command == "fintech-backup-data"
+    assert example.subcommand == "restore"
+    assert "--wrong-flag" not in example.flags
+    assert example.flags == {
+        "--workspace-root",
+        "--target-dataset-root",
+        "--backup-root",
+        "--backup-id",
+    }
+
+
 def test_validator_accepts_notebook_00_contracts_without_installed_commands(monkeypatch):
     monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
 

@@ -204,11 +204,13 @@ def extract_preview_examples(
             continue
 
         command_position = -1
-        for line in source.splitlines():
+        line_offset = 0
+        for line in source.splitlines(keepends=True):
             stripped = line.lstrip()
             if stripped.startswith("#") or command not in line:
+                line_offset += len(line)
                 continue
-            command_position = source.find(command)
+            command_position = line_offset + line.find(command)
             break
         if command_position < 0:
             continue

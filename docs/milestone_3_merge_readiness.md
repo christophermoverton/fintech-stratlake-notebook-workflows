@@ -56,7 +56,7 @@ Milestone 3 meaningfully introduced or updated:
 | Import status | `pilot_imported`, `imported` |
 | Repository-side validation | passed |
 | Audit record | `docs/notebook_01_import_audit.md` |
-| Manual Colab smoke status | pending |
+| Manual Colab smoke status | `passed-with-notes` |
 | Outputs | none |
 | Execution counts | `null` |
 
@@ -159,11 +159,11 @@ Milestone 3:
 
 ## Manual Colab Smoke-Test Status
 
-Manual Colab smoke testing remains pending.
+Manual Colab smoke testing status: `passed-with-notes`.
 
-Repository-side merge readiness is complete. Manual Colab smoke testing remains a post-merge or pre-release runtime confirmation item and must be recorded separately when performed.
+Repository-side merge readiness is complete. Manual Colab smoke has been recorded as `passed-with-notes`; a full pass can be recorded after rerunning the dry-run preview cells with a real `DRIVE_FOLDER_NAME`.
 
-Do not mark manual Colab smoke as passed unless a fresh Colab smoke test is actually completed and recorded. Do not commit Colab logs, screenshots, tracebacks, command outputs, notebook outputs, generated data, credentials, or runtime artifacts.
+Do not mark manual Colab smoke as fully passed unless a fresh Colab smoke test is completed and recorded with successful dry-run preview cells. Do not commit Colab logs, screenshots, tracebacks, command outputs, notebook outputs, generated data, credentials, or runtime artifacts.
 
 ## Merge Readiness Checklist
 
@@ -179,7 +179,7 @@ Do not mark manual Colab smoke as passed unless a fresh Colab smoke test is actu
 - [x] Notebook index and README reflect Notebook 01 status.
 - [x] Full repository-side validation passes.
 - [x] No generated data or runtime artifacts are committed.
-- [x] Manual Colab smoke status is recorded truthfully as pending.
+- [x] Manual Colab smoke status is recorded truthfully as `passed-with-notes`.
 - [x] Scope remains limited to Notebook 01.
 
 ## Final Merge Recommendation
@@ -191,7 +191,7 @@ Conditions satisfied:
 - Full repository-side validation passed.
 - Notebook 01 is cleaned, validated, audited, and tracked.
 - No generated artifacts are committed.
-- Manual Colab smoke status is explicitly pending.
+- Manual Colab smoke status is explicitly `passed-with-notes`.
 - No scope expansion beyond Notebook 01 occurred.
 
 ## Post-Merge Follow-Up

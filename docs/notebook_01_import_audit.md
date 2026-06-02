@@ -6,7 +6,7 @@ This audit records the controlled pilot import of Notebook 01 for Issue #23 and 
 
 Notebook 01 was imported as a cleaned, output-free Colab workflow source file for the Fintech daily bars extraction/backfill workflow. The import followed the repository staging process, cleanup workflow, reusable header guidance, secret-safe checklist, notebook standards, CLI contract validation, execution-readiness validation, and sanitized pytest execution coverage.
 
-Manual Colab smoke validation remains pending. Milestone merge readiness is not claimed by this audit.
+Manual Colab smoke validation is recorded as `passed-with-notes`. Milestone merge readiness is not claimed by this audit.
 
 ## Notebook
 
@@ -37,7 +37,7 @@ Final audited status:
 
 - Import status: `pilot_imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded`.
-- Manual Colab smoke status: `pending`.
+- Manual Colab smoke status: `passed-with-notes`.
 - Merge-readiness status: not claimed.
 
 ## Source / Staging Summary
