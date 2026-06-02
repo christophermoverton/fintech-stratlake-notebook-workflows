@@ -28,14 +28,17 @@ Do not use this tracker to justify direct imports from Google Drive. Future note
 | Number | Title | Repository path | Workflow role | Upstream app coverage | Import status | Validation status | Audit record | Manual Colab smoke | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | 00 | Setup and Storage Overview | [notebooks/00_setup_and_storage_overview.ipynb](../notebooks/00_setup_and_storage_overview.ipynb) | setup/storage/session/persistence overview | `fintech-market-ingestion`; references StratLake boundaries where relevant | `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 00 import audit](notebook_00_import_audit.md) | `pending` | First pilot import; final Colab runtime confirmation remains pending. |
+| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported_pending_audit` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated` | `pending` | `pending` | Controlled Notebook 01 pilot import confirmed; audit and manual Colab smoke remain pending. |
 
-Notebook 00 is the only imported notebook currently tracked by this repository.
+Notebook 00 and Notebook 01 are the imported notebooks currently tracked by this repository.
 
 ## Import Status Table
 
 | Status | Meaning |
 |---|---|
 | `imported` | Notebook exists under `notebooks/`, is cleaned, output-free, tracked, and has passed repository validation. |
+| `pilot_imported` | Notebook exists under `notebooks/` as a controlled pilot import and has passed the repository-side checks recorded for its milestone issue. |
+| `imported_pending_audit` | Notebook exists under `notebooks/` and has passed repository-side validation, but its import audit record is not complete yet. |
 | `pending_staging` | Candidate notebook exists outside the repo or is planned, but has not yet gone through staging and cleanup. |
 | `needs_cleanup` | Candidate notebook has useful content but contains outputs, runtime state, paths, logs, blobs, or other cleanup needs. |
 | `needs_rewrite` | Candidate notebook contains useful workflow intent but should be rewritten before import. |
@@ -66,7 +69,6 @@ These are planned workflow categories only. They are not imported, cleaned, vali
 
 | Candidate | Workflow role | Expected upstream coverage | Import status | Validation status | Notes |
 |---|---|---|---|---|---|
-| Notebook 01 - extraction / daily bars backfill | extraction/backfill | `fintech-market-ingestion` | `imported_pending_validation` | `notebook_cleaned_outputs_cleared`, `cli_contract_validated`, `readiness_validated`, `pytest_validated` | Cleaned candidate: [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb). Staging/classification recorded in [Notebook 01 staging and classification](notebook_01_staging_classification.md). Audit and manual Colab smoke remain pending. |
 | Session persistence workflow | session persistence | `fintech-market-ingestion` | `pending_staging` | `not_started` | May align with planned Notebook 02. |
 | Archive backup pack workflow | archive | `fintech-market-ingestion` | `pending_staging` | `not_started` | Must avoid committing archive packs or generated data. |
 | Archive restore workflow | restore | `fintech-market-ingestion` | `pending_staging` | `not_started` | Restore execution should remain runtime-only. |

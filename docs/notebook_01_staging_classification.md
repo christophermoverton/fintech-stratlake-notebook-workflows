@@ -19,11 +19,11 @@ This source notebook remains outside the repository. It must not be copied into 
 | Primary upstream app | `fintech-market-ingestion` |
 | Secondary upstream app | None expected for Notebook 01 |
 | Staging category | `cleaned` |
-| Import status | Cleaned candidate placed under `notebooks/`; pending full validation, audit, and smoke-test follow-up |
+| Import status | `pilot_imported`, `imported_pending_audit`; manual Colab smoke pending |
 | Local validation status | Cleanup validation passed; CLI contract validation added; execution-readiness and sanitized pytest coverage added |
 | Manual Colab smoke status | Pending after cleanup/import validation |
 
-The source candidate is useful and aligned with the planned Notebook 01 workflow, but the original runtime capture was not import-ready because it contained committed outputs. The source review found 42 cells, 19 code cells, 14 code cells with outputs, and no non-null execution counts. Issue #20 prepared a cleaned candidate at `notebooks/01_fintech_daily_bars_extraction_backfill.ipynb`; the original runtime capture remains outside the repository.
+The source candidate is useful and aligned with the planned Notebook 01 workflow, but the original runtime capture was not import-ready because it contained committed outputs. The source review found 42 cells, 19 code cells, 14 code cells with outputs, and no non-null execution counts. Issue #20 prepared a cleaned candidate at `notebooks/01_fintech_daily_bars_extraction_backfill.ipynb`; Issue #23 confirmed it as the controlled Notebook 01 pilot import. The original runtime capture remains outside the repository.
 
 ## Expected Notebook Role
 
