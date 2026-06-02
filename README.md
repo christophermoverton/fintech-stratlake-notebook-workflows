@@ -40,6 +40,8 @@ The notebooks will guide users through setup, Fintech extraction and backfill, s
 
 Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. The first pilot import is [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb).
 
+Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide.
+
 ## Upstream App Repositories
 
 This repository integrates with two upstream app repositories:
@@ -68,6 +70,19 @@ Notebook code should orchestrate, validate, parse, display, and review outputs. 
 
 Do not commit generated data, parquet files, archive packs, restore packs, artifacts, secrets, local app workspaces, notebook outputs, or Google Drive exports. Generated files should be reproducible from native commands or preserved outside Git through the documented persistence and archive workflows.
 
+## Validation Commands
+
+Run the repository guardrails before committing notebook changes:
+
+```bash
+python scripts/scan_for_secret_patterns.py .
+python scripts/check_notebooks_no_outputs.py notebooks
+python scripts/validate_repo_cleanliness.py .
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+```
+
+The notebook execution-readiness command performs static JSON, output/count, path-fragment, classification, and safe Python syntax checks. It does not execute notebooks, mount Drive, prompt for credentials, install packages, run ingestion, run archive/restore commands, or save outputs.
+
 ## GitHub Issue Templates
 
 This repository includes lightweight GitHub issue templates for notebook audits, milestone tasks, and upstream app triage. Use the upstream triage template when a notebook captures a failure that may belong in `fintech-market-ingestion` or `stratlake-trade-engine`, including Notebook 09-style cases where one strategy succeeds and other configured strategies fail.
@@ -88,6 +103,7 @@ This repository includes lightweight GitHub issue templates for notebook audits,
 ## Repository Layout
 
 ```text
+config/
 notebooks/
 docs/
 scripts/
@@ -95,6 +111,7 @@ examples/
 .github/ISSUE_TEMPLATE/
 ```
 
+- `config/` contains notebook development and validation configuration.
 - `notebooks/` contains reviewed, secret-safe Colab notebooks after the import checklist and ignore guardrails are ready.
 - `docs/` contains supporting documentation, checklists, and workflow notes.
 - `scripts/` contains small repository helper scripts for notebook workflow support. It should not duplicate native app logic.

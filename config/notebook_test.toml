@@ -1,0 +1,42 @@
+[notebook_validation]
+default_targets = ["notebooks/00_setup_and_storage_overview.ipynb"]
+require_no_outputs = true
+require_null_execution_counts = true
+compile_python_cells = true
+skip_shell_cells = true
+skip_colab_cells = true
+skip_drive_mount_cells = true
+skip_credential_cells = true
+skip_network_cells = true
+skip_artifact_commands = true
+smoke_execution_enabled = false
+
+[paths]
+active_runtime_prefix = "/content"
+forbidden_committed_path_fragments = [
+  "C:/Users/",
+  "C:\\Users\\",
+  "/Users/",
+  "/home/",
+  "/content/drive/MyDrive/fintech-market-ingestion"
+]
+
+[unsafe_patterns]
+cell_source_contains = [
+  "!python -m pip install",
+  "!pip install",
+  "drive.mount(",
+  "userdata.get(",
+  "getpass.getpass(",
+  "!fintech-backup-data restore",
+  "!fintech-backup-data pack",
+  "!fintech-backfill",
+  "requests.get(",
+  "requests.post(",
+  "ALPACA_API_SECRET_KEY",
+  "ALPACA_API_KEY_ID"
+]
+
+[future_safe_cells]
+explicit_safe_marker = "# NOTEBOOK_TEST_SAFE"
+allow_marked_smoke_cells = false
