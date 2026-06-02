@@ -22,7 +22,7 @@ Reviewed notebooks may be committed later, but only after outputs are cleared, e
 
 ```text
 00_setup_and_storage_overview.ipynb
-01_fintech_daily_bars_backfill.ipynb
+01_fintech_daily_bars_extraction_backfill.ipynb
 02_session_save_and_restore.ipynb
 03_archive_backup_pack_and_restore.ipynb
 04_stratlake_feature_series_index_setup.ipynb

@@ -20,6 +20,7 @@ Use this tracker with:
 - [Notebook Development Environment](notebook_development_environment.md)
 - [Colab Smoke-Test Workflow](colab_smoke_test_workflow.md)
 - [Notebook 00 Import Audit](notebook_00_import_audit.md)
+- [Notebook 01 Import Audit](notebook_01_import_audit.md)
 
 Do not use this tracker to justify direct imports from Google Drive. Future notebooks should remain outside the repository until they are staged, cleaned, validated, reviewed, and explicitly moved into `notebooks/`.
 
@@ -28,14 +29,17 @@ Do not use this tracker to justify direct imports from Google Drive. Future note
 | Number | Title | Repository path | Workflow role | Upstream app coverage | Import status | Validation status | Audit record | Manual Colab smoke | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | 00 | Setup and Storage Overview | [notebooks/00_setup_and_storage_overview.ipynb](../notebooks/00_setup_and_storage_overview.ipynb) | setup/storage/session/persistence overview | `fintech-market-ingestion`; references StratLake boundaries where relevant | `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 00 import audit](notebook_00_import_audit.md) | `pending` | First pilot import; final Colab runtime confirmation remains pending. |
+| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 01 import audit](notebook_01_import_audit.md) | `passed-with-notes` | Core Colab smoke passed; Issue #27 fixes Drive placeholder syntax before dry-run preview cells are rerun for full pass. |
 
-Notebook 00 is the only imported notebook currently tracked by this repository.
+Notebook 00 and Notebook 01 are the imported notebooks currently tracked by this repository.
 
 ## Import Status Table
 
 | Status | Meaning |
 |---|---|
 | `imported` | Notebook exists under `notebooks/`, is cleaned, output-free, tracked, and has passed repository validation. |
+| `pilot_imported` | Notebook exists under `notebooks/` as a controlled pilot import and has passed the repository-side checks recorded for its milestone issue. |
+| `imported_pending_audit` | Notebook exists under `notebooks/` and has passed repository-side validation, but its import audit record is not complete yet. |
 | `pending_staging` | Candidate notebook exists outside the repo or is planned, but has not yet gone through staging and cleanup. |
 | `needs_cleanup` | Candidate notebook has useful content but contains outputs, runtime state, paths, logs, blobs, or other cleanup needs. |
 | `needs_rewrite` | Candidate notebook contains useful workflow intent but should be rewritten before import. |
@@ -56,6 +60,7 @@ Notebook 00 is the only imported notebook currently tracked by this repository.
 | `cli_contract_validated` | Notebook CLI examples passed CLI contract validation. Missing local upstream commands may be warnings when configured. |
 | `audit_recorded` | A notebook import audit record exists. |
 | `colab_smoke_pending` | Manual Colab runtime smoke validation remains pending. |
+| `colab_smoke_passed_with_notes` | Manual Colab runtime smoke validation found the core workflow working but recorded follow-up notes before full pass. |
 | `colab_smoke_passed` | Manual Colab runtime smoke validation has been completed and recorded. |
 
 Validation status may include multiple markers for the same notebook. Do not claim `colab_smoke_passed` unless a fresh Colab smoke test was actually completed.
@@ -66,7 +71,6 @@ These are planned workflow categories only. They are not imported, cleaned, vali
 
 | Candidate | Workflow role | Expected upstream coverage | Import status | Validation status | Notes |
 |---|---|---|---|---|---|
-| Notebook 01 - extraction / daily bars backfill | extraction/backfill | `fintech-market-ingestion` | `pending_staging` | `not_started` | Do not import until staged, cleaned, and reviewed. |
 | Session persistence workflow | session persistence | `fintech-market-ingestion` | `pending_staging` | `not_started` | May align with planned Notebook 02. |
 | Archive backup pack workflow | archive | `fintech-market-ingestion` | `pending_staging` | `not_started` | Must avoid committing archive packs or generated data. |
 | Archive restore workflow | restore | `fintech-market-ingestion` | `pending_staging` | `not_started` | Restore execution should remain runtime-only. |

@@ -23,7 +23,6 @@ except ModuleNotFoundError:  # pragma: no cover - Python < 3.11
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_NOTEBOOK = REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb"
 EXECUTION_CONFIG = REPO_ROOT / "config" / "notebook_execution_test.toml"
 READINESS_CONFIG = REPO_ROOT / "config" / "notebook_test.toml"
 
@@ -54,6 +53,11 @@ def assert_source_notebook_clean(path: Path) -> None:
     for index, cell in enumerate(notebook_code_cells(nb)):
         assert cell.get("outputs", []) == [], f"cell {index} has outputs"
         assert cell.get("execution_count") is None, f"cell {index} has execution_count"
+
+
+def configured_notebook_targets(config_path: Path, section: str) -> list[Path]:
+    config = load_toml(config_path)
+    return [REPO_ROOT / target for target in config[section]["default_targets"]]
 
 
 def should_skip_cell(source: str, config: dict) -> bool:
@@ -125,15 +129,38 @@ def build_sanitized_notebook(source_path: Path, config: dict):
     return sanitized, skipped, kept_code
 
 
-def test_notebook_00_exists_and_loads_with_nbformat():
-    assert SOURCE_NOTEBOOK.exists()
-    nb = nbformat.read(SOURCE_NOTEBOOK, as_version=4)
+def sanitized_code_sources(nb) -> list[str]:
+    return [cell_source(cell) for cell in notebook_code_cells(nb)]
+
+
+@pytest.mark.parametrize(
+    "source_notebook",
+    configured_notebook_targets(EXECUTION_CONFIG, "notebook_execution"),
+    ids=lambda path: path.name,
+)
+def test_configured_notebooks_exist_and_load_with_nbformat(source_notebook):
+    assert source_notebook.exists()
+    nb = nbformat.read(source_notebook, as_version=4)
     assert nb.nbformat == 4
     assert nb.cells
 
 
-def test_notebook_00_source_is_output_free_and_unexecuted():
-    assert_source_notebook_clean(SOURCE_NOTEBOOK)
+@pytest.mark.parametrize(
+    "source_notebook",
+    configured_notebook_targets(EXECUTION_CONFIG, "notebook_execution"),
+    ids=lambda path: path.name,
+)
+def test_configured_notebooks_are_output_free_and_unexecuted(source_notebook):
+    assert_source_notebook_clean(source_notebook)
+
+
+def test_notebook_01_is_in_readiness_and_execution_targets():
+    notebook_01 = "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+
+    assert notebook_01 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_01 in execution["notebook_execution"]["default_targets"]
 
 
 def test_issue_14_readiness_command_remains_compatible():
@@ -152,21 +179,45 @@ def test_issue_14_readiness_command_remains_compatible():
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_notebook_00_sanitized_execution_does_not_mutate_source(tmp_path):
+@pytest.mark.parametrize(
+    "source_notebook",
+    configured_notebook_targets(EXECUTION_CONFIG, "notebook_execution"),
+    ids=lambda path: path.name,
+)
+def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
     config = load_toml(EXECUTION_CONFIG)
     execution = config["notebook_execution"]
     assert execution["execute_sanitized_copy"] is True
     assert execution["full_notebook_execution_enabled"] is False
     assert execution["write_outputs_to_source"] is False
 
-    before = file_digest(SOURCE_NOTEBOOK)
-    source_nb = nbformat.read(SOURCE_NOTEBOOK, as_version=4)
-    sanitized, skipped, kept_code = build_sanitized_notebook(SOURCE_NOTEBOOK, config)
+    before = file_digest(source_notebook)
+    source_nb = nbformat.read(source_notebook, as_version=4)
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
 
     assert skipped > 0
     assert kept_code > 0
 
-    sanitized_path = tmp_path / "00_setup_and_storage_overview.sanitized.ipynb"
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+    unsafe_fragments = [
+        "!python -m pip install",
+        "drive.mount(",
+        "userdata.get(",
+        "getpass.getpass(",
+        "!fintech-init-project",
+        "!fintech-backfill",
+        "!fintech-save-session",
+        "!fintech-backup-data",
+        "fintech-backup-data restore",
+        "session_manifest_paths",
+        "available_drive_sessions",
+        "DAILY_BARS_ROOT.rglob",
+        ".mkdir(",
+    ]
+    for fragment in unsafe_fragments:
+        assert fragment not in sanitized_sources
+
+    sanitized_path = tmp_path / f"{source_notebook.stem}.sanitized.ipynb"
     nbformat.write(sanitized, sanitized_path)
 
     client = NotebookClient(
@@ -177,12 +228,12 @@ def test_notebook_00_sanitized_execution_does_not_mutate_source(tmp_path):
     )
     executed = client.execute()
 
-    executed_path = tmp_path / "00_setup_and_storage_overview.executed.ipynb"
+    executed_path = tmp_path / f"{source_notebook.stem}.executed.ipynb"
     nbformat.write(executed, executed_path)
 
-    after = file_digest(SOURCE_NOTEBOOK)
+    after = file_digest(source_notebook)
     assert before == after
-    assert_source_notebook_clean(SOURCE_NOTEBOOK)
+    assert_source_notebook_clean(source_notebook)
 
     source_outputs = sum(len(cell.get("outputs", [])) for cell in notebook_code_cells(source_nb))
     assert source_outputs == 0

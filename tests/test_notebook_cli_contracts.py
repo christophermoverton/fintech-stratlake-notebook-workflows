@@ -69,6 +69,31 @@ def test_parser_extracts_fintech_backup_pack_subcommand_and_flags():
     assert "--dry-run" in example.flags
 
 
+def test_parser_extracts_multiline_backfill_flags():
+    example = parse_shell(
+        "!fintech-backfill-daily \\\n"
+        "  --symbols {TICKERS_FILE_STR} \\\n"
+        "  --start 2024-10-01 \\\n"
+        "  --end 2025-04-15 \\\n"
+        "  --out {DAILY_BARS_ROOT_STR} \\\n"
+        "  --feed iex \\\n"
+        "  --source session_{SESSION_ID} \\\n"
+        "  --window month"
+    )
+
+    assert example.command == "fintech-backfill-daily"
+    assert example.subcommand is None
+    assert example.flags == {
+        "--symbols",
+        "--start",
+        "--end",
+        "--out",
+        "--feed",
+        "--source",
+        "--window",
+    }
+
+
 def test_parser_extracts_restore_preview_string_flags():
     source = """
 restore_command = (
@@ -100,6 +125,41 @@ restore_command = (
     }
 
 
+def test_parser_ignores_comment_occurrence_when_extracting_preview_flags():
+    source = """
+# fintech-backup-data restore --wrong-flag
+restore_command = " ".join(
+    [
+        "fintech-backup-data restore",
+        f"--workspace-root {LOCAL_WORKSPACE}",
+        f"--target-dataset-root {LOCAL_CURATED}",
+        f"--backup-root {DRIVE_BACKUP_ROOT}",
+        f"--backup-id {ARCHIVE_ID}",
+    ]
+)
+"""
+
+    examples = cli_contracts.extract_preview_examples(
+        Path("notebook.ipynb"),
+        0,
+        source,
+        KNOWN_COMMANDS,
+        CONTRACTS,
+    )
+
+    assert len(examples) == 1
+    example = examples[0]
+    assert example.command == "fintech-backup-data"
+    assert example.subcommand == "restore"
+    assert "--wrong-flag" not in example.flags
+    assert example.flags == {
+        "--workspace-root",
+        "--target-dataset-root",
+        "--backup-root",
+        "--backup-id",
+    }
+
+
 def test_validator_accepts_notebook_00_contracts_without_installed_commands(monkeypatch):
     monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
 
@@ -109,6 +169,21 @@ def test_validator_accepts_notebook_00_contracts_without_installed_commands(monk
     )
 
     assert report.examples
+    assert report.help_checks == 0
+    assert report.warnings
+    assert not report.findings
+
+
+def test_validator_accepts_notebook_01_contracts_without_installed_commands(monkeypatch):
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
+
+    report = cli_contracts.validate_targets(
+        [REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb"],
+        CONFIG,
+    )
+
+    assert report.examples
+    assert any(example.command == "fintech-backfill-daily" for example in report.examples)
     assert report.help_checks == 0
     assert report.warnings
     assert not report.findings
