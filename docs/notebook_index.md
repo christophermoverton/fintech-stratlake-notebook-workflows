@@ -20,6 +20,7 @@ Use this tracker with:
 - [Notebook Development Environment](notebook_development_environment.md)
 - [Colab Smoke-Test Workflow](colab_smoke_test_workflow.md)
 - [Notebook 00 Import Audit](notebook_00_import_audit.md)
+- [Notebook 01 Import Audit](notebook_01_import_audit.md)
 
 Do not use this tracker to justify direct imports from Google Drive. Future notebooks should remain outside the repository until they are staged, cleaned, validated, reviewed, and explicitly moved into `notebooks/`.
 
@@ -28,7 +29,7 @@ Do not use this tracker to justify direct imports from Google Drive. Future note
 | Number | Title | Repository path | Workflow role | Upstream app coverage | Import status | Validation status | Audit record | Manual Colab smoke | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | 00 | Setup and Storage Overview | [notebooks/00_setup_and_storage_overview.ipynb](../notebooks/00_setup_and_storage_overview.ipynb) | setup/storage/session/persistence overview | `fintech-market-ingestion`; references StratLake boundaries where relevant | `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 00 import audit](notebook_00_import_audit.md) | `pending` | First pilot import; final Colab runtime confirmation remains pending. |
-| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported_pending_audit` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated` | `pending` | `pending` | Controlled Notebook 01 pilot import confirmed; audit and manual Colab smoke remain pending. |
+| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 01 import audit](notebook_01_import_audit.md) | `pending` | Controlled Notebook 01 pilot import confirmed; manual Colab smoke remains pending. |
 
 Notebook 00 and Notebook 01 are the imported notebooks currently tracked by this repository.
 
