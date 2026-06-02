@@ -14,16 +14,16 @@ This source notebook remains outside the repository. It must not be copied into 
 
 | Field | Decision |
 |---|---|
-| Planned repository filename | `01_fintech_daily_bars_backfill.ipynb` |
+| Planned repository filename | `01_fintech_daily_bars_extraction_backfill.ipynb` |
 | Workflow classification | Fintech daily bars extraction/backfill workflow |
 | Primary upstream app | `fintech-market-ingestion` |
 | Secondary upstream app | None expected for Notebook 01 |
-| Staging category | `needs_cleanup` |
-| Import status | Staged/planned only; not imported |
-| Local validation status | Not started for Notebook 01 source |
+| Staging category | `cleaned` |
+| Import status | Cleaned candidate placed under `notebooks/`; pending full validation, audit, and smoke-test follow-up |
+| Local validation status | Cleanup validation in progress for cleaned Notebook 01 candidate |
 | Manual Colab smoke status | Pending after cleanup/import validation |
 
-The source candidate is useful and aligned with the planned Notebook 01 workflow, but it is not import-ready because it is a captured runtime notebook with committed outputs. The source review found 42 cells, 19 code cells, 14 code cells with outputs, and no non-null execution counts.
+The source candidate is useful and aligned with the planned Notebook 01 workflow, but the original runtime capture was not import-ready because it contained committed outputs. The source review found 42 cells, 19 code cells, 14 code cells with outputs, and no non-null execution counts. Issue #20 prepared a cleaned candidate at `notebooks/01_fintech_daily_bars_extraction_backfill.ipynb`; the original runtime capture remains outside the repository.
 
 ## Expected Notebook Role
 
@@ -96,7 +96,7 @@ If the upstream app is not installed locally, help/contract checks for `fintech-
 | Generated Parquet/data files | Daily bars backfill writes Parquet output under runtime data roots. | Do not commit generated data; document runtime-only boundary. |
 | Local app workspaces | Fintech workspace is created under `/content/fintech-market-ingestion-demo`. | Do not copy workspaces into Git. |
 | Archives or restore packs | Optional backup pack and restore command examples are present. | Keep live archive/restore actions runtime-only; do not commit packs. |
-| Private Google Drive paths | Source uses `/content/drive/MyDrive/fintech-market-ingestion` and outputs include session-specific Drive paths. | Replace or document as portable placeholders; clear outputs containing Drive session paths. |
+| Private Google Drive paths | Source used a concrete mounted Drive project path and outputs included session-specific Drive paths. | Replace or document as portable placeholders; clear outputs containing Drive session paths. |
 | Private usernames or machine paths | Source file lives in a local Downloads path. | Keep source path only in staging doc; do not import source from Downloads directly. |
 | `.env` values | Upstream help/output references `.env.example`; live `.env` values must not appear. | Search raw JSON for `.env` values; keep credential values out of source. |
 | API keys | Alpaca key names are used. | Use placeholder secret names only; never commit literal key values. |
@@ -119,7 +119,7 @@ If the upstream app is not installed locally, help/contract checks for `fintech-
 | Local validation constraints documented. | Go |
 | Import deferred until cleanup, validation, audit, and review work is complete. | Go |
 
-Go result: Notebook 01 may proceed to M3.2 cleanup planning and cleanup work, but it must not be imported into `notebooks/` until outputs are cleared, raw JSON is reviewed, source is made portable, local validation passes, and the import audit is recorded.
+Go result: Notebook 01 may proceed through M3.2 cleanup validation. The cleaned candidate may remain under `notebooks/` only if outputs are cleared, raw JSON is reviewed, source is made portable, and cleanup validation passes. Full validation expansion, import audit, and manual Colab smoke testing remain later follow-up work.
 
 ## Future Staging Pattern
 
