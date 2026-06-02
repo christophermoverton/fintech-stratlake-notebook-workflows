@@ -1,5 +1,8 @@
 [notebook_execution]
-default_targets = ["notebooks/00_setup_and_storage_overview.ipynb"]
+default_targets = [
+  "notebooks/00_setup_and_storage_overview.ipynb",
+  "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"
+]
 execute_sanitized_copy = true
 full_notebook_execution_enabled = false
 timeout_seconds = 120
@@ -16,11 +19,16 @@ cell_source_contains = [
   "userdata.get(",
   "getpass.getpass(",
   "!fintech-init-project",
+  "!fintech-backfill",
   "!fintech-save-session",
   "!fintech-backup-data",
+  "fintech-backup-data restore",
   "requests.get(",
   "requests.post(",
   "Path(\"/content/drive/MyDrive\")",
+  "session_manifest_paths",
+  "available_drive_sessions",
+  "DAILY_BARS_ROOT.rglob",
   ".mkdir("
 ]
 

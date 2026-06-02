@@ -1,5 +1,8 @@
 [notebook_validation]
-default_targets = ["notebooks/00_setup_and_storage_overview.ipynb"]
+default_targets = [
+  "notebooks/00_setup_and_storage_overview.ipynb",
+  "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"
+]
 require_no_outputs = true
 require_null_execution_counts = true
 compile_python_cells = true

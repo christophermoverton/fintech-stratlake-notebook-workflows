@@ -66,7 +66,7 @@ These are planned workflow categories only. They are not imported, cleaned, vali
 
 | Candidate | Workflow role | Expected upstream coverage | Import status | Validation status | Notes |
 |---|---|---|---|---|---|
-| Notebook 01 - extraction / daily bars backfill | extraction/backfill | `fintech-market-ingestion` | `imported_pending_validation` | `notebook_cleaned_outputs_cleared`, `cli_contract_validated` | Cleaned candidate: [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb). Staging/classification recorded in [Notebook 01 staging and classification](notebook_01_staging_classification.md). Audit and manual Colab smoke remain pending. |
+| Notebook 01 - extraction / daily bars backfill | extraction/backfill | `fintech-market-ingestion` | `imported_pending_validation` | `notebook_cleaned_outputs_cleared`, `cli_contract_validated`, `readiness_validated`, `pytest_validated` | Cleaned candidate: [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb). Staging/classification recorded in [Notebook 01 staging and classification](notebook_01_staging_classification.md). Audit and manual Colab smoke remain pending. |
 | Session persistence workflow | session persistence | `fintech-market-ingestion` | `pending_staging` | `not_started` | May align with planned Notebook 02. |
 | Archive backup pack workflow | archive | `fintech-market-ingestion` | `pending_staging` | `not_started` | Must avoid committing archive packs or generated data. |
 | Archive restore workflow | restore | `fintech-market-ingestion` | `pending_staging` | `not_started` | Restore execution should remain runtime-only. |
