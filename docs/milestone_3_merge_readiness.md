@@ -200,6 +200,10 @@ Conditions satisfied:
 - Record manual Colab smoke results separately when performed.
 - Stage Notebook 02 or later notebooks only through the same controlled staging, cleanup, validation, audit, and review process.
 
+## Post-Closeout Note: Issue #27
+
+A manual Colab smoke run after the Milestone 3 closeout recorded Notebook 01 as `passed-with-notes`: the core extraction/backfill workflow passed, but the session-save and archive dry-run preview cells failed because an angle-bracket Drive placeholder was interpreted as shell redirection. Issue #27 updates Notebook 01 to use a shell-safe `DRIVE_FOLDER_NAME` convention. Full manual smoke pass should be recorded only after the fixed dry-run preview cells are rerun successfully.
+
 ## Final Branch Scope Confirmation
 
 This branch remains scoped to the controlled Notebook 01 extraction workflow import.

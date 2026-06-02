@@ -29,7 +29,7 @@ Do not use this tracker to justify direct imports from Google Drive. Future note
 | Number | Title | Repository path | Workflow role | Upstream app coverage | Import status | Validation status | Audit record | Manual Colab smoke | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | 00 | Setup and Storage Overview | [notebooks/00_setup_and_storage_overview.ipynb](../notebooks/00_setup_and_storage_overview.ipynb) | setup/storage/session/persistence overview | `fintech-market-ingestion`; references StratLake boundaries where relevant | `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 00 import audit](notebook_00_import_audit.md) | `pending` | First pilot import; final Colab runtime confirmation remains pending. |
-| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 01 import audit](notebook_01_import_audit.md) | `pending` | Controlled Notebook 01 pilot import confirmed; manual Colab smoke remains pending. |
+| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 01 import audit](notebook_01_import_audit.md) | `passed-with-notes` | Core Colab smoke passed; Issue #27 fixes Drive placeholder syntax before dry-run preview cells are rerun for full pass. |
 
 Notebook 00 and Notebook 01 are the imported notebooks currently tracked by this repository.
 
@@ -60,6 +60,7 @@ Notebook 00 and Notebook 01 are the imported notebooks currently tracked by this
 | `cli_contract_validated` | Notebook CLI examples passed CLI contract validation. Missing local upstream commands may be warnings when configured. |
 | `audit_recorded` | A notebook import audit record exists. |
 | `colab_smoke_pending` | Manual Colab runtime smoke validation remains pending. |
+| `colab_smoke_passed_with_notes` | Manual Colab runtime smoke validation found the core workflow working but recorded follow-up notes before full pass. |
 | `colab_smoke_passed` | Manual Colab runtime smoke validation has been completed and recorded. |
 
 Validation status may include multiple markers for the same notebook. Do not claim `colab_smoke_passed` unless a fresh Colab smoke test was actually completed.

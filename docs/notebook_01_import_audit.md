@@ -220,9 +220,15 @@ Local validation and tests must not run these cells against real credentials, AP
 
 ## Manual Colab Smoke-Test Status
 
-Manual Colab smoke validation remains pending.
+Manual Colab smoke validation status: `passed-with-notes`.
 
-This audit records repository-side staging, cleanup, import confirmation, static validation, CLI contract validation, execution-readiness validation, and sanitized pytest execution. It does not claim that Notebook 01 has been run in a fresh Colab runtime.
+A manual Colab smoke run confirmed the core extraction/backfill workflow: package installation completed, Fintech CLI commands were available, help commands ran, Google Drive mounted, the local `/content` workspace was created, `fintech-init-project` created a session manifest, `SESSION_ID` was extracted, runtime credentials were configured without printing secret values, `fintech-backfill-daily` completed, and runtime Parquet output appeared under the local `/content` workspace.
+
+The smoke run also found that the session-save and archive dry-run preview cells failed because the Drive folder placeholder used angle brackets. When interpolated into `!` shell commands, that placeholder was interpreted as shell redirection. Issue #27 replaces the angle-bracket placeholder with a shell-safe `DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"` convention.
+
+Manual Colab smoke should be rerun for the dry-run preview cells before marking smoke as fully passed. Specifically, rerun the Drive root/session setup cells with a real `DRIVE_FOLDER_NAME`, then rerun the `fintech-save-session --dry-run` and `fintech-backup-data pack --dry-run` preview cells.
+
+This audit records repository-side staging, cleanup, import confirmation, static validation, CLI contract validation, execution-readiness validation, sanitized pytest execution, and the `passed-with-notes` smoke finding. It does not claim full manual Colab smoke pass.
 
 Manual Colab smoke testing should follow `docs/colab_smoke_test_workflow.md`. After smoke testing, outputs must be cleared and execution counts must remain `null` before any notebook source update is committed.
 
@@ -238,7 +244,7 @@ These warnings are acceptable only when they match the known categories above an
 
 ## Follow-Up Items
 
-- Complete manual Colab smoke validation when ready and record the result separately.
+- Rerun the Notebook 01 session-save and archive dry-run preview cells in Colab with a real `DRIVE_FOLDER_NAME`, then record the final smoke status separately.
 - Create milestone merge-readiness documentation in Issue #26.
 - Do not expand this import to Notebook 02 or later notebooks without a new staged workflow.
 
@@ -254,5 +260,5 @@ The audit confirms:
 - Repository-side static, readiness, CLI contract, and sanitized pytest validation are in place.
 - Generated artifacts and secrets are not committed.
 - Native-command-first boundaries are preserved.
-- Manual Colab smoke validation remains pending.
+- Manual Colab smoke validation is `passed-with-notes`; the dry-run preview cells need follow-up before full smoke pass can be recorded.
 - Milestone merge readiness is not claimed.
