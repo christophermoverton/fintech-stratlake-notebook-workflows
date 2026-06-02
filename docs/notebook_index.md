@@ -66,7 +66,7 @@ These are planned workflow categories only. They are not imported, cleaned, vali
 
 | Candidate | Workflow role | Expected upstream coverage | Import status | Validation status | Notes |
 |---|---|---|---|---|---|
-| Notebook 01 - extraction / daily bars backfill | extraction/backfill | `fintech-market-ingestion` | `pending_staging` | `not_started` | Do not import until staged, cleaned, and reviewed. |
+| Notebook 01 - extraction / daily bars backfill | extraction/backfill | `fintech-market-ingestion` | `needs_cleanup` | `staged` | Staging/classification recorded in [Notebook 01 staging and classification](notebook_01_staging_classification.md). Do not import until cleaned, validated, audited, and reviewed. |
 | Session persistence workflow | session persistence | `fintech-market-ingestion` | `pending_staging` | `not_started` | May align with planned Notebook 02. |
 | Archive backup pack workflow | archive | `fintech-market-ingestion` | `pending_staging` | `not_started` | Must avoid committing archive packs or generated data. |
 | Archive restore workflow | restore | `fintech-market-ingestion` | `pending_staging` | `not_started` | Restore execution should remain runtime-only. |
