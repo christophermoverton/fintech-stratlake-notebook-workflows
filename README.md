@@ -79,9 +79,10 @@ python scripts/scan_for_secret_patterns.py .
 python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+pytest
 ```
 
-The notebook execution-readiness command performs static JSON, output/count, path-fragment, classification, and safe Python syntax checks. It does not execute notebooks, mount Drive, prompt for credentials, install packages, run ingestion, run archive/restore commands, or save outputs.
+The notebook execution-readiness command performs static JSON, output/count, path-fragment, classification, and safe Python syntax checks. The pytest harness executes only sanitized temporary notebook copies. Neither layer mutates source notebooks, mounts Drive, prompts for credentials, installs packages, runs ingestion, runs archive/restore commands, or saves outputs to committed notebooks.
 
 ## GitHub Issue Templates
 

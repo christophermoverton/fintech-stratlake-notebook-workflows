@@ -16,6 +16,7 @@ Windows PowerShell:
 python -m venv .venv
 .venv\Scripts\activate
 python -m pip install --upgrade pip
+python -m pip install -r requirements-notebook-dev.txt
 ```
 
 Unix or macOS:
@@ -24,9 +25,20 @@ Unix or macOS:
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
+python -m pip install -r requirements-notebook-dev.txt
 ```
 
-The notebook readiness harness uses the Python standard library and expects Python 3.11 or newer for `tomllib` TOML parsing.
+The notebook readiness harness uses the Python standard library and expects Python 3.11 or newer for `tomllib` TOML parsing. The pytest execution harness uses the notebook development dependencies in `requirements-notebook-dev.txt`, including JupyterLab, pytest, nbformat, nbclient, and ipykernel.
+
+## Launch JupyterLab
+
+After installing notebook development dependencies, launch JupyterLab from the repository root:
+
+```bash
+jupyter lab
+```
+
+Use JupyterLab for local notebook authoring and review. Source notebooks should still be cleaned before commit: clear outputs, reset execution counts, and run the repository validation commands.
 
 ## Static Repository Checks
 
@@ -36,6 +48,8 @@ Run the existing repository guardrails before committing notebook changes:
 python scripts/scan_for_secret_patterns.py .
 python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+pytest
 ```
 
 These checks scan for likely secrets, notebook outputs, execution counts, generated folders, and other repository cleanliness problems.
@@ -59,6 +73,29 @@ The default config currently targets:
 ```text
 notebooks/00_setup_and_storage_overview.ipynb
 ```
+
+## Pytest Notebook Execution Harness
+
+Run the pytest notebook execution harness:
+
+```bash
+pytest
+```
+
+This is a deeper layer than the Issue #14 readiness check. The readiness check loads notebook JSON, checks output/count state, classifies cells, and compiles safe Python-only cells. The pytest harness uses `nbformat` and `nbclient` to execute a temporary sanitized notebook copy in a notebook-capable environment.
+
+The pytest harness does not execute the source notebook directly. It:
+
+- Loads Notebook 00 with `nbformat`.
+- Builds a sanitized temporary copy under pytest's temporary directory.
+- Keeps markdown cells.
+- Keeps safe Python cells where possible.
+- Replaces shell, Colab, Drive mount, credential, package-install, upstream command, and artifact-producing cells with safe no-op cells or harmless setup fragments.
+- Executes the sanitized copy with `nbclient`.
+- Confirms the source notebook hash is unchanged.
+- Confirms the source notebook remains output-free and has `null` execution counts.
+
+Temporary executed notebooks are test artifacts only and must not be committed.
 
 ## What The Harness Checks
 
@@ -102,6 +139,8 @@ The harness does not:
 - Run archive or restore commands.
 - Run StratLake feature generation, strategy execution, backtests, or artifact generation.
 - Mutate notebook files.
+
+The pytest execution harness follows the same safety boundary for source notebooks. It may write sanitized and executed copies under pytest temporary folders, but it never writes outputs back into committed notebooks.
 
 Full Colab execution remains a manual or future explicitly guarded workflow.
 

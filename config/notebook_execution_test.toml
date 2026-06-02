@@ -1,0 +1,30 @@
+[notebook_execution]
+default_targets = ["notebooks/00_setup_and_storage_overview.ipynb"]
+execute_sanitized_copy = true
+full_notebook_execution_enabled = false
+timeout_seconds = 120
+allow_errors = false
+require_source_unchanged = true
+write_outputs_to_source = false
+
+[skip_patterns]
+cell_source_contains = [
+  "!python -m pip install",
+  "!pip install",
+  "drive.mount(",
+  "google.colab",
+  "userdata.get(",
+  "getpass.getpass(",
+  "!fintech-init-project",
+  "!fintech-save-session",
+  "!fintech-backup-data",
+  "requests.get(",
+  "requests.post(",
+  "Path(\"/content/drive/MyDrive\")",
+  ".mkdir("
+]
+
+[temporary_execution]
+use_pytest_tmp_path = true
+discard_executed_notebook = true
+replace_skipped_cells_with_noop = true
