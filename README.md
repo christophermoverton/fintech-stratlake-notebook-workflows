@@ -38,7 +38,7 @@ The workflows are designed for Colab sessions where active work happens under `/
 
 The notebooks will guide users through setup, Fintech extraction and backfill, session persistence, archive and restore flows, StratLake initialization, feature generation, validation, strategy smoke tests, backtest review, and research comparison.
 
-Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. The first pilot import is [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb).
+Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. The first pilot import is [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb), with its review trail recorded in the [Notebook 00 import audit](docs/notebook_00_import_audit.md).
 
 Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide.
 
