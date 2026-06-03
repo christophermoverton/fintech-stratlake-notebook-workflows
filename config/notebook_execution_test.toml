@@ -2,7 +2,8 @@
 default_targets = [
   "notebooks/00_setup_and_storage_overview.ipynb",
   "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
-  "notebooks/02_fintech_session_persistence_save_restore.ipynb"
+  "notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb"
 ]
 execute_sanitized_copy = true
 full_notebook_execution_enabled = false
@@ -32,8 +33,13 @@ cell_source_contains = [
   "FINTECH_ROOT",
   "DRIVE_PROJECT_ROOT",
   "DRIVE_SESSION_ROOT",
+  "DRIVE_BACKUP_ROOT",
+  "BACKUP_PACK_DIR",
+  "RESTORE_BACKUP_ROOT",
+  "PREVIOUS_BACKUP_PACK_DIR",
   "session_manifest_paths",
   "available_drive_sessions",
+  "SOURCE_DATASET_ROOT.rglob",
   "DAILY_BARS_ROOT.rglob",
   ".mkdir("
 ]
