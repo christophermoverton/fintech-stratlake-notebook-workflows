@@ -85,6 +85,10 @@ def file_digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def flag_names(example: cli_registry.CommandExample) -> set[str]:
+    return {flag.name for flag in example.flags}
+
+
 def test_registry_toml_files_parse_successfully():
     command_registry = cli_registry.load_toml(REPO_ROOT / "config" / "cli_command_registry.toml")
     notebook_registry = cli_registry.load_toml(REPO_ROOT / "config" / "notebook_cli_registry.toml")
@@ -157,6 +161,10 @@ def test_required_flag_schema_and_restore_semantics():
     assert save_entry.flags["--session-id"].argparse_required is True
     assert save_entry.flags["--destination"].required_when == "not_dry_run"
 
+    pack_entry = MODEL.subcommands[("fintech-backup-data", "pack")]
+    assert pack_entry.flags["--dry-run"].argparse_required is False
+    assert pack_entry.flags["--dry-run"].notebook_contract_required is False
+
 
 @pytest.mark.parametrize(
     "command_text",
@@ -175,6 +183,8 @@ def test_required_flag_schema_and_restore_semantics():
         "fintech-backup-data restore --help",
         "fintech-backup-data validate --help",
         "fintech-backup-data inspect --help",
+        "fintech-backup-data pack --workspace-root /content/demo --source-dataset-root /content/demo/data/curated --backup-root /drive/backups --backup-id archive-1 --shard-size-mb 512",
+        "fintech-backup-data pack --workspace-root /content/demo --source-dataset-root /content/demo/data/curated --backup-root /drive/backups --backup-id archive-1 --shard-size-mb 512 --dry-run",
     ],
 )
 def test_validator_accepts_valid_command_examples(command_text):
@@ -342,6 +352,7 @@ def test_excluded_stratlake_placeholder_does_not_make_concrete_command_valid(tmp
         REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb",
         REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb",
         REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb",
+        REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb",
     ],
     ids=lambda path: path.name,
 )
@@ -359,17 +370,47 @@ def test_notebook_02_passes_with_zero_registry_failures():
     assert not report.findings
 
 
+def test_notebook_03_passes_with_zero_registry_failures():
+    target = REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb"
+    report = cli_registry.validate_targets([target], MODEL, SETTINGS)
+
+    assert report.examples
+    assert not report.findings
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and example.classification == "dry_run"
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and "--dry-run" not in flag_names(example)
+        and example.classification == "manual_only_live"
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "restore"
+        and {"--backup-pack-dir", "--restore-root", "--overwrite-policy"} <= flag_names(example)
+        for example in report.examples
+    )
+    assert all(example.command != "fintech-save-session" for example in report.examples)
+    assert all(example.command != "fintech-restore-session" for example in report.examples)
+
+
 def test_registry_validation_does_not_mutate_source_notebooks():
     targets = [
         REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb",
         REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb",
         REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb",
+        REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb",
     ]
     before = {path: file_digest(path) for path in targets}
 
     report = cli_registry.validate_targets(targets, MODEL, SETTINGS)
 
-    assert report.targets_checked == 3
+    assert report.targets_checked == 4
     after = {path: file_digest(path) for path in targets}
     assert before == after
 

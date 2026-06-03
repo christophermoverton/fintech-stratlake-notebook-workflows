@@ -192,6 +192,12 @@ def test_config_includes_notebook_02_target():
     assert "notebooks/02_fintech_session_persistence_save_restore.ipynb" in targets
 
 
+def test_config_includes_notebook_03_target():
+    targets = CONFIG["notebook_cli_contracts"]["default_targets"]
+
+    assert "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb" in targets
+
+
 def test_validator_accepts_notebook_02_contracts_without_installed_commands(monkeypatch):
     monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
 
@@ -225,6 +231,62 @@ def test_validator_accepts_notebook_02_contracts_without_installed_commands(monk
         and "--overwrite-policy" in example.flags
         and not example.is_help
         and example.source_kind == "preview"
+        for example in report.examples
+    )
+    assert all(example.command != "fintech-save-session" for example in report.examples)
+    assert all(example.command != "fintech-restore-session" for example in report.examples)
+    assert report.help_checks == 0
+    assert report.warnings
+    assert not report.findings
+
+
+def test_validator_accepts_notebook_03_contracts_without_installed_commands(monkeypatch):
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
+
+    report = cli_contracts.validate_targets(
+        [REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb"],
+        CONFIG,
+    )
+
+    assert report.examples
+    assert any(
+        example.command == "fintech-init-project"
+        and "--root" in example.flags
+        and "--notebooks" in example.flags
+        and "--with-session" in example.flags
+        and "--session-name" in example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and "--dry-run" in example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and "--dry-run" not in example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "validate"
+        and example.flags == {"--backup-pack-dir"}
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "inspect"
+        and example.flags == {"--backup-pack-dir"}
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "restore"
+        and "--backup-pack-dir" in example.flags
+        and "--restore-root" in example.flags
+        and "--overwrite-policy" in example.flags
         for example in report.examples
     )
     assert all(example.command != "fintech-save-session" for example in report.examples)
