@@ -230,6 +230,22 @@ def test_validator_rejects_invalid_command_examples(command_text, expected_snipp
     assert any(expected_snippet in finding.reason for finding in findings)
 
 
+def test_boolean_flag_value_policy_can_be_disabled():
+    _example, findings, _warnings = validate_command_text(
+        'fintech-init-project --root /tmp/demo --notebooks "" --with-session --session-name demo',
+        settings={"fail_on_boolean_flag_value": False},
+    )
+    assert findings
+    assert not any("boolean flag" in finding.reason for finding in findings)
+
+
+def test_split_command_preserves_windows_style_backslashes():
+    parts = cli_registry.split_command(
+        r"fintech-init-project --root C:\tmp\demo --notebooks --with-session --session-name demo"
+    )
+    assert parts[2] == r"C:\tmp\demo"
+
+
 def test_help_examples_are_safe_help_and_skip_normal_required_flags():
     for command_text in [
         "fintech-backup-data restore --help",

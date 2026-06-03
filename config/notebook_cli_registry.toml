@@ -1,5 +1,5 @@
 [notebook_cli_registry]
-registry_path = "config/cli_command_registry.toml"
+registry_path = "cli_command_registry.toml"
 default_targets = [
   "notebooks/00_setup_and_storage_overview.ipynb",
   "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",

@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import re
 import shlex
 import sys
 from dataclasses import dataclass, field
@@ -18,7 +17,6 @@ except ModuleNotFoundError:  # pragma: no cover - Python < 3.11
     tomllib = None  # type: ignore[assignment]
 
 
-FLAG_RE = re.compile(r"(?<![\w-])--[A-Za-z0-9][A-Za-z0-9-]*")
 VALUE_PLACEHOLDER = "__VALUE__"
 
 
@@ -211,7 +209,7 @@ def build_registry_model(registry: dict[str, Any]) -> RegistryModel:
 
 def split_command(text: str) -> list[str]:
     try:
-        return shlex.split(text, posix=True)
+        return shlex.split(text, posix=False)
     except ValueError:
         return text.split()
 
@@ -638,7 +636,11 @@ def validate_example(
         flag = entry.flags.get(parsed.name) or command_entry.flags.get(parsed.name)
         if flag is None:
             continue
-        if flag.kind == "boolean" and parsed.value is not None:
+        if (
+            flag.kind == "boolean"
+            and parsed.value is not None
+            and settings.get("fail_on_boolean_flag_value", True)
+        ):
             findings.append(
                 Finding(
                     example.path,
