@@ -27,6 +27,7 @@ confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb",
   "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
   "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
   "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md",
@@ -261,6 +262,34 @@ notes = [
 "--restore-root" = { kind = "value", argparse_required = true, notebook_contract_required = true, mode = "backup_pack_restore", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:notebooks/03_fintech_archive_backup_pack_and_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
 "--overwrite-policy" = { kind = "value", argparse_required = false, notebook_contract_required = true, mode = "backup_pack_restore", allowed_values = ["fail", "replace", "merge"], default_value = "fail", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-market-ingestion:src/backup/restore.py", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:notebooks/03_fintech_archive_backup_pack_and_restore.ipynb", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
 "--help" = { kind = "boolean", argparse_required = false, notebook_contract_required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+
+[[commands]]
+name = "stratlake-init-session"
+owner = "stratlake-trade-engine"
+subcommands = []
+expected_missing_local = true
+classifications = ["manual_only_live"]
+confirmed_from = [
+  "fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb",
+  "fintech-stratlake-notebook-workflows:docs/notebook_04_command_surface_classification.md"
+]
+upstream_source_status = "smoke_test_confirmed_pending_source_verification"
+notes = [
+  "Notebook 04 uses stratlake-init-session as the live downstream StratLake session initializer.",
+  "Flags were confirmed from the smoke-tested Colab session (M7.1 / M7.2); upstream stratlake-trade-engine source verification is pending (M7.4+ follow-up).",
+  "--marketlake-root is the critical handoff flag: it connects StratLake to the Fintech curated-data root (MARKETLAKE_ROOT).",
+  "--enable-drive-persistence and --notebook-configs are standalone boolean flags (no value).",
+  "All six flags appear in the Notebook 04 live shell command cell bce5c87a→3dd31cc7.",
+  "stratlake-build-features, stratlake-session-export, stratlake-session-import, stratlake-session-archive-bootstrap, and stratlake-session-archive-restore-bootstrap remain excluded from live NB04 scope."
+]
+
+[commands.flags]
+"--root" = { kind = "value", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb"] }
+"--project-name" = { kind = "value", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb"] }
+"--marketlake-root" = { kind = "value", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb"] }
+"--drive-root" = { kind = "value", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb"] }
+"--enable-drive-persistence" = { kind = "boolean", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb"] }
+"--notebook-configs" = { kind = "boolean", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb"] }
 
 [[excluded_candidates]]
 name = "fintech-restore-session"

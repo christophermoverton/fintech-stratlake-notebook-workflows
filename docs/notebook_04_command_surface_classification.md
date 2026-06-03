@@ -318,9 +318,48 @@ mismatch before those preview cells can be registered as validated.
 No other concrete incompatibilities, stale command surfaces, or source-safety issues were
 found in Notebook 04.
 
-## M7.3 Handoff: Registry and Contract Actions Required
+## M7.3 Resolution Record
 
-M7.3 must:
+M7.3 (Issue #55) implemented the following against this classification:
+
+### `fintech-backup-data pack/restore` preview flag resolution
+
+The M7.2 flag mismatch was resolved in M7.3 by treating the registry as authoritative (confirmed
+from `fintech-market-ingestion:src/cli/backup_data.py`). The Notebook 04 preview strings were
+updated to use the registry-confirmed flag shapes:
+
+**pack preview** — changed from smoke-tested `--root/--dataset-root/--archive-id/--drive-root/...`
+to registry-confirmed `--workspace-root/--source-dataset-root/--backup-root/--backup-id/--shard-size-mb`.
+
+**restore preview** — changed from smoke-tested `--root/--archive-id/--drive-root/--target-root/--copy-policy.../...`
+to registry-confirmed `--backup-pack-dir/--restore-root/--overwrite-policy fail`.
+
+**Optional commented restore** (cell `tr2kxVdNtgH9`) — updated to the same registry-confirmed shape.
+
+The preview cell `BWLYWDVttgH8` was also split into two cells (cell `nb04_pack_preview` for pack,
+cell `BWLYWDVttgH8` for restore) to prevent the contract validator's naive regex extraction from
+mixing pack and restore flags into a single example. This is a minimal structural change required
+for correct contract validation.
+
+### `stratlake-init-session` registration
+
+Added as a new `[[commands]]` entry to `cli_command_registry.toml` with all six flags from the
+live NB04 cell, classified as `manual_only_live`. Upstream source verification is pending
+(stratlake-trade-engine pyproject / src); flags are smoke-test-confirmed for now.
+
+### Config and test updates
+
+- NB04 added to `notebook_cli_contracts.toml` and `notebook_cli_registry.toml` default_targets.
+- `stratlake-init-session` contract added to `notebook_cli_contracts.toml`.
+- `fintech-init-project` `confirmed_from` updated to include NB04.
+- Tests updated in `test_notebook_cli_contracts.py` and `test_notebook_cli_registry.py`.
+- 71 tests pass; all validators pass with no failures.
+
+## M7.3 Handoff: Registry and Contract Actions Required (Original — now complete)
+
+The following items were planned for M7.3 and have been completed:
+
+M7.3 completed:
 
 1. **Add Notebook 04 to `notebook_cli_contracts.toml` `default_targets`** and add a new
    `[[commands]]` block for `stratlake-init-session` with the six observed flags.

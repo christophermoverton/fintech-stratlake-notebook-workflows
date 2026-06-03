@@ -3,7 +3,8 @@ default_targets = [
   "notebooks/00_setup_and_storage_overview.ipynb",
   "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
   "notebooks/02_fintech_session_persistence_save_restore.ipynb",
-  "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb"
+  "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
+  "notebooks/04_stratlake_feature_series_index_setup.ipynb"
 ]
 require_installed_commands = false
 allow_missing_commands = true
@@ -59,3 +60,8 @@ optional_flags = [
   "--backup-root",
   "--backup-id"
 ]
+
+[[commands]]
+name = "stratlake-init-session"
+subcommands = []
+required_flags = ["--root", "--project-name", "--marketlake-root", "--drive-root", "--enable-drive-persistence", "--notebook-configs"]

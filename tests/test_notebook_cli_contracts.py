@@ -198,6 +198,26 @@ def test_config_includes_notebook_03_target():
     assert "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb" in targets
 
 
+def test_config_includes_notebook_04_target():
+    targets = CONFIG["notebook_cli_contracts"]["default_targets"]
+
+    assert "notebooks/04_stratlake_feature_series_index_setup.ipynb" in targets
+
+
+def test_config_includes_stratlake_init_session_contract():
+    contracts = cli_contracts.command_contracts(CONFIG)
+
+    assert "stratlake-init-session" in contracts
+    nb04_contract = contracts["stratlake-init-session"]
+    required = set(nb04_contract.get("required_flags", []))
+    assert "--root" in required
+    assert "--project-name" in required
+    assert "--marketlake-root" in required
+    assert "--drive-root" in required
+    assert "--enable-drive-persistence" in required
+    assert "--notebook-configs" in required
+
+
 def test_validator_accepts_notebook_02_contracts_without_installed_commands(monkeypatch):
     monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
 
@@ -311,7 +331,9 @@ def test_notebook_02_dry_run_examples_are_not_executed(monkeypatch):
                 "--symbols --start --end --out --feed --source --window "
                 "--workspace-root --source-dataset-root --backup-root --backup-id "
                 "--shard-size-mb --target-dataset-root --backup-pack-dir "
-                "--restore-root --overwrite-policy inspect"
+                "--restore-root --overwrite-policy inspect "
+                "--project-name --marketlake-root --drive-root "
+                "--enable-drive-persistence --notebook-configs"
             ),
             stderr="",
         )
@@ -397,3 +419,67 @@ def test_help_examples_do_not_require_workflow_flags():
     )
 
     assert findings == []
+
+
+def test_validator_accepts_notebook_04_contracts_without_installed_commands(monkeypatch):
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
+
+    report = cli_contracts.validate_targets(
+        [REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb"],
+        CONFIG,
+    )
+
+    assert report.examples
+    # fintech-init-project live shell is validated
+    assert any(
+        example.command == "fintech-init-project"
+        and example.source_kind == "shell"
+        and "--root" in example.flags
+        and "--notebooks" in example.flags
+        and "--with-session" in example.flags
+        and "--session-name" in example.flags
+        for example in report.examples
+    )
+    # stratlake-init-session live shell is validated
+    assert any(
+        example.command == "stratlake-init-session"
+        and example.source_kind == "shell"
+        and "--root" in example.flags
+        and "--project-name" in example.flags
+        and "--marketlake-root" in example.flags
+        and "--drive-root" in example.flags
+        and "--enable-drive-persistence" in example.flags
+        and "--notebook-configs" in example.flags
+        for example in report.examples
+    )
+    # fintech-backup-data pack preview is validated with registry-confirmed flags
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and example.source_kind == "preview"
+        and "--workspace-root" in example.flags
+        and "--source-dataset-root" in example.flags
+        and "--backup-root" in example.flags
+        and "--backup-id" in example.flags
+        and "--shard-size-mb" in example.flags
+        for example in report.examples
+    )
+    # fintech-backup-data restore preview is validated with registry-confirmed flags
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "restore"
+        and example.source_kind == "preview"
+        and "--backup-pack-dir" in example.flags
+        and "--restore-root" in example.flags
+        and "--overwrite-policy" in example.flags
+        for example in report.examples
+    )
+    # availability-check-only commands are not treated as live execution
+    assert all(example.command != "fintech-save-session" for example in report.examples)
+    assert all(example.command != "stratlake-build-features" for example in report.examples)
+    assert all(example.command != "stratlake-session-export" for example in report.examples)
+    assert all(example.command != "stratlake-session-import" for example in report.examples)
+    assert all(example.command != "fintech-restore-session" for example in report.examples)
+    assert report.help_checks == 0
+    assert report.warnings
+    assert not report.findings
