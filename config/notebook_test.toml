@@ -1,7 +1,8 @@
 [notebook_validation]
 default_targets = [
   "notebooks/00_setup_and_storage_overview.ipynb",
-  "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"
+  "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "notebooks/02_fintech_session_persistence_save_restore.ipynb"
 ]
 require_no_outputs = true
 require_null_execution_counts = true
@@ -34,6 +35,8 @@ cell_source_contains = [
   "!fintech-backup-data restore",
   "!fintech-backup-data pack",
   "!fintech-backfill",
+  "!fintech-save-session",
+  "!fintech-restore-session",
   "requests.get(",
   "requests.post(",
   "ALPACA_API_SECRET_KEY",

@@ -65,12 +65,27 @@ def should_skip_cell(source: str, config: dict) -> bool:
         return True
     if ".mkdir" in source:
         return True
+    if "RESTORE_ROOT" in source:
+        return True
     patterns = config["skip_patterns"]["cell_source_contains"]
     return any(pattern in source for pattern in patterns)
 
 
 def safe_prefix_lines(source: str) -> list[str]:
     if ".mkdir" in source:
+        return []
+    if any(
+        pattern in source
+        for pattern in (
+            "!fintech-",
+            "fintech-restore-session",
+            "fintech-backup-data restore",
+            "DRIVE_PROJECT_ROOT",
+            "DRIVE_SESSION_ROOT",
+            "FINTECH_ROOT",
+            "RESTORE_ROOT",
+        )
+    ):
         return []
 
     safe_lines: list[str] = []
@@ -163,6 +178,70 @@ def test_notebook_01_is_in_readiness_and_execution_targets():
     assert notebook_01 in execution["notebook_execution"]["default_targets"]
 
 
+def test_notebook_02_is_in_readiness_and_execution_targets():
+    notebook_02 = "notebooks/02_fintech_session_persistence_save_restore.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+
+    assert notebook_02 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_02 in execution["notebook_execution"]["default_targets"]
+
+
+def test_notebook_02_sanitized_copy_removes_runtime_restore_cells():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
+
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    assert skipped + kept_code > 0
+    assert "!fintech-save-session" not in sanitized_sources
+    assert "!fintech-restore-session" not in sanitized_sources
+    assert "RESTORE_COMMAND_CANDIDATE" not in sanitized_sources
+    assert "drive.mount(" not in sanitized_sources
+    assert ".mkdir(" not in sanitized_sources
+
+
+def test_notebook_02_has_archive_restore_preflight_guardrails():
+    source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
+    notebook = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in notebook.cells)
+
+    assert "Notebook 02 - Fintech Archive Restore and Session Readiness" in source
+    assert "Initialize Local Restore Workspace" in source
+    assert "ARCHIVE_RESTORE_PREFLIGHT_READY" in source
+    assert "INIT_PROJECT_COMMAND" in source
+    assert "fintech-init-project" in source
+    assert "SESSION_NAME" in source
+    assert '"--notebooks",' in source
+    assert '"--notebooks", "REPLACE_WITH_NOTEBOOKS_ROOT"' not in source
+    assert "REPLACE_WITH_NOTEBOOKS_ROOT" not in source
+    assert "REPLACE_WITH_DRIVE_FOLDER_NAME" in source
+    assert "REPLACE_WITH_SESSION_ID" in source
+    assert "REPLACE_WITH_BACKUP_ID" in source
+    assert "RESTORE_TARGET_READY" in source
+    assert "EXPECTED_RESTORE_TARGET_PATHS" in source
+    assert "RESTORE_ROOT" in source
+    assert "Missing restore target path" in source
+    assert "Local restore workspace initialization remains manual Colab-only." in source
+    assert "DRIVE_BACKUP_ROOT" in source
+    assert "DRIVE_BACKUP_MANIFEST" in source
+    assert "Missing backup-pack source path" in source
+    assert "Missing backup-pack manifest path" in source
+    assert 'ARCHIVE_RESTORE_COMMAND_CANDIDATE = "fintech-backup-data"' in source
+    assert "ARCHIVE_RESTORE_COMMAND" in source
+    assert "fintech-backup-data" in source
+    assert "fintech-backup-data restore" in source
+    assert "--backup-pack-dir" in source
+    assert "--restore-root" in source
+    assert 'OVERWRITE_POLICY = "fail"' in source
+    assert '"refuse"' not in source
+    assert "--source" not in source
+    assert '"fintech-restore-session"' not in source
+    assert "RuntimeError" in source
+
+
 def test_issue_14_readiness_command_remains_compatible():
     result = subprocess.run(
         [
@@ -196,7 +275,7 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
     sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
 
     assert skipped > 0
-    assert kept_code > 0
+    assert skipped + kept_code > 0
 
     sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
     unsafe_fragments = [
@@ -207,6 +286,9 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         "!fintech-init-project",
         "!fintech-backfill",
         "!fintech-save-session",
+        "!fintech-restore-session",
+        "RESTORE_COMMAND_CANDIDATE",
+        "RESTORE_ROOT",
         "!fintech-backup-data",
         "fintech-backup-data restore",
         "session_manifest_paths",
