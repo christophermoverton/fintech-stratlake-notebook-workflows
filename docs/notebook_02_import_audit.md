@@ -6,7 +6,7 @@ This audit records the controlled Milestone 4 import of Notebook 02 for Issue #3
 
 Notebook 02 was imported as a cleaned, output-free Colab workflow source file and was later refactored after Issue #37 exposed a Colab runtime-isolation problem. The current Notebook 02 workflow is Fintech archive restore and session readiness: it initializes a local Fintech project/session workspace under `/content`, restores archived/backfilled curated data from an intentional Drive backup pack into `/content`, then validates local workspace, session metadata, and curated/backfilled data readiness.
 
-Manual Colab smoke validation is recorded as `restore-command-confirmed-needs-rerun`. Issue #37 live testing confirmed the corrected initialization and archive restore command shape, but a final cleaned smoke record still needs rerun/documentation before any smoke pass can be claimed.
+Manual Colab smoke validation is recorded as `passed-with-notes`. Issue #37 live testing confirmed the corrected initialization and archive restore command shape; remaining notes preserve runtime-only boundaries and source-cleanup requirements rather than blocking the smoke status.
 
 ## Notebook Identity
 
@@ -29,7 +29,7 @@ Final audited status:
 - Import status: `pilot_imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded`.
 - Audit status: complete for repository-side import audit.
-- Manual Colab smoke status: `restore-command-confirmed-needs-rerun`.
+- Manual Colab smoke status: `passed-with-notes`.
 - Notebook index status: updated by Issue #35 and smoke status revised by Issue #37.
 - Merge-readiness status: not claimed; reserved for Issue #36.
 
@@ -238,11 +238,11 @@ These warnings are acceptable because they do not indicate unsafe execution, not
 
 ## Manual Colab Smoke Status
 
-Manual Colab smoke validation status: `restore-command-confirmed-needs-rerun`.
+Manual Colab smoke validation status: `passed-with-notes`.
 
-Issue #37 reviewed an uploaded executed Colab smoke attempt and records it as failed / needs rerun. The uploaded executed notebook must not be committed as source because it contained outputs and execution counts.
+Issue #37 reviewed an earlier uploaded executed Colab smoke attempt that failed, then subsequent live Colab testing confirmed the corrected restore-first flow. The uploaded executed notebook must not be committed as source because it contained outputs and execution counts.
 
-The failed attempt is not a valid pass because:
+The earlier failed attempt was not a valid pass because:
 
 - `DRIVE_FOLDER_NAME` still used `REPLACE_WITH_DRIVE_FOLDER_NAME`.
 - `SESSION_ID` still used a placeholder value instead of an intentional runtime session id.
@@ -263,29 +263,25 @@ Issue #37 first updated Notebook 02 with additional smoke-test guardrails, then 
 - The safe valid default overwrite policy is `fail`; the previously attempted `refuse` value is invalid for `fintech-backup-data restore`.
 - The restore preview cell builds a command preview but raises before live restore when preflight is not ready.
 
-Rerun requirements:
+Passed-with-notes confirmation:
 
-- Mount Google Drive intentionally.
-- Replace `REPLACE_WITH_DRIVE_FOLDER_NAME` with an intentional Drive folder name.
-- Replace `REPLACE_WITH_SESSION_ID` with an intentional session id.
-- Replace `REPLACE_WITH_BACKUP_ID` with an intentional backup id.
-- Confirm the Drive backup-pack source and manifest paths exist.
-- Initialize the local `/content` restore workspace before restore if it does not already exist.
-- Confirm `fintech-init-project --help` and `fintech-backup-data restore --help`.
-- Restore into `/content/fintech-market-ingestion-demo/data/curated`.
-- Confirm restored workspace structure, session metadata, and curated/backfilled data readiness.
-- Rerun Notebook 02 from a clean source copy and clear outputs/execution counts before any source update.
+- Google Drive was mounted intentionally in live Colab.
+- Runtime placeholders were replaced with intentional Drive, session, and backup identifiers during smoke.
+- The local `/content` restore workspace initialization flow was confirmed with `fintech-init-project --notebooks --with-session`.
+- `fintech-backup-data restore` was confirmed as the archive/backfilled data restore command.
+- `OVERWRITE_POLICY = "fail"` was confirmed as the safe valid default.
+- Restore target remained local `/content/fintech-market-ingestion-demo/data/curated`.
+- Smoke status is `passed-with-notes` because generated/restored runtime material and executed notebook outputs remain runtime-only and must not be committed.
 
 This audit does not claim:
 
-- Final clean live restore smoke passed.
-- Google Drive mount passed.
-- Colab runtime smoke passed.
-- Credential setup passed.
+- A no-notes full smoke pass.
+- That generated/restored runtime material is safe to commit.
+- That credential setup or Drive state should be reproduced in repository validation.
 
-No live Colab restore, Drive mount, or runtime archive/session restore workflow was run for this audit.
+Live Colab smoke was performed outside repository validation. No live Colab restore, Drive mount, or runtime archive/session restore workflow was run by repository validation.
 
-Manual smoke testing should be recorded separately after a real Colab run. Any notebook source updates after smoke testing must again clear outputs and keep all execution counts as `null` before commit.
+Any notebook source updates after smoke testing must again clear outputs and keep all execution counts as `null` before commit.
 
 ## Repository Boundary Confirmation
 
@@ -325,7 +321,7 @@ The audit confirms:
 - Source notebooks are not mutated by tests.
 - Generated artifacts and secrets are not committed.
 - Native-command-first boundaries are preserved.
-- Manual Colab smoke validation is `restore-command-confirmed-needs-rerun`.
+- Manual Colab smoke validation is `passed-with-notes`.
 - Notebook 03+ remains deferred.
 - Notebook index update belongs to Issue #35.
 - Milestone 4 merge-readiness closeout belongs to Issue #36.
@@ -334,4 +330,4 @@ The audit confirms:
 
 - Issue #35 should update the notebook index for Notebook 02.
 - Issue #36 should prepare Milestone 4 merge-readiness closeout.
-- Manual Colab smoke for Notebook 02 should be rerun and documented separately when a live runtime, real Drive folder name, real archive/session backup source, confirmed restore command flags, and credentials are intentionally available.
+- Preserve the Notebook 02 `passed-with-notes` smoke record while keeping generated/restored runtime material, executed notebook outputs, credentials, and private paths out of Git.
