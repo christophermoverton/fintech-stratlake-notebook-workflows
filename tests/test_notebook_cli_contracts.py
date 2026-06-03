@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -187,6 +188,73 @@ def test_validator_accepts_notebook_01_contracts_without_installed_commands(monk
     assert report.help_checks == 0
     assert report.warnings
     assert not report.findings
+
+
+def test_config_includes_notebook_02_target():
+    targets = CONFIG["notebook_cli_contracts"]["default_targets"]
+
+    assert "notebooks/02_fintech_session_persistence_save_restore.ipynb" in targets
+
+
+def test_validator_accepts_notebook_02_contracts_without_installed_commands(monkeypatch):
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
+
+    report = cli_contracts.validate_targets(
+        [REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"],
+        CONFIG,
+    )
+
+    assert report.examples
+    assert any(
+        example.command == "fintech-save-session"
+        and example.is_help
+        and example.source_kind == "shell"
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-save-session"
+        and "--dry-run" in example.flags
+        and not example.is_help
+        for example in report.examples
+    )
+    assert all(example.command != "fintech-restore-session" for example in report.examples)
+    assert report.help_checks == 0
+    assert report.warnings
+    assert not report.findings
+
+
+def test_notebook_02_dry_run_examples_are_not_executed(monkeypatch):
+    executed: list[tuple[str, ...]] = []
+
+    def fake_run(args, **_kwargs):
+        executed.append(tuple(args))
+        assert args[-1] == "--help"
+        assert "--dry-run" not in args
+        return SimpleNamespace(
+            returncode=0,
+            stdout=(
+                "--root --session-id --policy --adapter --destination --dry-run "
+                "--notebooks --with-session --session-name "
+                "--symbols --start --end --out --feed --source --window "
+                "--workspace-root --source-dataset-root --backup-root --backup-id "
+                "--shard-size-mb --target-dataset-root"
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda command: command)
+    monkeypatch.setattr(cli_contracts.subprocess, "run", fake_run)
+
+    report = cli_contracts.validate_targets(
+        [REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"],
+        CONFIG,
+    )
+
+    assert executed
+    assert report.help_checks == len(cli_contracts.help_commands(CONFIG))
+    assert not report.warnings
+    assert not report.findings
+    assert all("--dry-run" not in args for args in executed)
 
 
 def test_validator_rejects_missing_required_flag():
