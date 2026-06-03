@@ -32,7 +32,8 @@ required_flags = []
 [[command_subcommands]]
 command = "fintech-backup-data"
 subcommand = "pack"
-required_flags = ["--workspace-root", "--source-dataset-root", "--backup-root", "--backup-id", "--shard-size-mb", "--dry-run"]
+required_flags = ["--workspace-root", "--source-dataset-root", "--backup-root", "--backup-id", "--shard-size-mb"]
+optional_flags = ["--dry-run"]
 
 [[command_subcommands]]
 command = "fintech-backup-data"
