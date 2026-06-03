@@ -6,6 +6,8 @@ This document records the M4.1 staging and classification foundation for Noteboo
 
 Notebook 02 is planned as the Fintech session persistence save/restore workflow.
 
+Issue #37 later refactored the imported Notebook 02 source to **Fintech archive restore and session readiness** after a failed uploaded smoke attempt showed that Colab runtime isolation prevents Notebook 02 from relying on Notebook 00/01 local `/content` state. The current Notebook 02 workflow consumes an intentional Google Drive archive/session backup, restores or bootstraps it into `/content`, and validates restored workspace/session readiness.
+
 The reviewed source candidate is the attached Notebook 02 local download in the user's Downloads folder. The original runtime-captured source notebook remains outside the repository. This issue does not import a cleaned Notebook 02 source file into `notebooks/`.
 
 Milestone 4 starts the next one-notebook controlled import after Notebook 01. It should preserve the same staged import, cleanup before commit, CLI contract validation, execution-readiness validation, sanitized pytest coverage, import audit, notebook index update, artifact-free repository boundary, and native-command-first discipline established by Milestone 3.
@@ -15,11 +17,11 @@ Milestone 4 starts the next one-notebook controlled import after Notebook 01. It
 | Field | Decision |
 |---|---|
 | Planned repository path | `notebooks/02_fintech_session_persistence_save_restore.ipynb` |
-| Workflow classification | Fintech session persistence save/restore workflow |
+| Workflow classification | Fintech archive restore and session readiness workflow after Issue #37 refactor |
 | Primary upstream app | `fintech-market-ingestion` |
 | Secondary upstream app | None expected unless later review finds otherwise |
 | Relationship to Notebook 00 | Builds on setup, session initialization, and storage overview conventions |
-| Relationship to Notebook 01 | Persists and restores a session after extraction/backfill workflow state exists |
+| Relationship to Notebook 01 | Consumes archive/session backup material produced by Notebook 01 or a prior workflow while extraction/backfill state existed |
 | Staging category | `needs_cleanup` |
 | Import status | `pending_staging`; no notebook source import performed |
 | Local validation status | Not started for Notebook 02 source; M4.1 is documentation/classification only |
@@ -230,7 +232,7 @@ This issue adds the staging/classification record only. M4.2 should clean and no
 | Gate | Status |
 |---|---|
 | Candidate Notebook 02 source located outside committed repo. | Go |
-| Workflow role confirmed as Fintech session persistence save/restore. | Go |
+| Workflow role confirmed as Fintech session persistence save/restore for M4.1; refactored to archive/session restore and readiness after Issue #37. | Go |
 | Planned repository path identified. | Go |
 | Relationship to Notebook 00 documented. | Go |
 | Relationship to Notebook 01 documented. | Go |
@@ -260,15 +262,15 @@ As of M4.5, Notebook 02 is accepted as the controlled Milestone 4 pilot import.
 |---|---|
 | Pilot import status | `pilot_imported` |
 | Source path | `notebooks/02_fintech_session_persistence_save_restore.ipynb` |
-| Workflow scope | Fintech session persistence save/restore |
+| Workflow scope | Fintech archive restore and session readiness |
 | CLI contract coverage | Present in `config/notebook_cli_contracts.toml` |
 | Execution-readiness coverage | Present in `config/notebook_test.toml` |
 | Sanitized pytest coverage | Present in `config/notebook_execution_test.toml` and `tests/test_notebook_execution.py` |
-| Manual Colab smoke status | Not claimed; no live Colab save/restore was run for this decision |
+| Manual Colab smoke status | `refactored-needs-rerun`; Issue #37 failed smoke attempt motivated restore-first refactor |
 | Notebook 03+ scope | Deferred |
 | Repository artifact status | No generated artifacts or runtime state committed |
 
-The pilot-imported Notebook 02 source is output-free and execution-count-free. It preserves the session persistence role established during staging: `SESSION_ID` continuity, active app work under `/content`, Google Drive as persistence and restore storage only, native Fintech command orchestration, safe help/preview examples, manual Colab-only live save/restore cells, lightweight saved/restored session review, and a handoff to Notebook 03+ for archive and downstream StratLake workflows.
+The pilot-imported Notebook 02 source is output-free and execution-count-free. After Issue #37, it preserves the active `/content` workspace boundary while no longer assuming Notebook 00/01 local state exists. It configures a Drive archive/session source, previews native restore behavior, keeps live restore manual Colab-only, validates restored workspace/session/data readiness, and hands archive creation, advanced archive workflows, and downstream StratLake workflows to Notebook 03+.
 
 Notebook 02 remains a notebook orchestration and review layer. It does not reimplement Fintech session persistence, archive, restore, ingestion, generated artifact writing, StratLake feature generation, strategy smoke-test, or backtest logic.
 

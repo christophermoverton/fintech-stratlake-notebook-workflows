@@ -184,7 +184,7 @@ def test_notebook_02_is_in_readiness_and_execution_targets():
     assert notebook_02 in execution["notebook_execution"]["default_targets"]
 
 
-def test_notebook_02_sanitized_copy_removes_runtime_persistence_cells():
+def test_notebook_02_sanitized_copy_removes_runtime_restore_cells():
     config = load_toml(EXECUTION_CONFIG)
     source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
 
@@ -200,18 +200,19 @@ def test_notebook_02_sanitized_copy_removes_runtime_persistence_cells():
     assert ".mkdir(" not in sanitized_sources
 
 
-def test_notebook_02_has_session_persistence_preflight_guardrails():
+def test_notebook_02_has_archive_restore_preflight_guardrails():
     source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
     notebook = nbformat.read(source_notebook, as_version=4)
     source = "\n".join(cell_source(cell) for cell in notebook.cells)
 
-    assert "SESSION_PERSISTENCE_PREFLIGHT_READY" in source
+    assert "Notebook 02 - Fintech Archive Restore and Session Readiness" in source
+    assert "ARCHIVE_RESTORE_PREFLIGHT_READY" in source
     assert "REPLACE_WITH_DRIVE_FOLDER_NAME" in source
-    assert "REPLACE_WITH_SESSION_ID_IF_NEEDED" in source
-    assert "EXPECTED_SESSION_MANIFEST" in source
-    assert "Missing session manifest" in source
+    assert "REPLACE_WITH_ARCHIVE_ID" in source
+    assert "DRIVE_ARCHIVE_ROOT" in source
+    assert "Missing archive/session source path" in source
     assert "RuntimeError" in source
-    assert "SAVE_DRY_RUN_COMMAND" in source
+    assert "RESTORE_DRY_RUN_COMMAND" in source
 
 
 def test_issue_14_readiness_command_remains_compatible():

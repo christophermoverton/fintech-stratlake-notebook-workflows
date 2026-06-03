@@ -25,6 +25,12 @@ required_flags = ["--root", "--session-id", "--policy", "--adapter", "--destinat
 optional_flags = ["--include-curated-data"]
 
 [[commands]]
+name = "fintech-restore-session"
+subcommands = []
+required_flags = []
+optional_flags = ["--root", "--adapter", "--source", "--overwrite-policy", "--dry-run"]
+
+[[commands]]
 name = "fintech-backup-data"
 subcommands = ["pack", "validate", "restore"]
 required_flags = []

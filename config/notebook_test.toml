@@ -36,6 +36,7 @@ cell_source_contains = [
   "!fintech-backup-data pack",
   "!fintech-backfill",
   "!fintech-save-session",
+  "!fintech-restore-session",
   "requests.get(",
   "requests.post(",
   "ALPACA_API_SECRET_KEY",

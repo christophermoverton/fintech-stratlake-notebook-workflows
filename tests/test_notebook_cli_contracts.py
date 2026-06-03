@@ -206,18 +206,19 @@ def test_validator_accepts_notebook_02_contracts_without_installed_commands(monk
 
     assert report.examples
     assert any(
-        example.command == "fintech-save-session"
+        example.command == "fintech-restore-session"
         and example.is_help
         and example.source_kind == "shell"
         for example in report.examples
     )
     assert any(
-        example.command == "fintech-save-session"
+        example.command == "fintech-restore-session"
         and "--dry-run" in example.flags
         and not example.is_help
+        and example.source_kind == "preview"
         for example in report.examples
     )
-    assert all(example.command != "fintech-restore-session" for example in report.examples)
+    assert all(example.command != "fintech-save-session" for example in report.examples)
     assert report.help_checks == 0
     assert report.warnings
     assert not report.findings
@@ -237,7 +238,7 @@ def test_notebook_02_dry_run_examples_are_not_executed(monkeypatch):
                 "--notebooks --with-session --session-name "
                 "--symbols --start --end --out --feed --source --window "
                 "--workspace-root --source-dataset-root --backup-root --backup-id "
-                "--shard-size-mb --target-dataset-root"
+                "--shard-size-mb --target-dataset-root --overwrite-policy"
             ),
             stderr="",
         )
