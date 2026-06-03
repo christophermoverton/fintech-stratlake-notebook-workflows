@@ -297,7 +297,10 @@ confirmed_from = [
   "fintech-stratlake-notebook-workflows:README.md"
 ]
 notes = [
-  "Current imported notebooks do not use a concrete StratLake CLI command.",
-  "Notebook index and README defer StratLake initialization, feature generation, strategy smoke tests, backtest review, and research comparison to Notebook 03+.",
-  "No StratLake command, subcommand, flag, or argument is treated as valid notebook syntax in this registry."
+  "Notebooks 01-03 do not use a concrete StratLake CLI command.",
+  "Notebook index and README defer StratLake initialization, feature generation, strategy smoke tests, backtest review, and research comparison to Notebook 04+.",
+  "Notebook 04 promotes `stratlake-init-session` to a live runtime command (M7 / Issue #54). That command will receive its own [[commands]] entry in M7.3.",
+  "All remaining StratLake commands (stratlake-build-features, stratlake-session-export, stratlake-session-import, stratlake-session-archive-bootstrap, stratlake-session-archive-restore-bootstrap) remain excluded from valid notebook syntax until their respective Notebook 05-07 workflows are imported.",
+  "Notebook 04 availability check cell (shutil.which) lists all nine commands as readiness checks only; availability-check presence does not grant live execution classification.",
+  "No StratLake command other than stratlake-init-session is treated as valid NB04 notebook syntax in this registry."
 ]
