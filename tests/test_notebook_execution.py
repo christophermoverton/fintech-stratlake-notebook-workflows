@@ -65,6 +65,8 @@ def should_skip_cell(source: str, config: dict) -> bool:
         return True
     if ".mkdir" in source:
         return True
+    if "RESTORE_ROOT" in source:
+        return True
     patterns = config["skip_patterns"]["cell_source_contains"]
     return any(pattern in source for pattern in patterns)
 
@@ -81,6 +83,7 @@ def safe_prefix_lines(source: str) -> list[str]:
             "DRIVE_PROJECT_ROOT",
             "DRIVE_SESSION_ROOT",
             "FINTECH_ROOT",
+            "RESTORE_ROOT",
         )
     ):
         return []
@@ -210,19 +213,33 @@ def test_notebook_02_has_archive_restore_preflight_guardrails():
     assert "ARCHIVE_RESTORE_PREFLIGHT_READY" in source
     assert "INIT_PROJECT_COMMAND" in source
     assert "fintech-init-project" in source
+    assert "SESSION_NAME" in source
+    assert '"--notebooks",' in source
+    assert '"--notebooks", "REPLACE_WITH_NOTEBOOKS_ROOT"' not in source
+    assert "REPLACE_WITH_NOTEBOOKS_ROOT" not in source
     assert "REPLACE_WITH_DRIVE_FOLDER_NAME" in source
     assert "REPLACE_WITH_SESSION_ID" in source
     assert "REPLACE_WITH_BACKUP_ID" in source
     assert "RESTORE_TARGET_READY" in source
     assert "EXPECTED_RESTORE_TARGET_PATHS" in source
+    assert "RESTORE_ROOT" in source
     assert "Missing restore target path" in source
     assert "Local restore workspace initialization remains manual Colab-only." in source
     assert "DRIVE_BACKUP_ROOT" in source
     assert "DRIVE_BACKUP_MANIFEST" in source
     assert "Missing backup-pack source path" in source
     assert "Missing backup-pack manifest path" in source
+    assert 'ARCHIVE_RESTORE_COMMAND_CANDIDATE = "fintech-backup-data"' in source
+    assert "ARCHIVE_RESTORE_COMMAND" in source
+    assert "fintech-backup-data" in source
+    assert "fintech-backup-data restore" in source
+    assert "--backup-pack-dir" in source
+    assert "--restore-root" in source
+    assert 'OVERWRITE_POLICY = "fail"' in source
+    assert '"refuse"' not in source
+    assert "--source" not in source
+    assert '"fintech-restore-session"' not in source
     assert "RuntimeError" in source
-    assert "RESTORE_DRY_RUN_COMMAND" in source
 
 
 def test_issue_14_readiness_command_remains_compatible():
@@ -271,6 +288,7 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         "!fintech-save-session",
         "!fintech-restore-session",
         "RESTORE_COMMAND_CANDIDATE",
+        "RESTORE_ROOT",
         "!fintech-backup-data",
         "fintech-backup-data restore",
         "session_manifest_paths",

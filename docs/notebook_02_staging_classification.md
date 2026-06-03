@@ -6,7 +6,9 @@ This document records the M4.1 staging and classification foundation for Noteboo
 
 Notebook 02 is planned as the Fintech session persistence save/restore workflow.
 
-Issue #37 later refactored the imported Notebook 02 source to **Fintech archive restore and session readiness** after a failed uploaded smoke attempt showed that Colab runtime isolation prevents Notebook 02 from relying on Notebook 00/01 local `/content` state. The current Notebook 02 workflow consumes an intentional Google Drive archive/session backup, restores or bootstraps it into `/content`, and validates restored workspace/session readiness.
+Issue #37 later refactored the imported Notebook 02 source to **Fintech archive restore and session readiness** after a failed uploaded smoke attempt showed that Colab runtime isolation prevents Notebook 02 from relying on Notebook 00/01 local `/content` state. The current Notebook 02 workflow initializes a local Fintech project/session workspace under `/content`, consumes an intentional Google Drive session backup pack, restores archived/backfilled curated data with native `fintech-backup-data restore`, and validates restored workspace/session readiness.
+
+Latest Issue #37 live Colab findings confirmed that `fintech-init-project --notebooks` uses `--notebooks` as a standalone flag, `fintech-backup-data restore` is the archive/backfilled data restore command, and `fail` is the safe valid default overwrite policy for backup-pack restore.
 
 The reviewed source candidate is the attached Notebook 02 local download in the user's Downloads folder. The original runtime-captured source notebook remains outside the repository. This issue does not import a cleaned Notebook 02 source file into `notebooks/`.
 
@@ -266,13 +268,13 @@ As of M4.5, Notebook 02 is accepted as the controlled Milestone 4 pilot import.
 | CLI contract coverage | Present in `config/notebook_cli_contracts.toml` |
 | Execution-readiness coverage | Present in `config/notebook_test.toml` |
 | Sanitized pytest coverage | Present in `config/notebook_execution_test.toml` and `tests/test_notebook_execution.py` |
-| Manual Colab smoke status | `refactored-needs-rerun`; Issue #37 failed smoke attempt motivated restore-first refactor |
+| Manual Colab smoke status | `restore-command-confirmed-needs-rerun`; Issue #37 confirmed restore command shape, but final clean smoke pass is not claimed |
 | Notebook 03+ scope | Deferred |
 | Repository artifact status | No generated artifacts or runtime state committed |
 
 The pilot-imported Notebook 02 source is output-free and execution-count-free. After Issue #37, it preserves the active `/content` workspace boundary while no longer assuming Notebook 00/01 local state exists. It configures a Drive session backup-pack source (`sessions/<SESSION_ID>/backups/<BACKUP_ID>`), initializes the local restore workspace under `/content` before restore, previews native restore behavior, keeps live restore manual Colab-only, validates source-side and target-side restore readiness, and hands archive creation, advanced archive workflows, and downstream StratLake workflows to Notebook 03+.
 
-Notebook 02 remains a notebook orchestration and review layer. It does not reimplement Fintech session persistence, archive, restore, ingestion, generated artifact writing, StratLake feature generation, strategy smoke-test, or backtest logic.
+Notebook 02 remains a notebook orchestration and review layer. It does not reimplement Fintech session persistence, archive, restore, ingestion, generated artifact writing, StratLake feature generation, strategy smoke-test, or backtest logic. Live initialization and restore remain manual Colab-only.
 
 This pilot decision does not replace the full Notebook 02 import audit. The next M4 issue should add the dedicated audit record and any later notebook index or merge-readiness updates.
 

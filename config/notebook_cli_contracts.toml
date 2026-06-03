@@ -25,14 +25,8 @@ required_flags = ["--root", "--session-id", "--policy", "--adapter", "--destinat
 optional_flags = ["--include-curated-data"]
 
 [[commands]]
-name = "fintech-restore-session"
-subcommands = []
-required_flags = []
-optional_flags = ["--root", "--adapter", "--source", "--overwrite-policy", "--dry-run"]
-
-[[commands]]
 name = "fintech-backup-data"
-subcommands = ["pack", "validate", "restore"]
+subcommands = ["pack", "validate", "inspect", "restore"]
 required_flags = []
 
 [[command_subcommands]]
@@ -43,9 +37,23 @@ required_flags = ["--workspace-root", "--source-dataset-root", "--backup-root", 
 [[command_subcommands]]
 command = "fintech-backup-data"
 subcommand = "validate"
-required_flags = []
+required_flags = ["--backup-pack-dir"]
+
+[[command_subcommands]]
+command = "fintech-backup-data"
+subcommand = "inspect"
+required_flags = ["--backup-pack-dir"]
 
 [[command_subcommands]]
 command = "fintech-backup-data"
 subcommand = "restore"
-required_flags = ["--workspace-root", "--target-dataset-root", "--backup-root", "--backup-id"]
+required_flags = []
+optional_flags = [
+  "--backup-pack-dir",
+  "--restore-root",
+  "--overwrite-policy",
+  "--workspace-root",
+  "--target-dataset-root",
+  "--backup-root",
+  "--backup-id"
+]

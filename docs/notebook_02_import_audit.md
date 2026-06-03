@@ -4,9 +4,9 @@
 
 This audit records the controlled Milestone 4 import of Notebook 02 for Issue #34 and the preceding staging, cleanup, CLI contract, execution-readiness, sanitized pytest, and pilot-import work from Issues #29 through #33.
 
-Notebook 02 was imported as a cleaned, output-free Colab workflow source file and was later refactored after Issue #37 exposed a Colab runtime-isolation problem. The current Notebook 02 workflow is Fintech archive restore and session readiness: it restores or bootstraps an intentional Drive archive/session backup into `/content`, then validates local workspace, session metadata, and curated/backfilled data readiness.
+Notebook 02 was imported as a cleaned, output-free Colab workflow source file and was later refactored after Issue #37 exposed a Colab runtime-isolation problem. The current Notebook 02 workflow is Fintech archive restore and session readiness: it initializes a local Fintech project/session workspace under `/content`, restores archived/backfilled curated data from an intentional Drive backup pack into `/content`, then validates local workspace, session metadata, and curated/backfilled data readiness.
 
-Manual Colab smoke validation is recorded as `refactored-needs-rerun`. The uploaded Issue #37 smoke attempt failed, and the refactored restore-first notebook needs a fresh live Colab rerun before any smoke pass can be claimed.
+Manual Colab smoke validation is recorded as `restore-command-confirmed-needs-rerun`. Issue #37 live testing confirmed the corrected initialization and archive restore command shape, but a final cleaned smoke record still needs rerun/documentation before any smoke pass can be claimed.
 
 ## Notebook Identity
 
@@ -29,7 +29,7 @@ Final audited status:
 - Import status: `pilot_imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded`.
 - Audit status: complete for repository-side import audit.
-- Manual Colab smoke status: `refactored-needs-rerun`.
+- Manual Colab smoke status: `restore-command-confirmed-needs-rerun`.
 - Notebook index status: updated by Issue #35 and smoke status revised by Issue #37.
 - Merge-readiness status: not claimed; reserved for Issue #36.
 
@@ -67,13 +67,13 @@ Cleanup actions included:
 - Removed generated session payload listings.
 - Removed restore and archive output listings.
 - Excluded credentials, tokens, `.env` values, and private values.
-- Used shell-safe placeholders, including `REPLACE_WITH_DRIVE_FOLDER_NAME` and `REPLACE_WITH_SESSION_ID_IF_NEEDED`.
+- Used shell-safe placeholders, including `REPLACE_WITH_DRIVE_FOLDER_NAME`, `REPLACE_WITH_SESSION_ID`, and `REPLACE_WITH_BACKUP_ID`.
 
 Current cleaned notebook structure after the Issue #37 restore-first refactor:
 
-- Total cells: 25.
-- Code cells: 11.
-- Markdown cells: 14.
+- Total cells: 30.
+- Code cells: 14.
+- Markdown cells: 16.
 - Code cells with outputs: 0.
 - Code cells with non-null execution counts: 0.
 
@@ -84,12 +84,12 @@ Notebook 02 is scoped to archive/session restore and readiness:
 - Runs in its own Colab runtime without assuming Notebook 00/01 `/content` state still exists.
 - Configures an intentional Google Drive session backup-pack source with shell-safe placeholders.
 - Uses session-scoped backup-pack paths under `fintech-market-ingestion/sessions/<SESSION_ID>/backups/<BACKUP_ID>/manifest.json`.
-- Initializes the local `/content` restore workspace before restore preflight so the target side is ready as well as the Drive source.
-- Restores or bootstraps archive/session backup material into `/content`.
+- Initializes the local `/content` restore workspace with `fintech-init-project --notebooks --with-session` before restore preflight so the target side is ready as well as the Drive source.
+- Restores archived/backfilled curated data with `fintech-backup-data restore --backup-pack-dir --restore-root --overwrite-policy fail`.
 - Keeps the active app workspace under `/content`.
 - Keeps Google Drive as archive/session storage only.
-- Uses native Fintech restore/archive command orchestration.
-- Provides safe restore help and preview examples.
+- Uses native Fintech initialization and backup-pack restore orchestration.
+- Provides safe initialization, backup-data help, and restore preview examples.
 - Keeps live restore manual Colab-only and guarded.
 - Validates restored workspace structure, session metadata, and curated/backfilled data presence with lightweight checks.
 - Hands archive creation, advanced archive inspection/transfer, and downstream StratLake workflows to Notebook 03+.
@@ -120,8 +120,12 @@ Notebook 02 command coverage and classification:
 
 | Command or command family | Audit classification | Local validation handling |
 |---|---|---|
-| `fintech-restore-session --help` | Safe help command, upstream support still expected to be confirmed in live runtime | Covered as a safe CLI contract example. Help-surface execution is skipped with an expected warning when the command is not installed locally. |
-| `fintech-restore-session ... --dry-run` | Source/preview command | Parsed and source-validated for optional restore flags, but not executed locally. |
+| `fintech-init-project --help` | Safe help command | Covered as a safe CLI contract example. Help-surface execution is skipped with an expected warning when the command is not installed locally. |
+| `fintech-init-project --root ... --notebooks --with-session --session-name ...` | Source/preview command for local `/content` workspace/session initialization | Parsed and source-validated. Live execution remains manual Colab-only. `--notebooks` is a standalone flag and must not receive a path value. |
+| `fintech-backup-data --help` | Safe help command | Covered as a safe CLI contract example. |
+| `fintech-backup-data restore --help` | Safe help command | Covered as a safe CLI contract example. |
+| `fintech-backup-data validate --help` and `fintech-backup-data inspect --help` | Safe help commands | Covered as safe CLI contract examples for reviewing backup-pack surfaces before live restore. |
+| `fintech-backup-data restore --backup-pack-dir ... --restore-root ... --overwrite-policy fail` | Source/preview command | Parsed and source-validated for the confirmed backup-pack restore flags, but not executed locally. |
 | Commented live restore commands | Manual Colab-only runtime command | Excluded from local CLI execution. |
 | `fintech-save-session` | Source archive/session creation command used by prior workflows | Not Notebook 02's primary path after the refactor; retained only as upstream context where relevant. |
 | Google Drive mount and setup | Manual Colab-only runtime/API operation | Excluded from local CLI execution. |
@@ -149,9 +153,9 @@ Sanitized pytest execution:
 - Uses temporary notebook copies.
 - Does not mutate source notebooks.
 - Replaces runtime-only cells with no-op cells where configured.
-- Skips or replaces runtime persistence, restore-candidate, Google Drive, shell, and upstream-path cells.
+- Skips or replaces runtime persistence, backup-pack restore, Google Drive, shell, and upstream-path cells.
 - Does not execute `!fintech-save-session`.
-- Does not execute `!fintech-restore-session`.
+- Does not execute `!fintech-backup-data restore`.
 - Does not mount Drive.
 - Does not create folders.
 - Does not run package installs.
@@ -181,9 +185,9 @@ Local repository validation must not run these cells against real credentials, l
 | Field | Status |
 |---|---|
 | Notebook path | `notebooks/02_fintech_session_persistence_save_restore.ipynb` |
-| Total cells | 25 |
-| Code cells | 11 |
-| Markdown cells | 14 |
+| Total cells | 30 |
+| Code cells | 14 |
+| Markdown cells | 16 |
 | Output cells | 0 |
 | Non-null execution counts | 0 |
 | Real `SESSION_ID` committed | No |
@@ -208,10 +212,10 @@ Validation for this audit was run with the bundled Codex runtime Python because 
 | `python scripts/scan_for_secret_patterns.py .` | Passed; secret pattern scan clean. |
 | `python scripts/check_notebooks_no_outputs.py notebooks` | Passed; checked 3 notebooks. |
 | `python scripts/validate_repo_cleanliness.py .` | Passed. |
-| `python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml` | Passed; 3 notebook targets, 19 command examples, 0 failures. |
-| `python scripts/validate_notebook_cli_contracts.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_contracts.toml` | Passed; 1 notebook target, 2 command examples, 0 failures. |
-| `python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml` | Passed; 3 notebooks checked, 42 code cells checked, 21 compiled, 21 skipped, 0 failures. |
-| `python scripts/validate_notebook_execution_readiness.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_test.toml` | Passed; 1 notebook checked, 11 code cells checked, 8 compiled, 3 skipped, 0 failures. |
+| `python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml` | Passed; 3 notebook targets, 24 command examples, 0 failures. |
+| `python scripts/validate_notebook_cli_contracts.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_contracts.toml` | Passed; 1 notebook target, 7 command examples, 0 failures. |
+| `python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml` | Passed; 3 notebooks checked, 45 code cells checked, 24 compiled, 21 skipped, 0 failures. |
+| `python scripts/validate_notebook_execution_readiness.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_test.toml` | Passed; 1 notebook checked, 14 code cells checked, 11 compiled, 3 skipped, 0 failures. |
 | `python -m pytest tests/test_notebook_cli_contracts.py` | Passed; 13 tests passed. |
 | `python -m pytest tests/test_notebook_execution.py` | Passed; 14 tests passed. |
 | `python -m pytest` | Passed; 27 tests passed. |
@@ -226,7 +230,6 @@ Expected warning categories observed during repository-side validation:
   - `fintech-init-project`
   - `fintech-backfill-daily`
   - `fintech-save-session`
-  - `fintech-restore-session`
   - `fintech-backup-data`
 - Existing Notebook 00 nbformat missing cell-id warning.
 - Existing Windows ZMQ runtime warning during sanitized notebook execution.
@@ -235,14 +238,14 @@ These warnings are acceptable because they do not indicate unsafe execution, not
 
 ## Manual Colab Smoke Status
 
-Manual Colab smoke validation status: `refactored-needs-rerun`.
+Manual Colab smoke validation status: `restore-command-confirmed-needs-rerun`.
 
 Issue #37 reviewed an uploaded executed Colab smoke attempt and records it as failed / needs rerun. The uploaded executed notebook must not be committed as source because it contained outputs and execution counts.
 
 The failed attempt is not a valid pass because:
 
 - `DRIVE_FOLDER_NAME` still used `REPLACE_WITH_DRIVE_FOLDER_NAME`.
-- `SESSION_ID` still used `REPLACE_WITH_SESSION_ID_IF_NEEDED`.
+- `SESSION_ID` still used a placeholder value instead of an intentional runtime session id.
 - The expected Fintech workspace did not exist at `/content/fintech-market-ingestion-demo`.
 - Expected workspace subpaths were missing, including `configs`, `reports`, `artifacts`, and `data/curated`.
 - No runtime session manifest was found.
@@ -253,10 +256,12 @@ Issue #37 first updated Notebook 02 with additional smoke-test guardrails, then 
 
 - Top-level guidance now states Notebook 02 can run in its own Colab runtime.
 - The workflow now starts from an intentional Drive session backup-pack source.
-- A non-mutating archive restore preflight blocks placeholder Drive/session/backup values, missing Drive mount, missing backup-pack source or manifest paths, missing restore command, missing target workspace structure, and unsafe local targets.
-- Notebook 02 now initializes the local `/content` restore workspace before restore, instead of asking users to recreate directories manually.
+- A non-mutating archive restore preflight blocks placeholder Drive/session/backup values, missing Drive mount, missing backup-pack source or manifest paths, missing `fintech-backup-data`, missing target workspace structure, invalid overwrite policy, and unsafe local targets.
+- Notebook 02 now initializes the local `/content` restore workspace with the confirmed `fintech-init-project --notebooks --with-session` syntax before restore.
+- Live Colab testing confirmed `--notebooks` is a standalone flag and must not receive a path argument.
+- Live Colab testing confirmed `fintech-backup-data restore` is the archive/backfilled data restore command and accepts `--backup-pack-dir`, `--restore-root`, and `--overwrite-policy fail|replace|merge`.
+- The safe valid default overwrite policy is `fail`; the previously attempted `refuse` value is invalid for `fintech-backup-data restore`.
 - The restore preview cell builds a command preview but raises before live restore when preflight is not ready.
-- Restore flags remain upstream-confirmation-dependent.
 
 Rerun requirements:
 
@@ -266,14 +271,14 @@ Rerun requirements:
 - Replace `REPLACE_WITH_BACKUP_ID` with an intentional backup id.
 - Confirm the Drive backup-pack source and manifest paths exist.
 - Initialize the local `/content` restore workspace before restore if it does not already exist.
-- Confirm the upstream restore command and flags using help output.
-- Restore into `/content/fintech-market-ingestion-demo`.
+- Confirm `fintech-init-project --help` and `fintech-backup-data restore --help`.
+- Restore into `/content/fintech-market-ingestion-demo/data/curated`.
 - Confirm restored workspace structure, session metadata, and curated/backfilled data readiness.
 - Rerun Notebook 02 from a clean source copy and clear outputs/execution counts before any source update.
 
 This audit does not claim:
 
-- Live restore passed.
+- Final clean live restore smoke passed.
 - Google Drive mount passed.
 - Colab runtime smoke passed.
 - Credential setup passed.
@@ -320,7 +325,7 @@ The audit confirms:
 - Source notebooks are not mutated by tests.
 - Generated artifacts and secrets are not committed.
 - Native-command-first boundaries are preserved.
-- Manual Colab smoke validation is `refactored-needs-rerun`.
+- Manual Colab smoke validation is `restore-command-confirmed-needs-rerun`.
 - Notebook 03+ remains deferred.
 - Notebook index update belongs to Issue #35.
 - Milestone 4 merge-readiness closeout belongs to Issue #36.

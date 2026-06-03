@@ -99,10 +99,9 @@ def test_parser_extracts_restore_preview_string_flags():
     source = """
 restore_command = (
     "fintech-backup-data restore "
-    f"--workspace-root {LOCAL_WORKSPACE} "
-    f"--target-dataset-root {LOCAL_CURATED} "
-    f"--backup-root {DRIVE_BACKUP_ROOT} "
-    f"--backup-id {ARCHIVE_ID}"
+    f"--backup-pack-dir {DRIVE_BACKUP_ROOT} "
+    f"--restore-root {RESTORE_ROOT} "
+    f"--overwrite-policy {OVERWRITE_POLICY}"
 )
 """
 
@@ -119,10 +118,9 @@ restore_command = (
     assert example.command == "fintech-backup-data"
     assert example.subcommand == "restore"
     assert example.flags == {
-        "--workspace-root",
-        "--target-dataset-root",
-        "--backup-root",
-        "--backup-id",
+        "--backup-pack-dir",
+        "--restore-root",
+        "--overwrite-policy",
     }
 
 
@@ -132,10 +130,9 @@ def test_parser_ignores_comment_occurrence_when_extracting_preview_flags():
 restore_command = " ".join(
     [
         "fintech-backup-data restore",
-        f"--workspace-root {LOCAL_WORKSPACE}",
-        f"--target-dataset-root {LOCAL_CURATED}",
-        f"--backup-root {DRIVE_BACKUP_ROOT}",
-        f"--backup-id {ARCHIVE_ID}",
+        f"--backup-pack-dir {DRIVE_BACKUP_ROOT}",
+        f"--restore-root {RESTORE_ROOT}",
+        f"--overwrite-policy {OVERWRITE_POLICY}",
     ]
 )
 """
@@ -154,10 +151,9 @@ restore_command = " ".join(
     assert example.subcommand == "restore"
     assert "--wrong-flag" not in example.flags
     assert example.flags == {
-        "--workspace-root",
-        "--target-dataset-root",
-        "--backup-root",
-        "--backup-id",
+        "--backup-pack-dir",
+        "--restore-root",
+        "--overwrite-policy",
     }
 
 
@@ -215,19 +211,24 @@ def test_validator_accepts_notebook_02_contracts_without_installed_commands(monk
         for example in report.examples
     )
     assert any(
-        example.command == "fintech-restore-session"
+        example.command == "fintech-backup-data"
+        and example.subcommand == "restore"
         and example.is_help
         and example.source_kind == "shell"
         for example in report.examples
     )
     assert any(
-        example.command == "fintech-restore-session"
-        and "--dry-run" in example.flags
+        example.command == "fintech-backup-data"
+        and example.subcommand == "restore"
+        and "--backup-pack-dir" in example.flags
+        and "--restore-root" in example.flags
+        and "--overwrite-policy" in example.flags
         and not example.is_help
         and example.source_kind == "preview"
         for example in report.examples
     )
     assert all(example.command != "fintech-save-session" for example in report.examples)
+    assert all(example.command != "fintech-restore-session" for example in report.examples)
     assert report.help_checks == 0
     assert report.warnings
     assert not report.findings
@@ -247,7 +248,8 @@ def test_notebook_02_dry_run_examples_are_not_executed(monkeypatch):
                 "--notebooks --with-session --session-name "
                 "--symbols --start --end --out --feed --source --window "
                 "--workspace-root --source-dataset-root --backup-root --backup-id "
-                "--shard-size-mb --target-dataset-root --overwrite-policy"
+                "--shard-size-mb --target-dataset-root --backup-pack-dir "
+                "--restore-root --overwrite-policy inspect"
             ),
             stderr="",
         )
