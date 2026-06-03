@@ -147,6 +147,8 @@ Like the other repository-side validators, it is non-executing and does not run 
 
 Keep all three layers enabled. The registry validator is additive and does not replace the existing CLI contract or execution-readiness checks.
 
+For registry schema, traceability policy, and maintenance workflow, see [CLI Command Registry Guide](cli_command_registry.md).
+
 ## Manual Colab Smoke Testing
 
 Local validation cannot fully replace a fresh Colab runtime check. Use the [Colab Smoke-Test Workflow](colab_smoke_test_workflow.md) after local guardrails pass and before treating a notebook as run-ready.

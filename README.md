@@ -97,6 +97,8 @@ Validation layers are additive and should be run together:
 
 The Notebook 02 targeted registry command is an optional focused confidence check for the restore-first Colab workflow where CLI assumption drift has highest risk. All repository validation layers are non-executing for upstream workflows: they do not run live ingestion/restore/archive commands, mount Drive, prompt for credentials, install notebook packages, or mutate source notebooks. Missing local upstream Fintech command warnings remain bounded to the existing CLI contract validator behavior.
 
+For registry schema, policy, and maintenance details, see [CLI Command Registry Guide](docs/cli_command_registry.md).
+
 ## GitHub Issue Templates
 
 This repository includes lightweight GitHub issue templates for notebook audits, milestone tasks, and upstream app triage. Use the upstream triage template when a notebook captures a failure that may belong in `fintech-market-ingestion` or `stratlake-trade-engine`, including Notebook 09-style cases where one strategy succeeds and other configured strategies fail.

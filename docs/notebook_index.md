@@ -148,6 +148,8 @@ Validation layers remain additive:
 - CLI registry validation adds argument-aware checks for command/subcommand/flag/value correctness and excluded command candidates.
 - Execution-readiness validation remains the final static notebook-readiness check.
 
+For registry schema and maintenance policy details, see [CLI Command Registry Guide](cli_command_registry.md).
+
 Use explicit notebook target forms when reviewing a specific notebook:
 
 ```bash
