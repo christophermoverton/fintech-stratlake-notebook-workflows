@@ -175,6 +175,7 @@ Examples currently preserved:
 - `fintech-backup-data restore --backup-pack-dir`: `argparse_required = true`
 - `fintech-backup-data restore --restore-root`: `argparse_required = true`
 - `fintech-save-session --destination`: `required_when = "not_dry_run"`
+- `fintech-backup-data pack --dry-run`: optional because Notebook 03 intentionally includes both a dry-run preview command and a manual live pack command.
 
 ## Unsupported Flags and Patterns
 
@@ -254,6 +255,12 @@ Notebook 02 focused check:
 python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
 ```
 
+Notebook 03 focused check:
+
+```bash
+python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
+```
+
 Specific notebook check example:
 
 ```bash
@@ -331,7 +338,8 @@ The registry and validator preserve these specific lessons:
 - `refuse` is invalid.
 - `--source` is not valid for `fintech-backup-data restore`.
 - `fintech-restore-session` is not the current Notebook 02 backup-pack restore command.
-- StratLake commands are not valid current notebook syntax until concrete Notebook 03+ workflows confirm and register them.
+- Notebook 03 uses `fintech-backup-data pack`, `validate`, `inspect`, and `restore` source examples; live pack/restore execution remains manual Colab-only.
+- StratLake commands are not valid current notebook syntax until concrete future workflows confirm and register them.
 
 ## Maintenance Checklist
 
@@ -359,6 +367,7 @@ python scripts/validate_repo_cleanliness.py .
 python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
 python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py

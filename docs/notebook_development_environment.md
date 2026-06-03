@@ -51,6 +51,7 @@ python scripts/validate_repo_cleanliness.py .
 python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
 python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
@@ -78,6 +79,9 @@ The default config currently targets:
 
 ```text
 notebooks/00_setup_and_storage_overview.ipynb
+notebooks/01_fintech_daily_bars_extraction_backfill.ipynb
+notebooks/02_fintech_session_persistence_save_restore.ipynb
+notebooks/03_fintech_archive_backup_pack_and_restore.ipynb
 ```
 
 ## Pytest Notebook Execution Harness
@@ -92,11 +96,11 @@ This is a deeper layer than the Issue #14 readiness check. The readiness check l
 
 The pytest harness does not execute the source notebook directly. It:
 
-- Loads Notebook 00 with `nbformat`.
+- Loads the configured imported notebooks with `nbformat`.
 - Builds a sanitized temporary copy under pytest's temporary directory.
 - Keeps markdown cells.
 - Keeps safe Python cells where possible.
-- Replaces shell, Colab, Drive mount, credential, package-install, upstream command, and artifact-producing cells with safe no-op cells or harmless setup fragments.
+- Replaces shell, Colab, Drive mount, credential, package-install, upstream command, archive/restore, generated-data, and artifact-producing cells with safe no-op cells or harmless setup fragments.
 - Executes the sanitized copy with `nbclient`.
 - Confirms the source notebook hash is unchanged.
 - Confirms the source notebook remains output-free and has `null` execution counts.
@@ -133,6 +137,12 @@ Optional focused Notebook 02 check:
 
 ```bash
 python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+```
+
+Optional focused Notebook 03 check:
+
+```bash
+python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
 ```
 
 The registry validator checks command and subcommand identity plus argument semantics against `config/cli_command_registry.toml` and `config/notebook_cli_registry.toml`. It validates supported versus unsupported flags, boolean flags receiving values, value flags missing values, constrained `allowed_values`, `argparse_required`, `notebook_contract_required`, and conditional `required_when` behavior. It also rejects excluded command candidates, including `fintech-restore-session`, when they appear as valid current notebook syntax.
@@ -179,6 +189,7 @@ The harness does not execute notebooks. It also skips cells that should not be l
 - Credential and prompt cells.
 - Package-install and network cells.
 - Artifact-producing or upstream command cells.
+- Notebook 03 archive backup-pack cells that create demo files, create backup packs, validate or inspect runtime backup packs, restore data, or inspect restored files.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 
@@ -193,6 +204,8 @@ The harness does not:
 - Install packages.
 - Run market-data ingestion.
 - Run archive or restore commands.
+- Create demo `.parquet` placeholder files.
+- Validate or inspect runtime backup packs.
 - Run StratLake feature generation, strategy execution, backtests, or artifact generation.
 - Mutate notebook files.
 
