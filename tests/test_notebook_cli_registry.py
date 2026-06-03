@@ -165,6 +165,9 @@ def test_required_flag_schema_and_restore_semantics():
         "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy fail",
         "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy replace",
         "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy merge",
+        'fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy "fail"',
+        "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy 'replace'",
+        'fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy="merge"',
         "fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy=fail",
         "fintech-backup-data validate --backup-pack-dir /drive/pack",
         "fintech-backup-data validate --backup-pack-dir /drive/pack --raise-on-error",
@@ -195,7 +198,15 @@ def test_validator_accepts_valid_command_examples(command_text):
             "invalid value",
         ),
         (
+            'fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy "refuse"',
+            "invalid value",
+        ),
+        (
             "fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy=refuse",
+            "invalid value",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy='refuse'",
             "invalid value",
         ),
         (

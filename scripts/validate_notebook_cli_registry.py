@@ -479,8 +479,23 @@ def classify_example(example: CommandExample, entry: RegistryEntry | None) -> st
     return "manual_only_live"
 
 
+def normalize_cli_value(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+        return value[1:-1]
+    return value
+
+
 def flag_values(example: CommandExample, name: str) -> list[str]:
-    return [flag.value for flag in example.flags if flag.name == name and flag.value is not None]
+    values: list[str] = []
+    for flag in example.flags:
+        if flag.name != name or flag.value is None:
+            continue
+        normalized = normalize_cli_value(flag.value)
+        if normalized is not None:
+            values.append(normalized)
+    return values
 
 
 def unsupported_pattern_matches(pattern: str, example: CommandExample) -> bool:
