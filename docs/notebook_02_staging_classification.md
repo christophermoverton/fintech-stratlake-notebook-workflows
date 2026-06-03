@@ -252,6 +252,28 @@ The next step is M4.2 - Clean and Normalize Notebook 02 Session Persistence Work
 
 M4.2 should clean a staged copy of Notebook 02, preserve the session persistence scope, keep full archive workflows deferred to Notebook 03, and prepare the notebook for later CLI contract validation, execution-readiness validation, sanitized pytest coverage, import audit, and notebook index updates.
 
+## Pilot Import Decision
+
+As of M4.5, Notebook 02 is accepted as the controlled Milestone 4 pilot import.
+
+| Field | Decision |
+|---|---|
+| Pilot import status | `pilot_imported` |
+| Source path | `notebooks/02_fintech_session_persistence_save_restore.ipynb` |
+| Workflow scope | Fintech session persistence save/restore |
+| CLI contract coverage | Present in `config/notebook_cli_contracts.toml` |
+| Execution-readiness coverage | Present in `config/notebook_test.toml` |
+| Sanitized pytest coverage | Present in `config/notebook_execution_test.toml` and `tests/test_notebook_execution.py` |
+| Manual Colab smoke status | Not claimed; no live Colab save/restore was run for this decision |
+| Notebook 03+ scope | Deferred |
+| Repository artifact status | No generated artifacts or runtime state committed |
+
+The pilot-imported Notebook 02 source is output-free and execution-count-free. It preserves the session persistence role established during staging: `SESSION_ID` continuity, active app work under `/content`, Google Drive as persistence and restore storage only, native Fintech command orchestration, safe help/preview examples, manual Colab-only live save/restore cells, lightweight saved/restored session review, and a handoff to Notebook 03+ for archive and downstream StratLake workflows.
+
+Notebook 02 remains a notebook orchestration and review layer. It does not reimplement Fintech session persistence, archive, restore, ingestion, generated artifact writing, StratLake feature generation, strategy smoke-test, or backtest logic.
+
+This pilot decision does not replace the full Notebook 02 import audit. The next M4 issue should add the dedicated audit record and any later notebook index or merge-readiness updates.
+
 ## Non-Goals for M4.1
 
 - Do not add `notebooks/02_fintech_session_persistence_save_restore.ipynb`.
