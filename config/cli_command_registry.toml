@@ -1,0 +1,294 @@
+[cli_command_registry]
+schema_version = 1
+description = "Repository-side registry of notebook-used upstream CLI command shapes."
+default_unknown_command_policy = "warn"
+accuracy_policy = "confirmed_upstream_or_current_notebook_usage_only"
+scope = "Current Notebook 00-02 Fintech command surfaces; StratLake commands remain out of scope until notebook workflows reference confirmed upstream commands."
+expected_missing_local_default = true
+notes = [
+  "This registry is a validation contract for notebook-used command syntax, not a replacement for upstream CLI implementation.",
+  "Supported entries are limited to command shapes present in current notebooks, existing CLI contract validation, or recorded Colab smoke evidence.",
+  "Do not add future commands, flags, or allowed values without upstream implementation/test/docs evidence or current notebook usage evidence."
+]
+
+[[commands]]
+name = "fintech-init-project"
+owner = "fintech-market-ingestion"
+subcommands = []
+expected_missing_local = true
+classifications = ["safe_help", "manual_only_live"]
+confirmed_from = [
+  "fintech-market-ingestion:pyproject.toml",
+  "fintech-market-ingestion:src/cli/init_project.py",
+  "fintech-market-ingestion:tests/test_init_project.py",
+  "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
+  "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md",
+  "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Notebook 01 and Notebook 02 use this command to initialize a local /content Fintech workspace/session.",
+  "Live project initialization creates runtime workspace state and is manual Colab-only.",
+  "`--notebooks` is a standalone boolean flag.",
+  "`--with-session` is a standalone boolean flag."
+]
+unsupported_patterns = [
+  { pattern = "--notebooks <value>", reason = "`--notebooks` is a standalone boolean flag, not a value-taking option.", confirmed_from = ["fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] },
+  { pattern = "--with-session <value>", reason = "`--with-session` is represented by current notebooks as a standalone boolean flag.", confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+]
+
+[commands.flags]
+"--root" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--notebooks" = { kind = "boolean", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
+"--with-session" = { kind = "boolean", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--session-name" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+
+[[commands]]
+name = "fintech-backfill-daily"
+owner = "fintech-market-ingestion"
+subcommands = []
+expected_missing_local = true
+classifications = ["safe_help", "manual_only_live", "unsafe_live"]
+confirmed_from = [
+  "fintech-market-ingestion:pyproject.toml",
+  "fintech-market-ingestion:src/ingestion/backfill_daily.py",
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
+  "fintech-stratlake-notebook-workflows:docs/milestone_3_merge_readiness.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Notebook 01 uses this command for daily bars extraction/backfill.",
+  "Live backfill can call upstream data APIs and write generated market data, so it is manual/runtime-only.",
+  "Only Notebook 01 flags are represented here; this is not the full upstream command surface."
+]
+
+[commands.flags]
+"--symbols" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"] }
+"--start" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"] }
+"--end" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"] }
+"--out" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"] }
+"--feed" = { kind = "value", required = true, example_values = ["iex"], confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--source" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--window" = { kind = "value", required = true, allowed_values = ["month", "year"], example_values = ["month"], confirmed_from = ["fintech-market-ingestion:src/ingestion/backfill_daily.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"] }
+
+[[commands]]
+name = "fintech-save-session"
+owner = "fintech-market-ingestion"
+subcommands = []
+expected_missing_local = true
+classifications = ["safe_help", "safe_preview", "dry_run", "manual_only_live"]
+confirmed_from = [
+  "fintech-market-ingestion:pyproject.toml",
+  "fintech-market-ingestion:src/cli/save_session.py",
+  "fintech-market-ingestion:tests/test_save_session_cli.py",
+  "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Notebook 00 and Notebook 01 use `--dry-run` examples for preview.",
+  "Commented live save examples remain manual Colab-only and generated session payloads must stay outside Git.",
+  "Notebook 02 no longer uses this as its primary restore path."
+]
+
+[commands.flags]
+"--root" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--session-id" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--policy" = { kind = "value", required = true, example_values = ["artifacts_and_reports", "curated_daily_bars"], confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--adapter" = { kind = "value", required = true, allowed_values = ["local", "google-drive"], example_values = ["google-drive"], confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--destination" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--dry-run" = { kind = "boolean", required = true, classifications = ["safe_preview", "dry_run"], confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"] }
+"--include-curated-data" = { kind = "boolean", required = false, confirmed_from = ["fintech-market-ingestion:src/cli/save_session.py", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"] }
+
+[[commands]]
+name = "fintech-backup-data"
+owner = "fintech-market-ingestion"
+subcommands = ["pack", "validate", "inspect", "restore"]
+expected_missing_local = true
+classifications = ["safe_help"]
+confirmed_from = [
+  "fintech-market-ingestion:pyproject.toml",
+  "fintech-market-ingestion:src/cli/backup_data.py",
+  "fintech-market-ingestion:tests/test_backup_data_cli.py",
+  "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
+  "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Notebook 00-02 use this command family for archive backup-pack help, preview, validation, inspection, and restore planning.",
+  "Subcommand entries below define the notebook-used flag surfaces."
+]
+
+[commands.flags]
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+
+[[command_subcommands]]
+command = "fintech-backup-data"
+subcommand = "pack"
+owner = "fintech-market-ingestion"
+expected_missing_local = true
+classifications = ["safe_help", "safe_preview", "dry_run", "manual_only_live"]
+confirmed_from = [
+  "fintech-market-ingestion:src/cli/backup_data.py",
+  "fintech-market-ingestion:tests/test_backup_data_cli.py",
+  "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Included because Notebook 00 and Notebook 01 currently use archive-pack preview examples.",
+  "Only the notebook-used pack flags are represented; pack flags are not inferred from restore."
+]
+
+[command_subcommands.flags]
+"--workspace-root" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--source-dataset-root" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--backup-root" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--backup-id" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--shard-size-mb" = { kind = "value", required = true, example_values = ["512"], confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--dry-run" = { kind = "boolean", required = true, classifications = ["safe_preview", "dry_run"], confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+
+[[command_subcommands]]
+command = "fintech-backup-data"
+subcommand = "validate"
+owner = "fintech-market-ingestion"
+expected_missing_local = true
+classifications = ["safe_help", "manual_only_live"]
+confirmed_from = [
+  "fintech-market-ingestion:src/cli/backup_data.py",
+  "fintech-market-ingestion:tests/test_backup_data_cli.py",
+  "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Notebook 02 uses `validate --help` for safe help review before live restore.",
+  "Upstream implementation confirms `--backup-pack-dir` and `--raise-on-error` for this subcommand. Older commented Notebook 01 examples use `--backup-root` and `--backup-id`, so those older commented flags are not promoted as supported for this subcommand here.",
+  "Validation that touches Drive/runtime artifacts is manual-only and should not be treated as repository-safe execution."
+]
+
+[command_subcommands.flags]
+"--backup-pack-dir" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+"--raise-on-error" = { kind = "boolean", required = false, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+
+[[command_subcommands]]
+command = "fintech-backup-data"
+subcommand = "inspect"
+owner = "fintech-market-ingestion"
+expected_missing_local = true
+classifications = ["safe_help", "manual_only_live"]
+confirmed_from = [
+  "fintech-market-ingestion:src/cli/backup_data.py",
+  "fintech-market-ingestion:tests/test_backup_data_cli.py",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+notes = [
+  "Notebook 02 uses `inspect --help` for safe help review before live restore.",
+  "Runtime inspection may produce generated listings or depend on Drive/runtime artifacts and is manual-only."
+]
+
+[command_subcommands.flags]
+"--backup-pack-dir" = { kind = "value", required = true, confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+
+[[command_subcommands]]
+command = "fintech-backup-data"
+subcommand = "restore"
+owner = "fintech-market-ingestion"
+expected_missing_local = true
+classifications = ["safe_help", "safe_preview", "manual_only_live"]
+confirmed_from = [
+  "fintech-market-ingestion:src/cli/backup_data.py",
+  "fintech-market-ingestion:src/backup/restore.py",
+  "fintech-market-ingestion:tests/test_archive_backup_restore.py",
+  "fintech-market-ingestion:tests/test_backup_data_cli.py",
+  "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
+  "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md",
+  "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"
+]
+upstream_source_status = "confirmed_from_implementation"
+unsupported_flags = ["--source", "--workspace-root", "--target-dataset-root", "--backup-root", "--backup-id"]
+unsupported_patterns = [
+  { pattern = "--overwrite-policy refuse", reason = "`refuse` is invalid; valid values are fail, replace, and merge.", confirmed_from = ["fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] },
+  { pattern = "--source <value>", reason = "`--source` is not valid for the backup-pack restore command.", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] },
+  { pattern = "--workspace-root <value> --target-dataset-root <value> --backup-root <value> --backup-id <value>", reason = "Older Notebook 00/01 restore-readiness previews use this legacy shape, but current upstream `fintech-backup-data restore` only defines `--backup-pack-dir`, `--restore-root`, and `--overwrite-policy`.", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"] }
+]
+notes = [
+  "Notebook 02 uses this as the confirmed backup-pack curated-data restore command.",
+  "Live restore can write restored data under /content and remains manual Colab-only.",
+  "Notebook 00 and Notebook 01 contain older restore-readiness previews using workspace/backup-root style flags; upstream source does not confirm those flags for current `fintech-backup-data restore`, so the registry marks them unsupported.",
+  "`fintech-restore-session` is separate and is not represented as the backup-pack restore command."
+]
+
+[command_subcommands.flags]
+"--backup-pack-dir" = { kind = "value", required = false, mode = "backup_pack_restore", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
+"--restore-root" = { kind = "value", required = false, mode = "backup_pack_restore", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
+"--overwrite-policy" = { kind = "value", required = false, mode = "backup_pack_restore", allowed_values = ["fail", "replace", "merge"], confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-market-ingestion:src/backup/restore.py", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
+"--help" = { kind = "boolean", required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
+
+[[excluded_candidates]]
+name = "fintech-restore-session"
+owner = "fintech-market-ingestion"
+status = "excluded_not_current_notebook_scope"
+valid_notebook_syntax = false
+confirmed_from = [
+  "fintech-market-ingestion:pyproject.toml",
+  "fintech-market-ingestion:src/cli/restore_session.py",
+  "fintech-market-ingestion:tests/test_restore_session_cli.py",
+  "fintech-stratlake-notebook-workflows:tests/test_notebook_execution.py",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md"
+]
+notes = [
+  "Current Notebook 02 source explicitly avoids using `fintech-restore-session` as the backup-pack restore path.",
+  "Tests assert Notebook 02 does not contain `fintech-restore-session`.",
+  "Upstream confirms this separate command supports `--root`, `--adapter`, `--source`, `--dry-run`, and `--force`, but it is excluded from valid notebook syntax because current notebooks do not use it.",
+  "`fintech-restore-session --overwrite-policy ...` is not valid notebook syntax in this registry."
+]
+unsupported_patterns = [
+  { pattern = "fintech-restore-session --overwrite-policy <value>", reason = "No current notebook usage or available upstream evidence confirms this flag for `fintech-restore-session`.", confirmed_from = ["fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md"] }
+]
+
+[[excluded_candidates]]
+name = "stratlake-trade-engine commands"
+owner = "stratlake-trade-engine"
+status = "excluded_future_notebook_scope"
+valid_notebook_syntax = false
+confirmed_from = [
+  "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:docs/notebook_index.md",
+  "fintech-stratlake-notebook-workflows:README.md"
+]
+notes = [
+  "Current imported notebooks do not use a concrete StratLake CLI command.",
+  "Notebook index and README defer StratLake initialization, feature generation, strategy smoke tests, backtest review, and research comparison to Notebook 03+.",
+  "No StratLake command, subcommand, flag, or argument is treated as valid notebook syntax in this registry."
+]
