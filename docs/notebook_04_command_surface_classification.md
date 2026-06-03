@@ -397,6 +397,43 @@ M7.3 completed:
 
 8. **Do not** register `fintech-restore-session` in any NB04 context.
 
+## M7.4 Resolution Record
+
+M7.4 (Issue #56) implemented source-only readiness and sanitized execution coverage for
+Notebook 04. No changes to command surfaces or CLI registry/contract configuration were
+required. The following was confirmed:
+
+- All unsafe cell categories identified in M7.2 and M7.3 are correctly skipped by the
+  sanitized execution harness via the patterns in `config/notebook_execution_test.toml`.
+- Three additional skip patterns were added for NB04-specific variable namespaces:
+  `STRATLAKE_ROOT`, `available_fintech_sessions`, and `MARKETLAKE_ROOT`.
+- The `safe_prefix_lines` danger guard in `tests/test_notebook_execution.py` was extended
+  to include `STRATLAKE_ROOT` and `MARKETLAKE_ROOT`, preventing partial cell-prefix
+  extraction from leaking skipped variable assignments into sanitized output.
+- 98 tests pass; all validators pass with no failures.
+- Notebook 04 source was not modified by M7.4.
+
+### NB04 cell skip classification (M7.4 confirmed)
+
+| Cell | Category | Skip mechanism |
+|---|---|---|
+| `729b15e6` | Package install | Shell `!` prefix |
+| `99822946` | Drive mount | `google.colab` pattern |
+| `876835f0` | Path setup | `FINTECH_ROOT` in skip patterns |
+| `bce5c87a` | `fintech-init-project` | Shell `!` prefix |
+| `483eb3d3` | FINTECH_SESSION_ID extraction | `FINTECH_ROOT` pattern |
+| `3dd31cc7` | `stratlake-init-session` | Shell `!` prefix; `!stratlake-init-session` pattern |
+| `0d21ddaa` | STRATLAKE_SESSION_ID extraction | `STRATLAKE_ROOT` pattern (added M7.4) |
+| `0b8e19df` | Drive folder creation | `.mkdir(` pattern |
+| `8d3dc4dc` | Drive session enumeration | `available_fintech_sessions` pattern (added M7.4) |
+| `nb04_pack_preview` | Pack preview | `FINTECH_ROOT` substring in `FINTECH_ROOT_STR` |
+| `BWLYWDVttgH8` | Restore preview | `fintech-backup-data restore` pattern |
+| `tr2kxVdNtgH9` | MARKETLAKE_ROOT inspection | `MARKETLAKE_ROOT` pattern (added M7.4) |
+| `1a86c0cb` | Readiness check | `FINTECH_ROOT` pattern |
+| `f36c9ea9` | CLI availability check | Kept; `shutil.which` is safe |
+
+`stratlake-init-session` upstream source verification remains pending as of M7.4.
+
 ## Validation Results
 
 | Script | Result |
@@ -404,11 +441,11 @@ M7.3 completed:
 | `python scripts/check_notebooks_no_outputs.py notebooks` | ✅ Passed (5 notebooks) |
 | `python scripts/scan_for_secret_patterns.py .` | ✅ Passed |
 | `python scripts/validate_repo_cleanliness.py .` | ✅ Passed |
-| `python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml` | ✅ Passed (no failures; NB04 not yet in targets — expected) |
-| `python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml` | ✅ Passed (no failures; NB04 not yet in targets — expected) |
-
-The CLI validators do not fail because Notebook 04 is not yet in `default_targets` for
-either config file. That is expected; M7.3 owns adding NB04 to the target lists.
+| `python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml` | ✅ Passed (34 examples, 0 failures; NB04 included as of M7.3) |
+| `python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml` | ✅ Passed (30 validated, 0 failures; NB04 included as of M7.3) |
+| `python scripts/validate_notebook_cli_registry.py notebooks/04_stratlake_feature_series_index_setup.ipynb --config config/notebook_cli_registry.toml` | ✅ Passed (0 failures; added as of M7.3) |
+| `python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml` | ✅ Passed (5 notebooks, 0 failures; NB04 included as of M7.4) |
+| `python -m pytest` | ✅ Passed (98 tests, 0 failures; as of M7.4) |
 
 ## Known Blockers for M7.3
 

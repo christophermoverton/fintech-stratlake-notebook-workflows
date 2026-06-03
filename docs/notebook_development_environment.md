@@ -52,6 +52,7 @@ python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_c
 python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/04_stratlake_feature_series_index_setup.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
@@ -82,6 +83,7 @@ notebooks/00_setup_and_storage_overview.ipynb
 notebooks/01_fintech_daily_bars_extraction_backfill.ipynb
 notebooks/02_fintech_session_persistence_save_restore.ipynb
 notebooks/03_fintech_archive_backup_pack_and_restore.ipynb
+notebooks/04_stratlake_feature_series_index_setup.ipynb
 ```
 
 ## Pytest Notebook Execution Harness
@@ -145,6 +147,12 @@ Optional focused Notebook 03 check:
 python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
 ```
 
+Optional focused Notebook 04 check:
+
+```bash
+python scripts/validate_notebook_cli_registry.py notebooks/04_stratlake_feature_series_index_setup.ipynb --config config/notebook_cli_registry.toml
+```
+
 The registry validator checks command and subcommand identity plus argument semantics against `config/cli_command_registry.toml` and `config/notebook_cli_registry.toml`. It validates supported versus unsupported flags, boolean flags receiving values, value flags missing values, constrained `allowed_values`, `argparse_required`, `notebook_contract_required`, and conditional `required_when` behavior. It also rejects excluded command candidates, including `fintech-restore-session`, when they appear as valid current notebook syntax.
 
 Like the other repository-side validators, it is non-executing and does not run upstream CLI workflows.
@@ -158,6 +166,34 @@ Like the other repository-side validators, it is non-executing and does not run 
 Keep all three layers enabled. The registry validator is additive and does not replace the existing CLI contract or execution-readiness checks.
 
 For registry schema, traceability policy, and maintenance workflow, see [CLI Command Registry Guide](cli_command_registry.md).
+
+## Notebook 04 Runtime Boundary
+
+Notebook 04 (`notebooks/04_stratlake_feature_series_index_setup.ipynb`) is the first StratLake-facing notebook in the tutorial series. It introduces the dual-session pattern:
+
+```text
+FINTECH_SESSION_ID   -> upstream ingestion / curated-data workspace
+STRATLAKE_SESSION_ID -> downstream feature/research workspace
+```
+
+Repository validation for Notebook 04 uses source-only readiness, CLI contract/registry validation, and sanitized execution. It does **not**:
+
+- Install packages from TestPyPI (`fintech-market-ingestion`, `stratlake-trade-engine`, `pandas-market-calendars`).
+- Mount Google Drive.
+- Run `fintech-init-project` to create a Fintech session workspace.
+- Run `stratlake-init-session` to create a StratLake session workspace.
+- Create Drive session folders or archive directories.
+- Enumerate available Drive sessions.
+- Inspect or mutate `MARKETLAKE_ROOT`.
+- Restore Fintech curated data from a Drive archive pack.
+- Generate StratLake features.
+- Mutate the Notebook 04 source file.
+
+These operations remain manual Colab-only. The `FINTECH_SESSION_ID`, `STRATLAKE_SESSION_ID`, `MARKETLAKE_ROOT`, `fintech-init-project`, and `stratlake-init-session` identifiers are preserved in source as live Colab workflow guidance; they are skipped or no-oped by the sanitized execution harness.
+
+The `fintech-backup-data pack` and `fintech-backup-data restore` preview strings in Notebook 04 use registry-confirmed flag shapes (updated in M7.3). They are printed as human-readable guidance only; they are never executed by repository validation.
+
+Notebook 05 (StratLake Q1 feature data generation) is future tutorial continuity only and is not yet imported or implemented.
 
 ## Manual Colab Smoke Testing
 
@@ -190,6 +226,7 @@ The harness does not execute notebooks. It also skips cells that should not be l
 - Package-install and network cells.
 - Artifact-producing or upstream command cells.
 - Notebook 03 archive backup-pack cells that create demo files, create backup packs, validate or inspect runtime backup packs, restore data, or inspect restored files.
+- Notebook 04 cells that install packages, mount Google Drive, run `fintech-init-project`, run `stratlake-init-session`, create Drive session folders, enumerate Drive sessions, inspect `MARKETLAKE_ROOT`, or construct archive/restore command previews from runtime-derived session variables.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 
@@ -207,6 +244,9 @@ The harness does not:
 - Create demo `.parquet` placeholder files.
 - Validate or inspect runtime backup packs.
 - Run StratLake feature generation, strategy execution, backtests, or artifact generation.
+- Initialize Fintech or StratLake project sessions (`fintech-init-project`, `stratlake-init-session`).
+- Create or restore Fintech curated-data archive packs for StratLake's `marketlake_root`.
+- Create Drive session folders, archive directories, or StratLake session workspaces.
 - Mutate notebook files.
 
 The pytest execution harness follows the same safety boundary for source notebooks. It may write sanitized and executed copies under pytest temporary folders, but it never writes outputs back into committed notebooks.
