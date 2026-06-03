@@ -200,6 +200,20 @@ def test_notebook_02_sanitized_copy_removes_runtime_persistence_cells():
     assert ".mkdir(" not in sanitized_sources
 
 
+def test_notebook_02_has_session_persistence_preflight_guardrails():
+    source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
+    notebook = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in notebook.cells)
+
+    assert "SESSION_PERSISTENCE_PREFLIGHT_READY" in source
+    assert "REPLACE_WITH_DRIVE_FOLDER_NAME" in source
+    assert "REPLACE_WITH_SESSION_ID_IF_NEEDED" in source
+    assert "EXPECTED_SESSION_MANIFEST" in source
+    assert "Missing session manifest" in source
+    assert "RuntimeError" in source
+    assert "SAVE_DRY_RUN_COMMAND" in source
+
+
 def test_issue_14_readiness_command_remains_compatible():
     result = subprocess.run(
         [

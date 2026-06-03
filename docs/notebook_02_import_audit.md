@@ -6,7 +6,7 @@ This audit records the controlled Milestone 4 import of Notebook 02 for Issue #3
 
 Notebook 02 was imported as a cleaned, output-free Colab workflow source file for the Fintech session persistence save/restore workflow. The import followed the repository staging process, cleanup workflow, reusable header guidance, secret-safe checklist, notebook standards, CLI contract validation, execution-readiness validation, sanitized pytest execution coverage, and pilot-import decision.
 
-Manual Colab smoke validation is recorded as `not_claimed`. No live Colab save, restore, Drive mount, or runtime persistence smoke is claimed by this audit.
+Manual Colab smoke validation is recorded as `failed-needs-rerun` after the Issue #37 uploaded smoke attempt review. No live Colab save, restore, Drive mount, or runtime persistence pass is claimed by this audit.
 
 ## Notebook Identity
 
@@ -29,8 +29,8 @@ Final audited status:
 - Import status: `pilot_imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded`.
 - Audit status: complete for repository-side import audit.
-- Manual Colab smoke status: `not_claimed`.
-- Notebook index status: not updated by this audit; reserved for Issue #35.
+- Manual Colab smoke status: `failed-needs-rerun`.
+- Notebook index status: updated by Issue #35 and smoke status revised by Issue #37.
 - Merge-readiness status: not claimed; reserved for Issue #36.
 
 ## Staging History
@@ -69,11 +69,11 @@ Cleanup actions included:
 - Excluded credentials, tokens, `.env` values, and private values.
 - Used shell-safe placeholders, including `REPLACE_WITH_DRIVE_FOLDER_NAME` and `REPLACE_WITH_SESSION_ID_IF_NEEDED`.
 
-Final cleaned notebook structure:
+Current cleaned notebook structure after Issue #37 guardrail updates:
 
-- Total cells: 34.
-- Code cells: 15.
-- Markdown cells: 19.
+- Total cells: 36.
+- Code cells: 16.
+- Markdown cells: 20.
 - Code cells with outputs: 0.
 - Code cells with non-null execution counts: 0.
 
@@ -183,9 +183,9 @@ Local repository validation must not run these cells against real credentials, l
 | Field | Status |
 |---|---|
 | Notebook path | `notebooks/02_fintech_session_persistence_save_restore.ipynb` |
-| Total cells | 34 |
-| Code cells | 15 |
-| Markdown cells | 19 |
+| Total cells | 36 |
+| Code cells | 16 |
+| Markdown cells | 20 |
 | Output cells | 0 |
 | Non-null execution counts | 0 |
 | Real `SESSION_ID` committed | No |
@@ -211,11 +211,11 @@ Validation for this audit was run with the bundled Codex runtime Python because 
 | `python scripts/validate_repo_cleanliness.py .` | Passed. |
 | `python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml` | Passed; 3 notebook targets, 19 command examples, 0 failures. |
 | `python scripts/validate_notebook_cli_contracts.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_contracts.toml` | Passed; 1 notebook target, 2 command examples, 0 failures. |
-| `python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml` | Passed; 3 notebooks checked, 46 code cells checked, 22 compiled, 24 skipped, 0 failures. |
-| `python scripts/validate_notebook_execution_readiness.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_test.toml` | Passed; 1 notebook checked, 15 code cells checked, 9 compiled, 6 skipped, 0 failures. |
+| `python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml` | Passed; 3 notebooks checked, 47 code cells checked, 24 compiled, 23 skipped, 0 failures. |
+| `python scripts/validate_notebook_execution_readiness.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_test.toml` | Passed; 1 notebook checked, 16 code cells checked, 11 compiled, 5 skipped, 0 failures. |
 | `python -m pytest tests/test_notebook_cli_contracts.py` | Passed; 13 tests passed. |
-| `python -m pytest tests/test_notebook_execution.py` | Passed; 13 tests passed. |
-| `python -m pytest` | Passed; 26 tests passed. |
+| `python -m pytest tests/test_notebook_execution.py` | Passed; 14 tests passed. |
+| `python -m pytest` | Passed; 27 tests passed. |
 
 The pytest dependency stack was installed into a temporary workspace directory for validation and removed afterward. No package install was run from a validation notebook, and no dependency output was committed.
 
@@ -235,7 +235,36 @@ These warnings are acceptable because they do not indicate unsafe execution, not
 
 ## Manual Colab Smoke Status
 
-Manual Colab smoke validation status: `not_claimed`.
+Manual Colab smoke validation status: `failed-needs-rerun`.
+
+Issue #37 reviewed an uploaded executed Colab smoke attempt and records it as failed / needs rerun. The uploaded executed notebook must not be committed as source because it contained outputs and execution counts.
+
+The failed attempt is not a valid pass because:
+
+- `DRIVE_FOLDER_NAME` still used `REPLACE_WITH_DRIVE_FOLDER_NAME`.
+- `SESSION_ID` still used `REPLACE_WITH_SESSION_ID_IF_NEEDED`.
+- The expected Fintech workspace did not exist at `/content/fintech-market-ingestion-demo`.
+- Expected workspace subpaths were missing, including `configs`, `reports`, `artifacts`, and `data/curated`.
+- No runtime session manifest was found.
+- The session save dry-run failed because the expected manifest path under `artifacts/sessions/<SESSION_ID>/session_manifest.json` did not exist.
+- The run appeared to create placeholder-named Drive folders.
+
+Issue #37 updated Notebook 02 with additional smoke-test guardrails:
+
+- Top-level guidance now states Notebook 02 is not a standalone first notebook.
+- A non-mutating preflight cell blocks placeholder Drive/session values and missing Notebook 00/01 runtime state.
+- Manual Drive folder creation now includes commented guards before `mkdir` calls.
+- The save dry-run cell now builds a command preview but raises before execution when preflight is not ready.
+- Restore remains candidate/upstream-confirmation-dependent.
+
+Rerun requirements:
+
+- Run Notebook 00/01 setup/session workflow first.
+- Confirm `/content/fintech-market-ingestion-demo` exists.
+- Confirm `/content/fintech-market-ingestion-demo/artifacts/sessions/<REAL_SESSION_ID>/session_manifest.json` exists.
+- Replace `REPLACE_WITH_DRIVE_FOLDER_NAME` with an intentional Drive folder name before Drive actions.
+- Confirm `SESSION_ID` is a real runtime session id, not `REPLACE_WITH_SESSION_ID_IF_NEEDED`.
+- Rerun Notebook 02 from a clean source copy and clear outputs/execution counts before any source update.
 
 This audit does not claim:
 
@@ -287,7 +316,7 @@ The audit confirms:
 - Source notebooks are not mutated by tests.
 - Generated artifacts and secrets are not committed.
 - Native-command-first boundaries are preserved.
-- Manual Colab smoke validation is `not_claimed`.
+- Manual Colab smoke validation is `failed-needs-rerun`.
 - Notebook 03+ remains deferred.
 - Notebook index update belongs to Issue #35.
 - Milestone 4 merge-readiness closeout belongs to Issue #36.
@@ -296,4 +325,4 @@ The audit confirms:
 
 - Issue #35 should update the notebook index for Notebook 02.
 - Issue #36 should prepare Milestone 4 merge-readiness closeout.
-- Manual Colab smoke for Notebook 02 may be run and documented separately when a live runtime, Drive folder, and credentials are intentionally available.
+- Manual Colab smoke for Notebook 02 should be rerun and documented separately when a live runtime, real Drive folder name, real session manifest, and credentials are intentionally available.
