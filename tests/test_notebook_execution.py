@@ -82,6 +82,10 @@ def safe_prefix_lines(source: str) -> list[str]:
             "fintech-backup-data restore",
             "DRIVE_PROJECT_ROOT",
             "DRIVE_SESSION_ROOT",
+            "DRIVE_BACKUP_ROOT",
+            "BACKUP_PACK_DIR",
+            "RESTORE_BACKUP_ROOT",
+            "PREVIOUS_BACKUP_PACK_DIR",
             "FINTECH_ROOT",
             "RESTORE_ROOT",
         )
@@ -187,6 +191,15 @@ def test_notebook_02_is_in_readiness_and_execution_targets():
     assert notebook_02 in execution["notebook_execution"]["default_targets"]
 
 
+def test_notebook_03_is_in_readiness_and_execution_targets():
+    notebook_03 = "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+
+    assert notebook_03 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_03 in execution["notebook_execution"]["default_targets"]
+
+
 def test_notebook_02_sanitized_copy_removes_runtime_restore_cells():
     config = load_toml(EXECUTION_CONFIG)
     source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
@@ -201,6 +214,38 @@ def test_notebook_02_sanitized_copy_removes_runtime_restore_cells():
     assert "RESTORE_COMMAND_CANDIDATE" not in sanitized_sources
     assert "drive.mount(" not in sanitized_sources
     assert ".mkdir(" not in sanitized_sources
+
+
+def test_notebook_03_sanitized_copy_removes_archive_runtime_cells():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb"
+
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    assert kept_code > 0
+    assert "!python -m pip install" not in sanitized_sources
+    assert "drive.mount(" not in sanitized_sources
+    assert "!fintech-init-project" not in sanitized_sources
+    assert "!fintech-backup-data" not in sanitized_sources
+    assert "fintech-backup-data restore" not in sanitized_sources
+    assert "SOURCE_DATASET_ROOT.mkdir" not in sanitized_sources
+    assert "path.write_bytes" not in sanitized_sources
+    assert "BACKUP_PACK_DIR" not in sanitized_sources
+    assert "PREVIOUS_BACKUP_PACK_DIR" not in sanitized_sources
+    assert "RESTORE_ROOT" not in sanitized_sources
+
+
+def test_notebook_03_blocks_drive_directory_creation_until_preflight_is_ready():
+    source_notebook = REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb"
+    notebook = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in notebook.cells)
+
+    assert "if DRIVE_FOLDER_NAME_IS_PLACEHOLDER:" in source
+    assert "Update DRIVE_FOLDER_NAME before creating Drive archive directories." in source
+    assert 'if not Path("/content/drive/MyDrive").is_dir():' in source
+    assert "Mount Google Drive in Colab before creating Drive archive directories." in source
 
 
 def test_notebook_02_has_archive_restore_preflight_guardrails():
@@ -289,6 +334,12 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         "!fintech-restore-session",
         "RESTORE_COMMAND_CANDIDATE",
         "RESTORE_ROOT",
+        "BACKUP_PACK_DIR",
+        "PREVIOUS_BACKUP_PACK_DIR",
+        "DRIVE_BACKUP_ROOT",
+        "RESTORE_BACKUP_ROOT",
+        "SOURCE_DATASET_ROOT.mkdir",
+        "path.write_bytes",
         "!fintech-backup-data",
         "fintech-backup-data restore",
         "session_manifest_paths",
