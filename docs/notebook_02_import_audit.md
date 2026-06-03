@@ -84,6 +84,7 @@ Notebook 02 is scoped to archive/session restore and readiness:
 - Runs in its own Colab runtime without assuming Notebook 00/01 `/content` state still exists.
 - Configures an intentional Google Drive session backup-pack source with shell-safe placeholders.
 - Uses session-scoped backup-pack paths under `fintech-market-ingestion/sessions/<SESSION_ID>/backups/<BACKUP_ID>/manifest.json`.
+- Initializes the local `/content` restore workspace before restore preflight so the target side is ready as well as the Drive source.
 - Restores or bootstraps archive/session backup material into `/content`.
 - Keeps the active app workspace under `/content`.
 - Keeps Google Drive as archive/session storage only.
@@ -252,7 +253,8 @@ Issue #37 first updated Notebook 02 with additional smoke-test guardrails, then 
 
 - Top-level guidance now states Notebook 02 can run in its own Colab runtime.
 - The workflow now starts from an intentional Drive session backup-pack source.
-- A non-mutating archive restore preflight blocks placeholder Drive/session/backup values, missing Drive mount, missing backup-pack source or manifest paths, missing restore command, and unsafe local targets.
+- A non-mutating archive restore preflight blocks placeholder Drive/session/backup values, missing Drive mount, missing backup-pack source or manifest paths, missing restore command, missing target workspace structure, and unsafe local targets.
+- Notebook 02 now initializes the local `/content` restore workspace before restore, instead of asking users to recreate directories manually.
 - The restore preview cell builds a command preview but raises before live restore when preflight is not ready.
 - Restore flags remain upstream-confirmation-dependent.
 
@@ -263,6 +265,7 @@ Rerun requirements:
 - Replace `REPLACE_WITH_SESSION_ID` with an intentional session id.
 - Replace `REPLACE_WITH_BACKUP_ID` with an intentional backup id.
 - Confirm the Drive backup-pack source and manifest paths exist.
+- Initialize the local `/content` restore workspace before restore if it does not already exist.
 - Confirm the upstream restore command and flags using help output.
 - Restore into `/content/fintech-market-ingestion-demo`.
 - Confirm restored workspace structure, session metadata, and curated/backfilled data readiness.

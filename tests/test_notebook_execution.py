@@ -206,10 +206,17 @@ def test_notebook_02_has_archive_restore_preflight_guardrails():
     source = "\n".join(cell_source(cell) for cell in notebook.cells)
 
     assert "Notebook 02 - Fintech Archive Restore and Session Readiness" in source
+    assert "Initialize Local Restore Workspace" in source
     assert "ARCHIVE_RESTORE_PREFLIGHT_READY" in source
+    assert "INIT_PROJECT_COMMAND" in source
+    assert "fintech-init-project" in source
     assert "REPLACE_WITH_DRIVE_FOLDER_NAME" in source
     assert "REPLACE_WITH_SESSION_ID" in source
     assert "REPLACE_WITH_BACKUP_ID" in source
+    assert "RESTORE_TARGET_READY" in source
+    assert "EXPECTED_RESTORE_TARGET_PATHS" in source
+    assert "Missing restore target path" in source
+    assert "Local restore workspace initialization remains manual Colab-only." in source
     assert "DRIVE_BACKUP_ROOT" in source
     assert "DRIVE_BACKUP_MANIFEST" in source
     assert "Missing backup-pack source path" in source

@@ -206,6 +206,15 @@ def test_validator_accepts_notebook_02_contracts_without_installed_commands(monk
 
     assert report.examples
     assert any(
+        example.command == "fintech-init-project"
+        and example.source_kind == "preview"
+        and "--root" in example.flags
+        and "--notebooks" in example.flags
+        and "--with-session" in example.flags
+        and "--session-name" in example.flags
+        for example in report.examples
+    )
+    assert any(
         example.command == "fintech-restore-session"
         and example.is_help
         and example.source_kind == "shell"
