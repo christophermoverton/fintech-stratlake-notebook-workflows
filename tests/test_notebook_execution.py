@@ -237,6 +237,17 @@ def test_notebook_03_sanitized_copy_removes_archive_runtime_cells():
     assert "RESTORE_ROOT" not in sanitized_sources
 
 
+def test_notebook_03_blocks_drive_directory_creation_until_preflight_is_ready():
+    source_notebook = REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb"
+    notebook = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in notebook.cells)
+
+    assert "if DRIVE_FOLDER_NAME_IS_PLACEHOLDER:" in source
+    assert "Update DRIVE_FOLDER_NAME before creating Drive archive directories." in source
+    assert 'if not Path("/content/drive/MyDrive").is_dir():' in source
+    assert "Mount Google Drive in Colab before creating Drive archive directories." in source
+
+
 def test_notebook_02_has_archive_restore_preflight_guardrails():
     source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
     notebook = nbformat.read(source_notebook, as_version=4)

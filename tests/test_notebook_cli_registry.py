@@ -85,9 +85,6 @@ def file_digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def flag_names(example: cli_registry.CommandExample) -> set[str]:
-    return {flag.name for flag in example.flags}
-
 
 def test_registry_toml_files_parse_successfully():
     command_registry = cli_registry.load_toml(REPO_ROOT / "config" / "cli_command_registry.toml")
@@ -385,14 +382,14 @@ def test_notebook_03_passes_with_zero_registry_failures():
     assert any(
         example.command == "fintech-backup-data"
         and example.subcommand == "pack"
-        and "--dry-run" not in flag_names(example)
+        and "--dry-run" not in example.flag_names()
         and example.classification == "manual_only_live"
         for example in report.examples
     )
     assert any(
         example.command == "fintech-backup-data"
         and example.subcommand == "restore"
-        and {"--backup-pack-dir", "--restore-root", "--overwrite-policy"} <= flag_names(example)
+        and {"--backup-pack-dir", "--restore-root", "--overwrite-policy"} <= example.flag_names()
         for example in report.examples
     )
     assert all(example.command != "fintech-save-session" for example in report.examples)
