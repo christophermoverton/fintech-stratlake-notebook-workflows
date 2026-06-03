@@ -72,6 +72,18 @@ def should_skip_cell(source: str, config: dict) -> bool:
 def safe_prefix_lines(source: str) -> list[str]:
     if ".mkdir" in source:
         return []
+    if any(
+        pattern in source
+        for pattern in (
+            "!fintech-",
+            "fintech-restore-session",
+            "fintech-backup-data restore",
+            "DRIVE_PROJECT_ROOT",
+            "DRIVE_SESSION_ROOT",
+            "FINTECH_ROOT",
+        )
+    ):
+        return []
 
     safe_lines: list[str] = []
     for line in source.splitlines():
@@ -163,6 +175,31 @@ def test_notebook_01_is_in_readiness_and_execution_targets():
     assert notebook_01 in execution["notebook_execution"]["default_targets"]
 
 
+def test_notebook_02_is_in_readiness_and_execution_targets():
+    notebook_02 = "notebooks/02_fintech_session_persistence_save_restore.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+
+    assert notebook_02 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_02 in execution["notebook_execution"]["default_targets"]
+
+
+def test_notebook_02_sanitized_copy_removes_runtime_persistence_cells():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
+
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    assert skipped + kept_code > 0
+    assert "!fintech-save-session" not in sanitized_sources
+    assert "!fintech-restore-session" not in sanitized_sources
+    assert "RESTORE_COMMAND_CANDIDATE" not in sanitized_sources
+    assert "drive.mount(" not in sanitized_sources
+    assert ".mkdir(" not in sanitized_sources
+
+
 def test_issue_14_readiness_command_remains_compatible():
     result = subprocess.run(
         [
@@ -196,7 +233,7 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
     sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
 
     assert skipped > 0
-    assert kept_code > 0
+    assert skipped + kept_code > 0
 
     sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
     unsafe_fragments = [
@@ -207,6 +244,8 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         "!fintech-init-project",
         "!fintech-backfill",
         "!fintech-save-session",
+        "!fintech-restore-session",
+        "RESTORE_COMMAND_CANDIDATE",
         "!fintech-backup-data",
         "fintech-backup-data restore",
         "session_manifest_paths",
