@@ -154,6 +154,34 @@ python -m pytest
 
 The validation stack does not mount Drive, install packages from a notebook, prompt for credentials, run live restore, create session payloads, create archive packs, write restored data, or mutate source notebooks.
 
+## M5 Additive Validation Stack Update
+
+This Milestone 4 closeout record is historical. Starting in Milestone 5, repository validation adds the argument-aware CLI registry validator alongside the existing layers instead of replacing them.
+
+Current additive stack order:
+
+```bash
+python scripts/scan_for_secret_patterns.py .
+python scripts/check_notebooks_no_outputs.py notebooks
+python scripts/validate_repo_cleanliness.py .
+python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
+python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python -m pytest tests/test_notebook_cli_contracts.py
+python -m pytest tests/test_notebook_cli_registry.py
+python -m pytest tests/test_notebook_execution.py
+python -m pytest
+```
+
+Layer responsibilities:
+
+- CLI contract validator: broad command-surface checks and bounded safe `--help` behavior.
+- CLI registry validator: argument-aware command/subcommand/flag/value checks, including unsupported flags, value constraints, required-flag semantics, and excluded command candidates.
+- Execution-readiness validator: notebook JSON/state and safe Python syntax readiness checks.
+
+All three layers remain non-executing for upstream workflows and keep source notebooks unchanged.
+
 In this Windows workspace, script-based validation was run with the bundled Codex Python runtime. `pytest` was run with the project virtual environment because the bundled runtime did not include `pytest`.
 
 ## Known Expected Warnings
