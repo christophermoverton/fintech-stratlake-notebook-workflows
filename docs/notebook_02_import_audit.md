@@ -82,7 +82,8 @@ Current cleaned notebook structure after the Issue #37 restore-first refactor:
 Notebook 02 is scoped to archive/session restore and readiness:
 
 - Runs in its own Colab runtime without assuming Notebook 00/01 `/content` state still exists.
-- Configures an intentional Google Drive archive/session source with shell-safe placeholders.
+- Configures an intentional Google Drive session backup-pack source with shell-safe placeholders.
+- Uses session-scoped backup-pack paths under `fintech-market-ingestion/sessions/<SESSION_ID>/backups/<BACKUP_ID>/manifest.json`.
 - Restores or bootstraps archive/session backup material into `/content`.
 - Keeps the active app workspace under `/content`.
 - Keeps Google Drive as archive/session storage only.
@@ -250,8 +251,8 @@ The failed attempt is not a valid pass because:
 Issue #37 first updated Notebook 02 with additional smoke-test guardrails, then the notebook was refactored away from save-first assumptions after confirming the Colab runtime-isolation problem:
 
 - Top-level guidance now states Notebook 02 can run in its own Colab runtime.
-- The workflow now starts from an intentional Drive archive/session backup source.
-- A non-mutating archive restore preflight blocks placeholder Drive/archive values, missing Drive mount, missing source path, missing restore command, and unsafe local targets.
+- The workflow now starts from an intentional Drive session backup-pack source.
+- A non-mutating archive restore preflight blocks placeholder Drive/session/backup values, missing Drive mount, missing backup-pack source or manifest paths, missing restore command, and unsafe local targets.
 - The restore preview cell builds a command preview but raises before live restore when preflight is not ready.
 - Restore flags remain upstream-confirmation-dependent.
 
@@ -259,8 +260,9 @@ Rerun requirements:
 
 - Mount Google Drive intentionally.
 - Replace `REPLACE_WITH_DRIVE_FOLDER_NAME` with an intentional Drive folder name.
-- Replace `REPLACE_WITH_ARCHIVE_ID` with an intentional archive/session backup id.
-- Confirm the Drive archive/session source exists.
+- Replace `REPLACE_WITH_SESSION_ID` with an intentional session id.
+- Replace `REPLACE_WITH_BACKUP_ID` with an intentional backup id.
+- Confirm the Drive backup-pack source and manifest paths exist.
 - Confirm the upstream restore command and flags using help output.
 - Restore into `/content/fintech-market-ingestion-demo`.
 - Confirm restored workspace structure, session metadata, and curated/backfilled data readiness.

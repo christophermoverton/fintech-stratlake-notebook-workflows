@@ -208,9 +208,12 @@ def test_notebook_02_has_archive_restore_preflight_guardrails():
     assert "Notebook 02 - Fintech Archive Restore and Session Readiness" in source
     assert "ARCHIVE_RESTORE_PREFLIGHT_READY" in source
     assert "REPLACE_WITH_DRIVE_FOLDER_NAME" in source
-    assert "REPLACE_WITH_ARCHIVE_ID" in source
-    assert "DRIVE_ARCHIVE_ROOT" in source
-    assert "Missing archive/session source path" in source
+    assert "REPLACE_WITH_SESSION_ID" in source
+    assert "REPLACE_WITH_BACKUP_ID" in source
+    assert "DRIVE_BACKUP_ROOT" in source
+    assert "DRIVE_BACKUP_MANIFEST" in source
+    assert "Missing backup-pack source path" in source
+    assert "Missing backup-pack manifest path" in source
     assert "RuntimeError" in source
     assert "RESTORE_DRY_RUN_COMMAND" in source
 

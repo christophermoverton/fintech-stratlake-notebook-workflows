@@ -111,7 +111,7 @@ Current imported notebook chain:
 - Notebook 01 runs the Fintech daily bars extraction/backfill workflow through native upstream commands.
 - Notebook 02 restores or bootstraps a saved Fintech archive/session backup from Google Drive into `/content`, then validates restored workspace, session metadata, and curated/backfilled data readiness.
 
-Notebook 02 keeps live restore, Drive mount, credential setup, and restored workspace handling manual Colab-only. The Issue #37 uploaded smoke attempt exposed that separate Colab runtimes cannot rely on prior `/content` state, so Notebook 02 now starts from a Drive archive/session source instead of assuming Notebook 00/01 local state still exists. Dedicated restore command behavior remains candidate/upstream-confirmation-dependent where applicable. Archive creation, advanced archive inspection/transfer, StratLake initialization, feature generation, strategy smoke tests, and backtest review remain deferred to Notebook 03+.
+Notebook 02 keeps live restore, Drive mount, credential setup, and restored workspace handling manual Colab-only. The Issue #37 uploaded smoke attempt exposed that separate Colab runtimes cannot rely on prior `/content` state, so Notebook 02 now starts from a Drive session backup-pack source (`fintech-market-ingestion/sessions/<SESSION_ID>/backups/<BACKUP_ID>`) instead of assuming Notebook 00/01 local state still exists. Dedicated restore command behavior remains candidate/upstream-confirmation-dependent where applicable. Archive creation, advanced archive inspection/transfer, StratLake initialization, feature generation, strategy smoke tests, and backtest review remain deferred to Notebook 03+.
 
 ## Repository Layout
 

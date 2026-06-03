@@ -270,7 +270,7 @@ As of M4.5, Notebook 02 is accepted as the controlled Milestone 4 pilot import.
 | Notebook 03+ scope | Deferred |
 | Repository artifact status | No generated artifacts or runtime state committed |
 
-The pilot-imported Notebook 02 source is output-free and execution-count-free. After Issue #37, it preserves the active `/content` workspace boundary while no longer assuming Notebook 00/01 local state exists. It configures a Drive archive/session source, previews native restore behavior, keeps live restore manual Colab-only, validates restored workspace/session/data readiness, and hands archive creation, advanced archive workflows, and downstream StratLake workflows to Notebook 03+.
+The pilot-imported Notebook 02 source is output-free and execution-count-free. After Issue #37, it preserves the active `/content` workspace boundary while no longer assuming Notebook 00/01 local state exists. It configures a Drive session backup-pack source (`sessions/<SESSION_ID>/backups/<BACKUP_ID>`), previews native restore behavior, keeps live restore manual Colab-only, validates restored workspace/session/data readiness, and hands archive creation, advanced archive workflows, and downstream StratLake workflows to Notebook 03+.
 
 Notebook 02 remains a notebook orchestration and review layer. It does not reimplement Fintech session persistence, archive, restore, ingestion, generated artifact writing, StratLake feature generation, strategy smoke-test, or backtest logic.
 
