@@ -2,11 +2,11 @@
 
 ## Summary
 
-This audit records the controlled Milestone 6 import of Notebook 03 for Issue #46 and the follow-up validation work from Issues #47 and #48.
+This audit records the controlled Milestone 6 import of Notebook 03 for Issue #46, the follow-up validation work from Issues #47 and #48, the documentation update from Issue #49, and the manual Colab smoke evidence from Issue #51.
 
 Notebook 03 was imported as a cleaned, output-free Colab workflow source file at `notebooks/03_fintech_archive_backup_pack_and_restore.ipynb`. It demonstrates the `fintech-market-ingestion` archive backup-pack workflow for notebook-first use: initialize a local project/session under `/content`, derive archive paths from the generated `SESSION_ID`, create archive backup-pack source examples, validate and inspect backup packs, restore to local runtime storage, and verify restored files.
 
-Repository validation for Notebook 03 is source-only and sanitized. It does not run package installation, mount Google Drive, initialize live workspaces, create backup packs, validate or inspect real backup packs, restore data, create demo `.parquet` files, or inspect generated restored files. No manual Colab smoke pass is claimed for Notebook 03 in this audit.
+Repository validation for Notebook 03 is source-only and sanitized. It does not run package installation, mount Google Drive, initialize live workspaces, create backup packs, validate or inspect real backup packs, restore data, create demo `.parquet` files, or inspect generated restored files. Issue #51 separately records manual Colab smoke evidence as `colab_smoke_passed_with_notes`; the executed smoke artifact and generated runtime material are not committed.
 
 ## Notebook Identity
 
@@ -20,15 +20,16 @@ Repository validation for Notebook 03 is source-only and sanitized. It does not 
 - CLI coverage issue: Issue #47 - M6.2 Validate Notebook 03 CLI Contract and Registry Coverage.
 - Execution-readiness issue: Issue #48 - M6.3 Add Notebook 03 Sanitized Execution Coverage.
 - Documentation/audit issue: Issue #49 - M6.4 Update Notebook Index and Import Audit Docs.
+- Manual Colab smoke issue: Issue #51 - Notebook 03 manual Colab smoke-test evidence.
 
 ## Import Status
 
 Current audited status:
 
 - Import status: `imported`.
-- Validation status: `cleaned`, `static_validated`, `readiness_validated`, `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`.
+- Validation status: `cleaned`, `static_validated`, `readiness_validated`, `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`, `colab_smoke_passed_with_notes`.
 - Audit status: complete for repository-side import audit.
-- Manual Colab smoke status: `not_claimed`.
+- Manual Colab smoke status: `passed-with-notes`.
 - Merge-readiness status: not claimed; reserved for later Milestone 6 closeout work.
 
 ## Staging History
@@ -230,9 +231,11 @@ These warnings are acceptable because they do not indicate unsafe execution, not
 
 ## Manual Colab Smoke Status
 
-Manual Colab smoke validation status: `not_claimed`.
+Manual Colab smoke validation status: `colab_smoke_passed_with_notes`.
 
-The uploaded source notebook was user-provided as prior workflow context, but this audit does not claim that repository validation ran live Colab, Drive mount, package install, archive pack creation, backup-pack validation, backup-pack inspection, restore, or restored-file verification. Any future manual smoke result should be recorded separately and must keep executed notebook outputs, logs, screenshots, generated data, Drive artifacts, backup packs, manifests, restored files, credentials, and runtime folders out of Git.
+Issue #51 recorded manual Colab smoke evidence for Notebook 03. The smoke run confirmed package installation, CLI availability, Google Drive mount, project/session initialization, `SESSION_ID` extraction, `SESSION_ID`-derived backup paths under `<DRIVE_FOLDER_NAME>`, demo curated files under `/content`, dry-run pack, manual live pack creation, backup-pack validation, backup-pack inspection, local restore, and restored-file verification.
+
+The executed smoke artifact was runtime evidence only and is not committed. Repository validation still does not run live Colab, Drive mount, package install, archive pack creation, backup-pack validation, backup-pack inspection, restore, or restored-file verification. Any future source update after smoke testing must keep executed notebook outputs, logs, screenshots, generated data, Drive artifacts, backup packs, manifests, restored files, credentials, and runtime folders out of Git.
 
 ## Repository Boundary Confirmation
 
@@ -281,4 +284,4 @@ The audit confirms:
 - Generated artifacts and secrets are not committed.
 - Native-command-first boundaries are preserved.
 - Live archive, Drive, package install, backup-pack validation/inspection, restore, and generated-data cells remain manual Colab/runtime-only.
-- No live Notebook 03 smoke pass is claimed.
+- Manual Notebook 03 smoke evidence is recorded as `colab_smoke_passed_with_notes`; the executed artifact and generated runtime material are not committed.

@@ -20,7 +20,7 @@ Notebook 03 is the Fintech archive backup-pack and restore tutorial. It is usefu
 | Relationship to Notebook 02 | Continues the archive/session restore boundary using current backup-pack command shapes |
 | Staging category | `needs_cleanup` before import; `source_safe_after_cleanup` after Issue #46 |
 | Import status | `imported` after Issue #46 |
-| Manual Colab smoke status | `not_claimed` |
+| Manual Colab smoke status | `colab_smoke_passed_with_notes`; Issue #51 recorded manual runtime evidence, while repository validation remains source-only and sanitized. |
 
 ## Source Review Facts
 
@@ -171,7 +171,7 @@ Notebook 03 import and validation must not:
 | CLI registry validation configured. | Go |
 | Execution-readiness validation configured. | Go |
 | Sanitized pytest execution configured. | Go |
-| Live Colab smoke not claimed. | Go |
+| Manual Colab smoke recorded separately as `colab_smoke_passed_with_notes`; executed artifacts are not committed. | Go |
 | No generated artifacts committed. | Go |
 
-Go result: Notebook 03 is suitable as a cleaned, source-safe repository notebook with runtime-only archive and restore cells protected by source-only and sanitized validation.
+Go result: Notebook 03 is suitable as a cleaned, source-safe repository notebook with runtime-only archive and restore cells protected by source-only and sanitized validation. Issue #51 later recorded manual Colab smoke as `colab_smoke_passed_with_notes`; that evidence does not change the repository validation boundary.
