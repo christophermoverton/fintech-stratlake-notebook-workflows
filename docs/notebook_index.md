@@ -29,9 +29,9 @@ Do not use this tracker to justify direct imports from Google Drive. Future note
 
 | Number | Title | Repository path | Workflow role | Upstream app coverage | Import status | Validation status | Audit record | Manual Colab smoke | Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| 00 | Setup and Storage Overview | [notebooks/00_setup_and_storage_overview.ipynb](../notebooks/00_setup_and_storage_overview.ipynb) | setup/storage/session/persistence overview | `fintech-market-ingestion`; references StratLake boundaries where relevant | `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 00 import audit](notebook_00_import_audit.md) | `pending` | First pilot import; final Colab runtime confirmation remains pending. |
-| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded` | [Notebook 01 import audit](notebook_01_import_audit.md) | `passed-with-notes` | Core Colab smoke passed; Issue #27 fixes Drive placeholder syntax before dry-run preview cells are rerun for full pass. |
-| 02 | Fintech Archive Restore and Session Readiness | [notebooks/02_fintech_session_persistence_save_restore.ipynb](../notebooks/02_fintech_session_persistence_save_restore.ipynb) | archive/session restore and readiness | `fintech-market-ingestion`; secondary upstream app none expected | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `audit_recorded`, `colab_smoke_passed_with_notes` | [Notebook 02 import audit](notebook_02_import_audit.md); [staging/classification](notebook_02_staging_classification.md) | `passed-with-notes` | Issue #37 exposed the runtime-isolation problem: Notebook 02 cannot assume Notebook 00/01 `/content` state still exists. It now initializes the local `/content` Fintech project/session workspace with `fintech-init-project --notebooks --with-session`, then restores archived/backfilled curated data from an intentional Drive session backup-pack source (`sessions/<SESSION_ID>/backups/<BACKUP_ID>`) using `fintech-backup-data restore --backup-pack-dir --restore-root --overwrite-policy fail`. Manual Colab smoke passed with notes; live restore, Drive mount, credential setup, and restored workspace material remain manual Colab-only and must stay out of Git. Notebook 03+ archive creation/advanced archive and downstream StratLake workflows are deferred. |
+| 00 | Setup and Storage Overview | [notebooks/00_setup_and_storage_overview.ipynb](../notebooks/00_setup_and_storage_overview.ipynb) | setup/storage/session/persistence overview | `fintech-market-ingestion`; references StratLake boundaries where relevant | `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded` | [Notebook 00 import audit](notebook_00_import_audit.md) | `pending` | First pilot import; final Colab runtime confirmation remains pending. |
+| 01 | Fintech Daily Bars Extraction/Backfill | [notebooks/01_fintech_daily_bars_extraction_backfill.ipynb](../notebooks/01_fintech_daily_bars_extraction_backfill.ipynb) | extraction/backfill | `fintech-market-ingestion` | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded` | [Notebook 01 import audit](notebook_01_import_audit.md) | `passed-with-notes` | Core Colab smoke passed; Issue #27 fixes Drive placeholder syntax before dry-run preview cells are rerun for full pass. |
+| 02 | Fintech Archive Restore and Session Readiness | [notebooks/02_fintech_session_persistence_save_restore.ipynb](../notebooks/02_fintech_session_persistence_save_restore.ipynb) | archive/session restore and readiness | `fintech-market-ingestion`; secondary upstream app none expected | `pilot_imported`, `imported` | `cleaned`, `static_validated`, `readiness_validated`, `pytest_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`, `colab_smoke_passed_with_notes` | [Notebook 02 import audit](notebook_02_import_audit.md); [staging/classification](notebook_02_staging_classification.md) | `passed-with-notes` | Issue #37 exposed the runtime-isolation problem: Notebook 02 cannot assume Notebook 00/01 `/content` state still exists. It now initializes the local `/content` Fintech project/session workspace with `fintech-init-project --notebooks --with-session`, then restores archived/backfilled curated data from an intentional Drive session backup-pack source (`sessions/<SESSION_ID>/backups/<BACKUP_ID>`) using `fintech-backup-data restore --backup-pack-dir --restore-root --overwrite-policy fail`. Manual Colab smoke passed with notes; live restore, Drive mount, credential setup, and restored workspace material remain manual Colab-only and must stay out of Git. Notebook 03+ archive creation/advanced archive and downstream StratLake workflows are deferred. |
 
 Notebook 00, Notebook 01, and Notebook 02 are the imported notebooks currently tracked by this repository. Notebook 02 is repository-validated and audited. Issue #37 live testing confirmed the corrected initialization and backup-pack restore command shape, and manual Colab smoke is recorded as `passed-with-notes`.
 
@@ -62,6 +62,7 @@ Notebook 02 preserves the restore/readiness boundary: active Colab app work rema
 | `readiness_validated` | TOML-backed notebook execution-readiness validation passed. |
 | `pytest_validated` | Sanitized pytest notebook execution passed without mutating source notebooks. |
 | `cli_contract_validated` | Notebook CLI examples passed CLI contract validation. Missing local upstream commands may be warnings when configured. |
+| `cli_registry_validated` | Notebook CLI examples passed argument-aware CLI registry validation, including command/subcommand/flag/value constraints and excluded-command checks. |
 | `audit_recorded` | A notebook import audit record exists. |
 | `colab_smoke_pending` | Manual Colab runtime smoke validation remains pending. |
 | `colab_smoke_failed_needs_rerun` | A manual Colab smoke attempt was reviewed and failed or was invalid; rerun is required before pass can be claimed. |
@@ -131,16 +132,30 @@ Run these commands before marking a notebook as imported or advancing validation
 python scripts/scan_for_secret_patterns.py .
 python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
-python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
-pytest
+python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python -m pytest tests/test_notebook_cli_contracts.py
+python -m pytest tests/test_notebook_cli_registry.py
+python -m pytest tests/test_notebook_execution.py
+python -m pytest
 ```
+
+Validation layers remain additive:
+
+- CLI contract validation covers broad command-surface and bounded safe `--help` checks; expected missing-local-upstream warnings remain in this layer.
+- CLI registry validation adds argument-aware checks for command/subcommand/flag/value correctness and excluded command candidates.
+- Execution-readiness validation remains the final static notebook-readiness check.
+
+For registry schema and maintenance policy details, see [CLI Command Registry Guide](cli_command_registry.md).
 
 Use explicit notebook target forms when reviewing a specific notebook:
 
 ```bash
 python scripts/validate_notebook_execution_readiness.py notebooks/00_setup_and_storage_overview.ipynb --config config/notebook_test.toml
 python scripts/validate_notebook_cli_contracts.py notebooks/00_setup_and_storage_overview.ipynb --config config/notebook_cli_contracts.toml
+python scripts/validate_notebook_cli_registry.py notebooks/00_setup_and_storage_overview.ipynb --config config/notebook_cli_registry.toml
 ```
 
 Manual Colab smoke validation should follow [Colab Smoke-Test Workflow](colab_smoke_test_workflow.md). Keep Colab outputs, logs, screenshots, tracebacks, and generated artifacts out of Git.

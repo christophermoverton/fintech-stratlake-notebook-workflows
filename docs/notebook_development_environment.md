@@ -48,9 +48,14 @@ Run the existing repository guardrails before committing notebook changes:
 python scripts/scan_for_secret_patterns.py .
 python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
-python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
-pytest
+python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python -m pytest tests/test_notebook_cli_contracts.py
+python -m pytest tests/test_notebook_cli_registry.py
+python -m pytest tests/test_notebook_execution.py
+python -m pytest
 ```
 
 These checks scan for likely secrets, notebook outputs, execution counts, generated folders, and other repository cleanliness problems.
@@ -115,6 +120,34 @@ python scripts/validate_notebook_cli_contracts.py notebooks/00_setup_and_storage
 The CLI contract validator parses notebook shell command examples and conservative command-preview strings. It checks command names, configured subcommands, and expected flags against `config/notebook_cli_contracts.toml`. When upstream commands are installed locally, it may call safe `--help` forms only. Missing local commands are warnings by default.
 
 The validator never executes notebook command cells, real ingestion, archive writes, restore writes, Drive mounts, credential prompts, live API calls, or artifact-producing workflows.
+
+## CLI Registry Validation
+
+Run the argument-aware CLI registry validator:
+
+```bash
+python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
+```
+
+Optional focused Notebook 02 check:
+
+```bash
+python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+```
+
+The registry validator checks command and subcommand identity plus argument semantics against `config/cli_command_registry.toml` and `config/notebook_cli_registry.toml`. It validates supported versus unsupported flags, boolean flags receiving values, value flags missing values, constrained `allowed_values`, `argparse_required`, `notebook_contract_required`, and conditional `required_when` behavior. It also rejects excluded command candidates, including `fintech-restore-session`, when they appear as valid current notebook syntax.
+
+Like the other repository-side validators, it is non-executing and does not run upstream CLI workflows.
+
+## Validation Layer Roles
+
+- CLI contract validation: broad command-surface and safe `--help` contract checks; expected missing local upstream command warnings can appear here.
+- CLI registry validation: argument-aware command/subcommand/flag/value semantics and exclusion checks.
+- Execution-readiness validation: notebook JSON/state and safe Python syntax readiness checks.
+
+Keep all three layers enabled. The registry validator is additive and does not replace the existing CLI contract or execution-readiness checks.
+
+For registry schema, traceability policy, and maintenance workflow, see [CLI Command Registry Guide](cli_command_registry.md).
 
 ## Manual Colab Smoke Testing
 

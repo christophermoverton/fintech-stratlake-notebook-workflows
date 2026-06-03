@@ -40,7 +40,7 @@ The notebooks will guide users through setup, Fintech extraction and backfill, s
 
 Notebook imports should start with the [Notebook Import Staging Guide](docs/notebook_import_staging.md), then follow the [notebook cleanup workflow](docs/notebook_cleanup_workflow.md), [reusable notebook header template](docs/notebook_header_template.md), [secret-safe import checklist](docs/notebook_import_checklist.md), [notebook standards](docs/notebook_standards.md), and `.gitignore` guardrails before any notebook is committed. Imported and pending notebooks are tracked in the [notebook index](docs/notebook_index.md). Current imported notebooks are [Notebook 00 - setup and storage overview](notebooks/00_setup_and_storage_overview.ipynb), [Notebook 01 - Fintech daily bars extraction/backfill](notebooks/01_fintech_daily_bars_extraction_backfill.ipynb), and [Notebook 02 - Fintech archive restore and session readiness](notebooks/02_fintech_session_persistence_save_restore.ipynb), with review trails recorded in the [Notebook 00 import audit](docs/notebook_00_import_audit.md), [Notebook 01 import audit](docs/notebook_01_import_audit.md), and [Notebook 02 import audit](docs/notebook_02_import_audit.md). Manual Colab smoke testing remains pending, failed-needs-rerun, passed-with-notes, passed, or not claimed unless explicitly recorded in the notebook index or audit trail.
 
-Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide. Final branch scope and merge readiness are summarized in the [Milestone 2 merge-readiness closeout](docs/milestone_2_merge_readiness.md) and [Milestone 3 merge-readiness closeout](docs/milestone_3_merge_readiness.md).
+Local notebook development and execution-readiness checks are documented in the [Notebook Development Environment](docs/notebook_development_environment.md) guide. Final branch scope and merge readiness are summarized in the [Milestone 2 merge-readiness closeout](docs/milestone_2_merge_readiness.md), [Milestone 3 merge-readiness closeout](docs/milestone_3_merge_readiness.md), [Milestone 4 merge-readiness closeout](docs/milestone_4_merge_readiness.md), and [Milestone 5 merge-readiness closeout](docs/milestone_5_merge_readiness.md).
 
 ## Upstream App Repositories
 
@@ -79,12 +79,25 @@ Run the repository guardrails before committing notebook changes:
 python scripts/scan_for_secret_patterns.py .
 python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
-python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python scripts/validate_notebook_cli_contracts.py --config config/notebook_cli_contracts.toml
-pytest
+python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python -m pytest tests/test_notebook_cli_contracts.py
+python -m pytest tests/test_notebook_cli_registry.py
+python -m pytest tests/test_notebook_execution.py
+python -m pytest
 ```
 
-The notebook execution-readiness command performs static JSON, output/count, path-fragment, classification, and safe Python syntax checks. The CLI contract validator checks notebook command examples against configured safe `--help` contracts. The pytest harness executes only sanitized temporary notebook copies. These layers do not mutate source notebooks, mount Drive, prompt for credentials, install packages, run ingestion, run archive/restore commands, or save outputs to committed notebooks.
+Validation layers are additive and should be run together:
+
+- CLI contract validation checks broad command-surface examples and bounded safe `--help` contract behavior.
+- CLI registry validation is argument-aware and checks known command/subcommand/flag/value syntax against the verified registry, including unsupported flags, boolean/value misuse, constrained `allowed_values`, `argparse_required`, `notebook_contract_required`, `required_when`, and excluded command candidates such as `fintech-restore-session`.
+- Execution-readiness validation checks static JSON, output/count, path-fragment, classification, and safe Python syntax.
+
+The Notebook 02 targeted registry command is an optional focused confidence check for the restore-first Colab workflow where CLI assumption drift has highest risk. All repository validation layers are non-executing for upstream workflows: they do not run live ingestion/restore/archive commands, mount Drive, prompt for credentials, install notebook packages, or mutate source notebooks. Missing local upstream Fintech command warnings remain bounded to the existing CLI contract validator behavior.
+
+For registry schema, policy, and maintenance details, see [CLI Command Registry Guide](docs/cli_command_registry.md).
 
 ## GitHub Issue Templates
 

@@ -1,0 +1,42 @@
+[notebook_cli_registry]
+registry_path = "cli_command_registry.toml"
+default_targets = [
+  "notebooks/00_setup_and_storage_overview.ipynb",
+  "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
+  "notebooks/02_fintech_session_persistence_save_restore.ipynb"
+]
+
+unknown_command_policy = "warn"
+fail_on_invalid_known_command = true
+fail_on_invalid_known_flag = true
+fail_on_invalid_flag_value = true
+fail_on_boolean_flag_value = true
+fail_on_missing_argparse_required = true
+fail_on_missing_notebook_contract_required = true
+safe_help_only = false
+
+watched_command_prefixes = [
+  "fintech-",
+  "stratlake"
+]
+
+ignored_command_prefixes = [
+  "pip",
+  "python",
+  "python3"
+]
+
+ignored_shell_prefixes = [
+  "pip ",
+  "python -m pip ",
+  "python3 -m pip ",
+  "%pip "
+]
+
+# Conservative preview extraction: uppercase command variables are treated as
+# deliberate command previews; lower-case explanatory strings are left to later
+# validator expansion so current legacy prose/templates do not become brittle.
+preview_variable_suffixes = [
+  "COMMAND",
+  "COMMAND_TEXT"
+]

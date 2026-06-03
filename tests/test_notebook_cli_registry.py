@@ -1,0 +1,407 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+
+import validate_notebook_cli_registry as cli_registry  # noqa: E402
+
+if sys.version_info < (3, 11):  # pragma: no cover - Python < 3.11
+    pytest.skip(
+        "Python 3.11+ is required for TOML-based CLI registry tests.",
+        allow_module_level=True,
+    )
+
+
+CONFIG_PATH = REPO_ROOT / "config" / "notebook_cli_registry.toml"
+CONFIG = cli_registry.load_toml(CONFIG_PATH)
+SETTINGS = dict(CONFIG["notebook_cli_registry"])
+REGISTRY_PATH = cli_registry.resolve_registry_path(CONFIG_PATH, SETTINGS)
+REGISTRY = cli_registry.load_toml(REGISTRY_PATH)
+MODEL = cli_registry.build_registry_model(REGISTRY)
+
+
+def deep_contains_key(value: Any, target_key: str) -> bool:
+    if isinstance(value, dict):
+        if target_key in value:
+            return True
+        return any(deep_contains_key(item, target_key) for item in value.values())
+    if isinstance(value, list):
+        return any(deep_contains_key(item, target_key) for item in value)
+    return False
+
+
+def write_synthetic_notebook(tmp_path: Path, commands: list[str]) -> Path:
+    cells = [
+        {
+            "cell_type": "code",
+            "metadata": {},
+            "source": [f"!{command}\n"],
+            "outputs": [],
+            "execution_count": None,
+        }
+        for command in commands
+    ]
+    notebook = {
+        "cells": cells,
+        "metadata": {},
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+    path = tmp_path / "synthetic.ipynb"
+    path.write_text(json.dumps(notebook, indent=2), encoding="utf-8")
+    return path
+
+
+def parse_example(command_text: str):
+    parts = cli_registry.split_command(command_text)
+    example = cli_registry.parse_parts(
+        Path("synthetic.ipynb"),
+        0,
+        parts,
+        "shell",
+        MODEL,
+    )
+    assert example is not None
+    return example
+
+
+def validate_command_text(command_text: str, *, settings: dict[str, Any] | None = None):
+    active_settings = dict(SETTINGS)
+    if settings:
+        active_settings.update(settings)
+    return cli_registry.validate_example(parse_example(command_text), MODEL, active_settings)
+
+
+def file_digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_registry_toml_files_parse_successfully():
+    command_registry = cli_registry.load_toml(REPO_ROOT / "config" / "cli_command_registry.toml")
+    notebook_registry = cli_registry.load_toml(REPO_ROOT / "config" / "notebook_cli_registry.toml")
+
+    assert "commands" in command_registry
+    assert "notebook_cli_registry" in notebook_registry
+
+
+def test_build_registry_model_contains_expected_commands_and_subcommands():
+    assert isinstance(MODEL, cli_registry.RegistryModel)
+
+    assert "fintech-init-project" in MODEL.commands
+    assert "fintech-backfill-daily" in MODEL.commands
+    assert "fintech-save-session" in MODEL.commands
+    assert "fintech-backup-data" in MODEL.commands
+
+    backup_entry = MODEL.commands["fintech-backup-data"]
+    assert backup_entry.subcommands == ("pack", "validate", "inspect", "restore")
+    assert ("fintech-backup-data", "pack") in MODEL.subcommands
+    assert ("fintech-backup-data", "validate") in MODEL.subcommands
+    assert ("fintech-backup-data", "inspect") in MODEL.subcommands
+    assert ("fintech-backup-data", "restore") in MODEL.subcommands
+
+
+def test_registry_exclusions_and_no_current_stratlake_commands():
+    assert "fintech-restore-session" in MODEL.excluded
+    assert "fintech-restore-session" not in MODEL.commands
+
+    assert "stratlake-trade-engine commands" in MODEL.excluded
+    assert not any(command.startswith("stratlake") for command in MODEL.commands)
+
+
+def test_required_flag_schema_and_restore_semantics():
+    assert not deep_contains_key(REGISTRY, "required")
+
+    for entry in REGISTRY.get("commands", []):
+        for _flag_name, flag_data in entry.get("flags", {}).items():
+            assert "argparse_required" in flag_data or "notebook_contract_required" in flag_data
+    for entry in REGISTRY.get("command_subcommands", []):
+        for _flag_name, flag_data in entry.get("flags", {}).items():
+            assert "argparse_required" in flag_data or "notebook_contract_required" in flag_data
+
+    restore_entry = MODEL.subcommands[("fintech-backup-data", "restore")]
+    assert restore_entry.flags["--backup-pack-dir"].argparse_required is True
+    assert restore_entry.flags["--restore-root"].argparse_required is True
+
+    overwrite = restore_entry.flags["--overwrite-policy"]
+    assert overwrite.argparse_required is False
+    assert overwrite.allowed_values == ("fail", "replace", "merge")
+
+    subcommands_raw = REGISTRY.get("command_subcommands", [])
+    restore_raw = next(
+        entry
+        for entry in subcommands_raw
+        if entry.get("command") == "fintech-backup-data" and entry.get("subcommand") == "restore"
+    )
+    assert restore_raw["flags"]["--overwrite-policy"]["default_value"] == "fail"
+
+    init_entry = MODEL.commands["fintech-init-project"]
+    assert init_entry.flags["--notebooks"].kind == "boolean"
+    assert init_entry.flags["--notebooks"].argparse_required is False
+    assert init_entry.flags["--with-session"].kind == "boolean"
+    assert init_entry.flags["--with-session"].argparse_required is False
+
+    backfill_entry = MODEL.commands["fintech-backfill-daily"]
+    assert backfill_entry.flags["--start"].argparse_required is True
+    assert backfill_entry.flags["--end"].argparse_required is True
+
+    save_entry = MODEL.commands["fintech-save-session"]
+    assert save_entry.flags["--session-id"].argparse_required is True
+    assert save_entry.flags["--destination"].required_when == "not_dry_run"
+
+
+@pytest.mark.parametrize(
+    "command_text",
+    [
+        "fintech-init-project --root /content/fintech-market-ingestion-demo --notebooks --with-session --session-name extraction_daily_bars_demo",
+        "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy fail",
+        "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy replace",
+        "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy merge",
+        'fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy "fail"',
+        "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy 'replace'",
+        'fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy="merge"',
+        "fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy=fail",
+        "fintech-backup-data validate --backup-pack-dir /drive/pack",
+        "fintech-backup-data validate --backup-pack-dir /drive/pack --raise-on-error",
+        "fintech-backup-data inspect --backup-pack-dir /drive/pack",
+        "fintech-backup-data restore --help",
+        "fintech-backup-data validate --help",
+        "fintech-backup-data inspect --help",
+    ],
+)
+def test_validator_accepts_valid_command_examples(command_text):
+    _example, findings, _warnings = validate_command_text(command_text)
+    assert findings == []
+
+
+@pytest.mark.parametrize(
+    ("command_text", "expected_snippet"),
+    [
+        (
+            'fintech-init-project --root /tmp/demo --notebooks "" --with-session --session-name demo',
+            "boolean flag",
+        ),
+        (
+            'fintech-init-project --root /tmp/demo --notebooks --with-session "" --session-name demo',
+            "boolean flag",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy refuse",
+            "invalid value",
+        ),
+        (
+            'fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --overwrite-policy "refuse"',
+            "invalid value",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy=refuse",
+            "invalid value",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir=/drive/pack --restore-root=/tmp/data --overwrite-policy='refuse'",
+            "invalid value",
+        ),
+        (
+            "fintech-backup-data restore --source /drive/pack --restore-root /tmp/data --overwrite-policy fail",
+            "unsupported flag",
+        ),
+        (
+            "fintech-backup-data restore --restore-root /tmp/data --overwrite-policy fail",
+            "missing argparse-required flag",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir /drive/pack --overwrite-policy fail",
+            "missing argparse-required flag",
+        ),
+        (
+            "fintech-restore-session --root /tmp/demo --adapter google-drive --source /drive/session --overwrite-policy fail",
+            "excluded from valid current notebook syntax",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir /drive/pack --restore-root /tmp/data --unknown-flag value",
+            "unknown flag",
+        ),
+        (
+            "fintech-backup-data restore --backup-pack-dir --restore-root /tmp/data --overwrite-policy fail",
+            "value flag",
+        ),
+    ],
+)
+def test_validator_rejects_invalid_command_examples(command_text, expected_snippet):
+    _example, findings, _warnings = validate_command_text(command_text)
+    assert findings
+    assert any(expected_snippet in finding.reason for finding in findings)
+
+
+def test_boolean_flag_value_policy_can_be_disabled():
+    _example, findings, _warnings = validate_command_text(
+        'fintech-init-project --root /tmp/demo --notebooks "" --with-session --session-name demo',
+        settings={"fail_on_boolean_flag_value": False},
+    )
+    assert findings
+    assert not any("boolean flag" in finding.reason for finding in findings)
+
+
+def test_split_command_preserves_windows_style_backslashes():
+    parts = cli_registry.split_command(
+        r"fintech-init-project --root C:\tmp\demo --notebooks --with-session --session-name demo"
+    )
+    assert parts[2] == r"C:\tmp\demo"
+
+
+def test_help_examples_are_safe_help_and_skip_normal_required_flags():
+    for command_text in [
+        "fintech-backup-data restore --help",
+        "fintech-backup-data validate --help",
+        "fintech-backup-data inspect --help",
+    ]:
+        example, findings, _warnings = validate_command_text(command_text)
+        assert findings == []
+        assert example.classification == "safe_help"
+
+
+def test_help_requires_known_command_or_subcommand():
+    _example, findings, _warnings = validate_command_text(
+        "fintech-backup-data unknown-subcommand --help"
+    )
+    assert findings
+    assert any("unknown subcommand" in finding.reason for finding in findings)
+
+
+def test_unknown_watched_command_warn_policy(tmp_path):
+    notebook = write_synthetic_notebook(tmp_path, ["fintech-unlisted-command --help"])
+    report = cli_registry.validate_targets([notebook], MODEL, dict(SETTINGS, unknown_command_policy="warn"))
+
+    assert not report.findings
+    assert any("unknown command: fintech-unlisted-command" in warning for warning in report.warnings)
+
+
+def test_unknown_watched_command_fail_policy(tmp_path):
+    notebook = write_synthetic_notebook(tmp_path, ["fintech-unlisted-command --help"])
+    report = cli_registry.validate_targets([notebook], MODEL, dict(SETTINGS, unknown_command_policy="fail"))
+
+    assert report.findings
+    assert any("unknown command: fintech-unlisted-command" in finding.reason for finding in report.findings)
+
+
+def test_ignored_setup_commands_do_not_fail_registry_validation(tmp_path):
+    notebook = write_synthetic_notebook(
+        tmp_path,
+        [
+            "pip install -q notebook",
+            "python -m pip install -q notebook",
+        ],
+    )
+    payload = json.loads(notebook.read_text(encoding="utf-8"))
+    payload["cells"].append(
+        {
+            "cell_type": "code",
+            "metadata": {},
+            "source": ["%pip install -q notebook\n"],
+            "outputs": [],
+            "execution_count": None,
+        }
+    )
+    notebook.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    report = cli_registry.validate_targets([notebook], MODEL, SETTINGS)
+
+    assert report.examples == []
+    assert report.findings == []
+
+
+def test_excluded_command_reports_unsupported_pattern():
+    _example, findings, _warnings = validate_command_text(
+        "fintech-restore-session --overwrite-policy fail"
+    )
+
+    assert findings
+    assert any("excluded from valid current notebook syntax" in finding.reason for finding in findings)
+    assert any("unsupported excluded-command pattern" in finding.reason for finding in findings)
+
+
+def test_excluded_stratlake_placeholder_does_not_make_concrete_command_valid(tmp_path):
+    notebook = write_synthetic_notebook(tmp_path, ["stratlake-train --help"])
+    report = cli_registry.validate_targets([notebook], MODEL, dict(SETTINGS, unknown_command_policy="fail"))
+
+    assert report.findings
+    assert any("unknown command: stratlake-train" in finding.reason for finding in report.findings)
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb",
+        REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb",
+        REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb",
+    ],
+    ids=lambda path: path.name,
+)
+def test_current_notebooks_pass_registry_validation(target):
+    report = cli_registry.validate_targets([target], MODEL, SETTINGS)
+
+    assert report.examples
+    assert not report.findings
+
+
+def test_notebook_02_passes_with_zero_registry_failures():
+    target = REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb"
+    report = cli_registry.validate_targets([target], MODEL, SETTINGS)
+
+    assert not report.findings
+
+
+def test_registry_validation_does_not_mutate_source_notebooks():
+    targets = [
+        REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb",
+        REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb",
+        REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb",
+    ]
+    before = {path: file_digest(path) for path in targets}
+
+    report = cli_registry.validate_targets(targets, MODEL, SETTINGS)
+
+    assert report.targets_checked == 3
+    after = {path: file_digest(path) for path in targets}
+    assert before == after
+
+
+def test_validate_notebook_cli_registry_subprocess_smoke_all_targets():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "validate_notebook_cli_registry.py"),
+            "--config",
+            str(REPO_ROOT / "config" / "notebook_cli_registry.toml"),
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_validate_notebook_cli_registry_subprocess_smoke_notebook_02_only():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "validate_notebook_cli_registry.py"),
+            "notebooks/02_fintech_session_persistence_save_restore.ipynb",
+            "--config",
+            str(REPO_ROOT / "config" / "notebook_cli_registry.toml"),
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
