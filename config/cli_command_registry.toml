@@ -29,6 +29,7 @@ confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
   "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
   "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md",
@@ -36,7 +37,7 @@ confirmed_from = [
 ]
 upstream_source_status = "confirmed_from_implementation"
 notes = [
-  "Notebook 01, Notebook 02, and Notebook 05 use this command to initialize a local /content Fintech workspace/session.",
+  "Notebook 01, Notebook 02, Notebook 05, and Notebook 06 use this command to initialize a local /content Fintech workspace/session.",
   "Live project initialization creates runtime workspace state and is manual Colab-only.",
   "`--notebooks` is a standalone boolean flag.",
   "`--with-session` is a standalone boolean flag."
@@ -64,13 +65,14 @@ confirmed_from = [
   "fintech-market-ingestion:src/ingestion/backfill_daily.py",
   "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
   "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
   "fintech-stratlake-notebook-workflows:docs/milestone_3_merge_readiness.md"
 ]
 upstream_source_status = "confirmed_from_implementation"
 notes = [
-  "Notebook 01 and Notebook 05 use this command for daily bars extraction/backfill.",
+  "Notebook 01, Notebook 05, and Notebook 06 use this command for daily bars extraction/backfill.",
   "Live backfill can call upstream data APIs and write generated market data, so it is manual/runtime-only.",
   "Only Notebook 01 flags are represented here; this is not the full upstream command surface."
 ]
@@ -157,12 +159,13 @@ confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
   "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md"
 ]
 upstream_source_status = "confirmed_from_implementation"
 notes = [
-  "Included because Notebook 00, Notebook 01, and Notebook 05 use archive-pack preview examples, and Notebook 03 uses the same pack surface for dry-run preview and manual live pack creation.",
+  "Included because Notebook 00, Notebook 01, Notebook 05, and Notebook 06 use archive-pack preview examples, and Notebook 03 uses the same pack surface for dry-run preview and manual live pack creation.",
   "Only the notebook-used pack flags are represented; pack flags are not inferred from restore.",
   "`--dry-run` remains recognized for preview cells, but it is optional because Notebook 03 intentionally includes a manual live pack creation command."
 ]
@@ -188,6 +191,7 @@ confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
   "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md"
 ]
@@ -254,7 +258,7 @@ unsupported_patterns = [
   { pattern = "--workspace-root <value> --target-dataset-root <value> --backup-root <value> --backup-id <value>", reason = "Older Notebook 00/01 restore-readiness previews use this legacy shape, but current upstream `fintech-backup-data restore` only defines `--backup-pack-dir`, `--restore-root`, and `--overwrite-policy`.", confirmed_from = ["fintech-market-ingestion:src/cli/backup_data.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb"] }
 ]
 notes = [
-  "Notebook 02 and Notebook 03 use this as the confirmed backup-pack curated-data restore command; Notebook 05 includes the same shape as optional commented manual guidance.",
+  "Notebook 02 and Notebook 03 use this as the confirmed backup-pack curated-data restore command; Notebook 05 includes the same shape as optional commented manual guidance, and Notebook 06 includes it as restore-readiness preview guidance.",
   "Live restore can write restored data under /content and remains manual Colab-only.",
   "Notebook 00 and Notebook 01 contain older restore-readiness previews using workspace/backup-root style flags; upstream source does not confirm those flags for current `fintech-backup-data restore`, so the registry marks them unsupported.",
   "`fintech-restore-session` is separate and is not represented as the backup-pack restore command."
@@ -275,11 +279,12 @@ classifications = ["manual_only_live"]
 confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:docs/notebook_04_command_surface_classification.md"
 ]
 upstream_source_status = "smoke_test_confirmed_pending_source_verification"
 notes = [
-  "Notebook 04 and Notebook 05 use stratlake-init-session as the live downstream StratLake session initializer.",
+  "Notebook 04, Notebook 05, and Notebook 06 use stratlake-init-session as the live downstream StratLake session initializer.",
   "Flags were confirmed from the smoke-tested Colab session (M7.1 / M7.2); upstream stratlake-trade-engine source verification is pending (M7.4+ follow-up).",
   "--marketlake-root is the critical handoff flag: it connects StratLake to the Fintech curated-data root (MARKETLAKE_ROOT).",
   "--enable-drive-persistence and --notebook-configs are standalone boolean flags (no value).",
@@ -303,11 +308,12 @@ expected_missing_local = true
 classifications = ["manual_only_live", "unsafe_live"]
 confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:docs/notebook_05_command_surface_classification.md"
 ]
 upstream_source_status = "current_notebook_usage_pending_source_verification"
 notes = [
-  "Notebook 05 uses stratlake-build-features as the live Q1 daily feature-generation command.",
+  "Notebook 05 and Notebook 06 use stratlake-build-features as the live Q1 daily feature-generation command.",
   "Live feature generation can read curated market data and write generated feature outputs, so it is manual Colab-only and unsafe for repository execution.",
   "The Notebook 05 source keeps --marketlake-root explicit so the Fintech curated-data handoff does not depend on the current working directory.",
   "Upstream stratlake-trade-engine source verification remains pending; this registry entry covers current Notebook 05 source syntax only."
@@ -328,11 +334,12 @@ expected_missing_local = true
 classifications = ["dry_run", "manual_only_live"]
 confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
   "fintech-stratlake-notebook-workflows:docs/notebook_05_command_surface_classification.md"
 ]
 upstream_source_status = "current_notebook_usage_pending_source_verification"
 notes = [
-  "Notebook 05 uses stratlake-session-export only with --dry-run.",
+  "Notebook 05 and Notebook 06 use stratlake-session-export only with --dry-run.",
   "Repository validation parses the command shape but does not execute export or create Drive artifacts.",
   "Upstream stratlake-trade-engine source verification remains pending; this registry entry covers current Notebook 05 source syntax only."
 ]

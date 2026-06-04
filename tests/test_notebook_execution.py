@@ -449,6 +449,196 @@ def test_notebook_05_sanitized_does_not_invoke_shell_drive_or_credentials():
         assert "!stratlake-" not in stripped
 
 
+def test_config_includes_notebook_06_readiness_target():
+    notebook_06 = "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    assert notebook_06 in readiness["notebook_validation"]["default_targets"]
+
+
+def test_config_includes_notebook_06_sanitized_execution_target():
+    notebook_06 = "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    execution = load_toml(EXECUTION_CONFIG)
+    assert notebook_06 in execution["notebook_execution"]["default_targets"]
+
+
+def test_notebook_06_is_in_readiness_and_execution_targets():
+    notebook_06 = "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+    assert notebook_06 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_06 in execution["notebook_execution"]["default_targets"]
+
+
+def test_notebook_06_source_hygiene():
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    assert_source_notebook_clean(source_notebook)
+
+
+def test_notebook_06_execution_counts_and_outputs_are_clean():
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    nb = nbformat.read(source_notebook, as_version=4)
+    for index, cell in enumerate(notebook_code_cells(nb)):
+        assert cell.get("outputs", []) == [], f"cell {index} has outputs"
+        assert cell.get("execution_count") is None, f"cell {index} has execution_count"
+
+
+def test_notebook_06_source_invariants_are_pinned():
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    nb = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in nb.cells)
+
+    # Session and workspace identifiers
+    assert "FINTECH_SESSION_ID" in source
+    assert "STRATLAKE_SESSION_ID" in source
+    assert "MARKETLAKE_ROOT" in source
+
+    # Drive placeholder guard
+    assert 'DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"' in source
+
+    # Q1 validation window
+    assert 'START_DATE = "2025-01-01"' in source
+    assert 'END_DATE = "2025-04-01"' in source
+
+    # Compact ticker universe
+    assert 'TICKERS = ["AAPL", "MSFT", "NVDA"]' in source
+
+    # Command surface lists
+    assert "required_workflow_commands" in source
+    assert "optional_unverified_preview_commands" in source
+
+    # Optional/unverified archive bootstrap commands remain source-visible
+    assert "stratlake-session-archive-bootstrap" in source
+    assert "stratlake-session-archive-restore-bootstrap" in source
+
+    # Registry-current Fintech backup preview variables
+    assert "FINTECH_PACK_COMMAND_TEXT" in source
+    assert "FINTECH_RESTORE_COMMAND_TEXT" in source
+
+    # Fintech pack CLI flags
+    assert "--workspace-root {FINTECH_ROOT_STR}" in source
+    assert "--source-dataset-root {MARKETLAKE_ROOT_STR}" in source
+    assert "--backup-root {FINTECH_DRIVE_BACKUP_ROOT_STR}" in source
+    assert "--backup-id {FINTECH_ARCHIVE_ID}" in source
+    assert "--shard-size-mb 512" in source
+
+    # Fintech restore CLI flags
+    assert "--backup-pack-dir {RESTORE_FINTECH_BACKUP_PACK_DIR_STR}" in source
+    assert "--restore-root {MARKETLAKE_ROOT_STR}" in source
+    assert "--overwrite-policy fail" in source
+
+    # StratLake export dry-run remains source-visible
+    assert "!stratlake-session-export" in source
+    assert "--dry-run" in source
+
+
+def test_notebook_06_sanitized_execution_skips_runtime_surfaces():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    assert skipped + kept_code > 0
+
+    # Package installs
+    assert "!pip install" not in sanitized_sources
+    assert "%pip" not in sanitized_sources
+
+    # Drive and Colab surfaces
+    assert "drive.mount(" not in sanitized_sources
+    assert "google.colab" not in sanitized_sources
+    assert "userdata.get(" not in sanitized_sources
+    assert "getpass.getpass(" not in sanitized_sources
+
+    # Session initialization
+    assert "!fintech-init-project" not in sanitized_sources
+    assert "!stratlake-init-session" not in sanitized_sources
+
+    # Data generation and export
+    assert "!fintech-backfill-daily" not in sanitized_sources
+    assert "!stratlake-build-features" not in sanitized_sources
+    assert "!stratlake-session-export" not in sanitized_sources
+
+    # Archive/restore execution
+    assert "!fintech-backup-data" not in sanitized_sources
+    assert "subprocess.run(" not in sanitized_sources
+
+    # Filesystem mutation
+    assert ".mkdir(" not in sanitized_sources
+    assert ".write_text(" not in sanitized_sources
+    assert "os.chdir(" not in sanitized_sources
+
+    # Generated data inspection
+    assert 'rglob("*.parquet")' not in sanitized_sources
+    assert "pd.read_parquet(" not in sanitized_sources
+    assert "display(" not in sanitized_sources
+
+    # Runtime path namespaces
+    assert "FINTECH_ROOT" not in sanitized_sources
+    assert "STRATLAKE_ROOT" not in sanitized_sources
+    assert "MARKETLAKE_ROOT" not in sanitized_sources
+    assert "DAILY_BARS_ROOT" not in sanitized_sources
+    assert "FINTECH_DRIVE" not in sanitized_sources
+    assert "STRATLAKE_DRIVE" not in sanitized_sources
+
+    # Session/manifest artifacts
+    assert "FINTECH_SESSION_MANIFEST" not in sanitized_sources
+    assert "STRATLAKE_SESSION_FILE" not in sanitized_sources
+    assert "feature_candidates" not in sanitized_sources
+
+
+def test_notebook_06_sanitized_execution_does_not_require_colab_or_credentials():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+
+    sanitized, skipped, _ = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    for line in sanitized_sources.splitlines():
+        stripped = line.lstrip()
+        assert not stripped.startswith("!"), f"Shell command leaked into sanitized output: {line!r}"
+        assert not stripped.startswith("%"), f"Magic command leaked into sanitized output: {line!r}"
+        assert "drive.mount(" not in stripped
+        assert "userdata.get(" not in stripped
+        assert "getpass.getpass(" not in stripped
+        assert "!fintech-" not in stripped
+        assert "!stratlake-" not in stripped
+        assert "ALPACA_API_KEY" not in stripped
+
+
+def test_notebook_06_sanitized_execution_does_not_mutate_source():
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    nb = nbformat.read(source_notebook, as_version=4)
+    source_before = "\n".join(cell_source(cell) for cell in nb.cells)
+
+    config = load_toml(EXECUTION_CONFIG)
+    build_sanitized_notebook(source_notebook, config)
+
+    nb_after = nbformat.read(source_notebook, as_version=4)
+    source_after = "\n".join(cell_source(cell) for cell in nb_after.cells)
+    assert source_before == source_after, "Sanitized build mutated the source notebook"
+
+
+def test_notebook_06_runtime_cells_remain_manual_only():
+    source_notebook = REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    nb = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in nb.cells)
+
+    # These runtime surfaces must be present in source (manual Colab-only)
+    assert "!fintech-init-project" in source
+    assert "!stratlake-init-session" in source
+    assert "!fintech-backfill-daily" in source
+    assert "!stratlake-build-features" in source
+    assert "!stratlake-session-export" in source
+    assert "subprocess.run(" in source
+    assert "drive.mount(" in source
+    assert "from google.colab import drive" in source
+    assert "pd.read_parquet(" in source
+    assert "display(" in source
+
+
 def test_issue_14_readiness_command_remains_compatible():
     result = subprocess.run(
         [

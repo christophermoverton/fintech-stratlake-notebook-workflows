@@ -5,7 +5,8 @@ default_targets = [
   "notebooks/02_fintech_session_persistence_save_restore.ipynb",
   "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
   "notebooks/04_stratlake_feature_series_index_setup.ipynb",
-  "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+  "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb"
 ]
 execute_sanitized_copy = true
 full_notebook_execution_enabled = false
@@ -55,7 +56,21 @@ cell_source_contains = [
   "!stratlake-session-archive",
   "STRATLAKE_ROOT",
   "available_fintech_sessions",
-  "MARKETLAKE_ROOT"
+  "MARKETLAKE_ROOT",
+  "subprocess.run(",
+  "display(",
+  "pd.read_parquet(",
+  "FINTECH_DRIVE",
+  "STRATLAKE_DRIVE",
+  "DAILY_BARS_ROOT",
+  "FINTECH_SESSION_MANIFEST",
+  "STRATLAKE_SESSION_FILE",
+  "FINTECH_ARCHIVE_ID",
+  "STRATLAKE_ARCHIVE_ID",
+  "RESTORE_FINTECH",
+  "RESTORE_STRATLAKE",
+  "required_workflow_commands",
+  "missing_required_commands"
 ]
 
 [temporary_execution]

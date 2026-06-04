@@ -385,6 +385,7 @@ def test_excluded_stratlake_placeholder_does_not_make_concrete_command_valid(tmp
         REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb",
         REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb",
         REPO_ROOT / "notebooks" / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+        REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb",
     ],
     ids=lambda path: path.name,
 )
@@ -485,6 +486,12 @@ def test_config_includes_notebook_05_registry_target():
     )
 
 
+def test_config_includes_notebook_06_registry_target():
+    targets = SETTINGS.get("default_targets", [])
+
+    assert "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb" in targets
+
+
 def test_notebook_05_passes_with_zero_registry_failures():
     target = (
         REPO_ROOT
@@ -571,6 +578,129 @@ def test_notebook_05_command_source_values_are_pinned():
     assert "MARKETLAKE_ROOT" in source
 
 
+def test_notebook_06_passes_with_zero_registry_failures():
+    target = (
+        REPO_ROOT
+        / "notebooks"
+        / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    )
+    report = cli_registry.validate_targets([target], MODEL, SETTINGS)
+
+    assert report.examples
+    assert not report.findings
+    assert any(
+        example.command == "fintech-init-project"
+        and example.classification == "manual_only_live"
+        and {"--root", "--notebooks", "--with-session", "--session-name"} <= example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "stratlake-init-session"
+        and example.classification == "manual_only_live"
+        and {"--root", "--project-name", "--marketlake-root", "--drive-root"}
+        <= example.flag_names()
+        and "--enable-drive-persistence" in example.flag_names()
+        and "--notebook-configs" in example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "restore"
+        and example.classification == "safe_preview"
+        and {"--backup-pack-dir", "--restore-root", "--overwrite-policy"} <= example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backfill-daily"
+        and example.classification == "unsafe_live"
+        and {"--symbols", "--start", "--end", "--out", "--feed", "--source", "--window"}
+        <= example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and example.classification == "safe_preview"
+        and {
+            "--workspace-root",
+            "--source-dataset-root",
+            "--backup-root",
+            "--backup-id",
+            "--shard-size-mb",
+        }
+        <= example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "stratlake-build-features"
+        and example.classification == "unsafe_live"
+        and {"--timeframe", "--start", "--end", "--tickers", "--marketlake-root"}
+        <= example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "stratlake-session-export"
+        and example.classification == "dry_run"
+        and {
+            "--root",
+            "--drive-root",
+            "--include-features",
+            "--include-artifacts",
+            "--include-configs",
+            "--dry-run",
+        }
+        <= example.flag_names()
+        for example in report.examples
+    )
+    availability_only = {
+        "fintech-save-session",
+        "fintech-restore-session",
+        "stratlake-session-import",
+        "stratlake-session-archive-bootstrap",
+        "stratlake-session-archive-restore-bootstrap",
+    }
+    for command in availability_only:
+        assert all(example.command != command for example in report.examples)
+
+
+def test_notebook_06_command_source_values_are_pinned():
+    target = (
+        REPO_ROOT
+        / "notebooks"
+        / "06_stratlake_feature_validation_archive_and_handoff.ipynb"
+    )
+    notebook = json.loads(target.read_text(encoding="utf-8"))
+    source = "\n".join(
+        "".join(cell.get("source", []))
+        for cell in notebook.get("cells", [])
+        if isinstance(cell, dict)
+    )
+
+    assert "--start {START_DATE}" in source
+    assert "--end {END_DATE}" in source
+    assert 'START_DATE = "2025-01-01"' in source
+    assert 'END_DATE = "2025-04-01"' in source
+    assert 'TICKERS = ["AAPL", "MSFT", "NVDA"]' in source
+    assert "--feed iex" in source
+    assert "--source session_{FINTECH_SESSION_ID}" in source
+    assert "--window month" in source
+    assert "--timeframe 1D" in source
+    assert "--marketlake-root {MARKETLAKE_ROOT_STR}" in source
+    assert "--workspace-root {FINTECH_ROOT_STR}" in source
+    assert "--source-dataset-root {MARKETLAKE_ROOT_STR}" in source
+    assert "--backup-root {FINTECH_DRIVE_BACKUP_ROOT_STR}" in source
+    assert "--backup-id {FINTECH_ARCHIVE_ID}" in source
+    assert "--shard-size-mb 512" in source
+    assert "--backup-pack-dir {RESTORE_FINTECH_BACKUP_PACK_DIR_STR}" in source
+    assert "--restore-root {MARKETLAKE_ROOT_STR}" in source
+    assert "--overwrite-policy fail" in source
+    assert "!stratlake-session-export" in source
+    assert "--dry-run" in source
+    assert "optional_unverified_preview_commands" in source
+    assert "stratlake-session-archive-bootstrap" in source
+    assert "stratlake-session-archive-restore-bootstrap" in source
+
+
 def test_registry_validation_does_not_mutate_source_notebooks():
     targets = [
         REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb",
@@ -579,12 +709,13 @@ def test_registry_validation_does_not_mutate_source_notebooks():
         REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb",
         REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb",
         REPO_ROOT / "notebooks" / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+        REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb",
     ]
     before = {path: file_digest(path) for path in targets}
 
     report = cli_registry.validate_targets(targets, MODEL, SETTINGS)
 
-    assert report.targets_checked == 6
+    assert report.targets_checked == 7
     after = {path: file_digest(path) for path in targets}
     assert before == after
 
@@ -628,6 +759,23 @@ def test_validate_notebook_cli_registry_subprocess_smoke_notebook_05_only():
             sys.executable,
             str(REPO_ROOT / "scripts" / "validate_notebook_cli_registry.py"),
             "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+            "--config",
+            str(REPO_ROOT / "config" / "notebook_cli_registry.toml"),
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_validate_notebook_cli_registry_subprocess_smoke_notebook_06_only():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "validate_notebook_cli_registry.py"),
+            "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
             "--config",
             str(REPO_ROOT / "config" / "notebook_cli_registry.toml"),
         ],

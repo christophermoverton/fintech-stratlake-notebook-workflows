@@ -5,7 +5,8 @@ default_targets = [
   "notebooks/02_fintech_session_persistence_save_restore.ipynb",
   "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
   "notebooks/04_stratlake_feature_series_index_setup.ipynb",
-  "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+  "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
+  "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb"
 ]
 require_installed_commands = false
 allow_missing_commands = true
