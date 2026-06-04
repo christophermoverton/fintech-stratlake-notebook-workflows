@@ -142,6 +142,37 @@ M10.3 adds static, source-only test coverage for Notebook 07 command references,
 - Native strategy smoke success not claimed (deferred to M10.6)
 - Command-discovery candidates remain availability guidance only
 
+## M10.4 source-only readiness and sanitized validation scope
+
+M10.4 adds source-only readiness and sanitized notebook validation coverage for Notebook 07.
+
+**Primary test file**: `tests/test_notebook_07_source_readiness.py`
+
+**Config changes in M10.4**:
+- `config/notebook_test.toml`: NB07 added to `default_targets` so the shared execution-readiness harness covers it automatically
+- `config/notebook_test.toml`: `/content/drive/MyDrive/fintech-stratlake-tutorial` added to `forbidden_committed_path_fragments`
+
+**What M10.4 validates**:
+- Sanitized notebook metadata: no widget state, no Colab runtime metadata, no accelerator metadata, no cell-level execution timing metadata, no inline image/DataFrame outputs
+- Notebook identity: title phrases (Notebook 07, StratLake Feature Consumption, Baseline Research Smoke, Archive Checkpoint) present in source
+- Credential safety: Alpaca env-var names allowed; actual values not present; credentials prompted via `userdata.get()` or `getpass.getpass()` at runtime; notebook includes confirmation that values are not printed
+- Runtime artifact exclusions: all code-cell outputs empty; no MIME bundles committed
+- Execution-readiness boundaries: Drive mount guarded by `IN_COLAB`; backfill and feature build conditional on missing data or force flags; native smoke governed by `RUN_NATIVE_BASELINE_SMOKE` and `STRATEGIES_CONFIG.exists()`; fallback diagnostic conditional on native smoke not completing; archive and restore execution behind false-default boolean guards
+- Generic readiness config coverage: NB07 present in `notebook_test.toml` and hardcoded tutorial Drive path in forbidden fragments
+
+**Scope boundary**:
+- All checks are source-only and deterministic
+- No notebook cells are executed
+- No CLI commands are run
+- No live Colab, native strategy, archive, export, restore, package install, or credential success is claimed
+- Colab smoke validation remains deferred to M10.6
+
+## M10.4 completion stance
+
+`notebook_07_source_readiness_sanitized_validation_covered`
+
+---
+
 ## M10.2 completion stance
 
 `notebook_07_command_runtime_surfaces_classified`
@@ -153,3 +184,4 @@ boundaries, and repository source exclusions are documented in this file.
 
 No notebook cells were modified in M10.2. No generated runtime artifacts were committed.
 Colab smoke validation remains deferred to M10.6.
+
