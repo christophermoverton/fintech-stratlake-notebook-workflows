@@ -121,7 +121,7 @@ Other checklist commands have separate Notebook 05 surfaces:
 
 ### `fintech-backup-data pack`
 
-Notebook 05 still shows an older-looking pack preview/commented form:
+For historical contrast, this pre-M8.3 legacy pack preview/commented form is shown below:
 
 ```text
 fintech-backup-data pack
@@ -151,7 +151,7 @@ manual guidance only and is not executed by repository validation.
 
 ### `fintech-backup-data restore`
 
-Notebook 05 shows only a commented optional restore form:
+For historical contrast, this pre-M8.3 commented optional restore form is shown below:
 
 ```text
 fintech-backup-data restore
