@@ -238,7 +238,7 @@ def test_no_parquet_artifacts_in_outputs(code_cells: list) -> None:
     for i, cell in enumerate(code_cells):
         for output in cell.get("outputs", []):
             text = "".join(output.get("text", []))
-            assert ".parquet" not in text or "PARQUET" not in text.upper() or len(text) < 5, (
+            assert ".parquet" not in text.lower(), (
                 f"Code cell {i} output references a .parquet path. All outputs must be cleared."
             )
 
