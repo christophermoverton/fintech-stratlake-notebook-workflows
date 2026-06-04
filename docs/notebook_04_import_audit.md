@@ -176,10 +176,13 @@ claimed as part of the M7 import audit:
 - Repository validation did not generate StratLake feature data.
 - Repository validation did not produce any runtime artifacts.
 
-Manual Colab smoke testing remains `pending` for Notebook 04. The user-provided
-smoke-test evidence cited in M7.1 (the uploaded source notebook) confirms the core Colab
-workflow was smoke-tested before import; it does not constitute a fresh, recorded smoke
-pass against the committed repository source.
+Manual Colab smoke for Notebook 04 is recorded as `colab_smoke_passed_with_notes` in
+Issue #59. The captured run confirms the core setup workflow (package install, CLI
+availability, Drive mount, Fintech session init, `FINTECH_SESSION_ID` extraction,
+StratLake session init, `STRATLAKE_SESSION_ID` extraction, Drive path creation, and
+readiness check) but does not constitute a clean top-to-bottom `colab_smoke_passed`
+result. A clean rerun with `DRIVE_FOLDER_NAME` set exactly once and all cells executed
+in linear order remains optional future work.
 
 ## Notebook 05 Non-Implementation Note
 
