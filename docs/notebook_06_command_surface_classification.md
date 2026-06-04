@@ -51,9 +51,9 @@ M9.3 registry/contract checks.
 | `stratlake-session-archive-restore-bootstrap` | Verify optional/unverified preview commands | `shutil.which("stratlake-session-archive-restore-bootstrap")` | `availability_check_only`; `contract_mismatch_or_unverified` | Optional availability print only; must not hard-fail source validation | M9.2 split this out of the hard-failing required workflow command list. Upstream contract remains unverified. |
 | `fintech-init-project` | Initialize or reconnect the Fintech project session | `!fintech-init-project --root ... --notebooks --with-session --session-name ...` | `live_manual_runtime` | Eligible for static command-form coverage only; never execute in repo validation | Creates `/content` Fintech workspace/session manifest. |
 | `stratlake-init-session` | Initialize or reconnect the StratLake project session | `!stratlake-init-session --root ... --project-name ... --marketlake-root ... --drive-root ... --enable-drive-persistence --notebook-configs` | `live_manual_runtime` | Eligible for static command-form coverage only; never execute in repo validation | Preserves explicit `MARKETLAKE_ROOT` Fintech-to-StratLake handoff. |
-| `fintech-backup-data restore` | Optional restore Fintech curated data from Drive before API ingestion | Printed restore preview with `--root`, `--archive-id`, `--drive-root`, `--target-root`, `--copy-policy overwrite_allowed`, `--validate-after-copy`, `--inspect-after-copy` | `preview_manual_guidance`; `optional_commented_manual_restore`; `contract_mismatch_or_unverified` | Defer from M9.3 confirmed registry coverage unless corrected to registry-current syntax | Current registry-confirmed restore form uses `--backup-pack-dir`, `--restore-root`, and `--overwrite-policy`. |
+| `fintech-backup-data restore` | Optional restore Fintech curated data from Drive before API ingestion | M9.3-updated restore preview with `--backup-pack-dir`, `--restore-root`, and `--overwrite-policy fail` | `preview_manual_guidance`; `optional_commented_manual_restore` | Covered by static CLI contract/registry validation after M9.3 correction | M9.3 removed the stale `--root`/`--archive-id`/`--drive-root`/`--target-root`/`--copy-policy` preview form. |
 | `fintech-backfill-daily` | Ensure Q1 daily bars are available locally | Conditional `!fintech-backfill-daily --symbols ... --start 2025-01-01 --end 2025-04-01 --out ... --feed iex --source session_{FINTECH_SESSION_ID} --window month` | `live_manual_runtime_conditional` | Eligible for static command-form coverage only; unsafe for repository execution | Conditional daily-bars backfill is live manual runtime and unsafe for repository validation. |
-| `fintech-backup-data pack` | Optional archive the Fintech curated Q1 input | `subprocess.run(fintech_pack_cmd, check=True)` guarded by `CREATE_FINTECH_ARCHIVE = False`; command uses stale `--root`, `--dataset-root`, `--archive-id`, `--drive-root`, `--copy-policy`, validate/inspect flags | `preview_manual_guidance`; `contract_mismatch_or_unverified`; `notebook_python_runtime` | Defer from M9.3 confirmed registry coverage unless corrected to registry-current syntax | Current registry-confirmed pack form uses `--workspace-root`, `--source-dataset-root`, `--backup-root`, `--backup-id`, and `--shard-size-mb`. |
+| `fintech-backup-data pack` | Optional archive the Fintech curated Q1 input | `FINTECH_PACK_COMMAND_TEXT` guarded by `CREATE_FINTECH_ARCHIVE = False`; M9.3-updated preview uses `--workspace-root`, `--source-dataset-root`, `--backup-root`, `--backup-id`, and `--shard-size-mb` | `preview_manual_guidance`; `notebook_python_runtime` | Covered by static CLI contract/registry validation after M9.3 correction | `subprocess.run(...)` remains guarded and manual-only; repository validation parses but does not execute the command. |
 | `stratlake-build-features` | Ensure StratLake feature outputs are available | Conditional `!stratlake-build-features --timeframe 1D --start 2025-01-01 --end 2025-04-01 --tickers ... --marketlake-root ...` | `live_manual_runtime_conditional` | Eligible for static command-form coverage only; unsafe for repository execution | Conditional StratLake feature build is live manual runtime and unsafe for repository validation. |
 | `stratlake-session-export` | Preview StratLake session export | `!stratlake-session-export --root ... --drive-root ... --include-features --include-artifacts --include-configs --dry-run` | `live_manual_runtime_dry_run` | Eligible for static dry-run command-form coverage; never execute in source-only validation | Dry-run is still live manual runtime because it depends on runtime workspace and Drive paths. |
 | `stratlake-session-archive-bootstrap` | Optional archive the StratLake feature session | `subprocess.run(stratlake_archive_cmd, check=True)` guarded by `CREATE_STRATLAKE_ARCHIVE = False` | `preview_manual_guidance`; `contract_mismatch_or_unverified`; `notebook_python_runtime` | Defer from confirmed registry coverage until upstream verified | Preview remains manual guidance. Do not promote without verifying command existence, flags, and allowed values upstream. |
@@ -103,8 +103,8 @@ M9.3 registry/contract checks.
 
 ### Fintech backup command drift
 
-Notebook 06 currently retains older-looking `fintech-backup-data pack` and `restore`
-preview forms:
+Issue #70 found that Notebook 06 retained older-looking `fintech-backup-data pack` and
+`restore` preview forms:
 
 ```text
 fintech-backup-data pack
@@ -146,10 +146,20 @@ fintech-backup-data restore
   --overwrite-policy ...
 ```
 
-M9.2 decision: do not silently validate the stale Notebook 06 forms. They are classified
-as `contract_mismatch_or_unverified` and deferred from confirmed M9.3 registry coverage
-unless a later issue updates the notebook source to registry-current syntax with explicit
-documentation.
+M9.2 decision: do not silently validate the stale Notebook 06 forms. They were classified
+as `contract_mismatch_or_unverified` unless corrected.
+
+M9.3 resolution: Notebook 06 was updated to the registry-current backup-pack forms before
+adding static coverage:
+
+- `fintech-backup-data pack` now uses `--workspace-root`, `--source-dataset-root`,
+  `--backup-root`, `--backup-id`, and `--shard-size-mb`.
+- `fintech-backup-data restore` now uses `--backup-pack-dir`, `--restore-root`, and
+  `--overwrite-policy fail`.
+
+The corrected pack and restore previews are covered by static CLI contract/registry
+validation. They remain preview/manual guidance only and are not executed during
+repository validation.
 
 ### StratLake archive/bootstrap caution
 
@@ -177,17 +187,11 @@ support and source-only validation:
 - `fintech-backfill-daily`
 - `stratlake-build-features`
 - `stratlake-session-export --dry-run`
-- `fintech-backup-data pack` only if updated to registry-current syntax
-- `fintech-backup-data restore` only if updated to registry-current syntax
+- `fintech-backup-data pack` after M9.3 update to registry-current syntax
+- `fintech-backup-data restore` after M9.3 update to registry-current syntax
 
 Not eligible for confirmed M9.3 coverage unless corrected or upstream verified:
 
-- stale Notebook 06 `fintech-backup-data pack` form using `--root`, `--dataset-root`,
-  `--archive-id`, `--drive-root`, `--copy-policy`, `--validate-after-copy`, and
-  `--inspect-after-copy`
-- stale Notebook 06 `fintech-backup-data restore` form using `--root`, `--archive-id`,
-  `--drive-root`, `--target-root`, `--copy-policy`, `--validate-after-copy`, and
-  `--inspect-after-copy`
 - `stratlake-session-archive-bootstrap`
 - `stratlake-session-archive-restore-bootstrap`
 
