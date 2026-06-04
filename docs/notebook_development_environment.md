@@ -371,9 +371,19 @@ Native strategy smoke (`stratlake-run-strategy`) is the preferred validation pat
 remain preview/manual guidance. Their source presence is a reference check only; upstream
 contract verification is deferred.
 
-Manual Colab smoke for Notebook 07 is `colab_smoke_pending`. Colab smoke is deferred to
-M10.6 (Issue #82). Until M10.6 is recorded, do not claim native strategy smoke,
-archive/export/restore success, or live Colab runtime success for Notebook 07.
+Manual Colab smoke for Notebook 07 is `colab_smoke_passed_with_notes`. Issue #82
+recorded a manual Colab smoke run where native strategy smoke (`stratlake-run-strategy
+momentum_v1`) completed with return code 0 and QA status PASS, the fallback diagnostic
+was correctly skipped, padded daily-bars backfill (555 rows) and feature build (10 files)
+ran, and archive creation remained off. Caveats: non-blocking pip resolver warning;
+final-summary `q1_bars_rows_loaded: 0` normalization mismatch (daily-bar and feature data
+were correct); no native time-series artifact discovered; `RuntimeWarning` in native smoke
+stderr.
+
+The executed artifact contains outputs, session IDs, generated-data displays, and plot
+images. It must not be committed as repository source. Repository source remains
+output-free and execution-count-null. Archive/export/restore success is not claimed
+beyond dry-run/preview surfaces.
 
 ## Validation Layer Distinction
 

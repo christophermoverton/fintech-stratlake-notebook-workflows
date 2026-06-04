@@ -178,6 +178,30 @@ Passing source checks (no outputs, no secret patterns, clean metadata, readiness
 notebook artifact. Runtime success requires live execution in a Colab or local environment
 with installed packages, valid credentials, and available network access.
 
+## M10.6 manual Colab smoke note
+
+Issue #82 recorded a manual Colab smoke run as `colab_smoke_passed_with_notes`. The
+native strategy-smoke surface (`stratlake-run-strategy`) was exercised and completed with
+return code 0 and QA status PASS. The notebook-local fallback diagnostic was correctly
+skipped.
+
+Classification distinctions preserved after M10.6:
+
+- Native strategy smoke (`stratlake-run-strategy`) was exercised for `momentum_v1` in the
+  audited smoke run; it is not claimed as a general confirmed registry contract or a
+  formal backtest result.
+- `stratlake-session-archive-bootstrap` and `stratlake-session-archive-restore-bootstrap`
+  were not executed in the smoke run; they remain preview/manual guidance and their
+  upstream contracts remain unverified.
+- `stratlake-session-export --dry-run` was printed as a dry-run preview; no session
+  export artifact was created.
+- Archive creation remained off (`CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`).
+- `stratlake-backtest` and `stratlake-run-backtest` were not available in the Colab
+  environment.
+
+The executed artifact must not be committed. Repository source remains output-free and
+source-safe.
+
 ## Import audit cross-reference
 
 The full Notebook 07 import audit — including source notebook name, target path, cell

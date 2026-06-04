@@ -197,6 +197,38 @@ M10.5 creates the repository-facing documentation and audit layer for the Notebo
 
 ---
 
+## M10.6 manual Colab smoke status
+
+**Result:** `colab_smoke_passed_with_notes`
+
+Issue #82 audited an executed Notebook 07 artifact from a live Colab run.
+
+**Summary:**
+
+- Native StratLake strategy smoke (`stratlake-run-strategy --strategy momentum_v1`) returned exit code 0 with QA status PASS, 300 QA rows, 5 symbols, 44 trades.
+- Notebook-local fallback diagnostic was correctly skipped (`RUN_NOTEBOOK_LOCAL_FALLBACK_SMOKE = False`) because native smoke completed.
+- Padded daily-bars backfill ran for 5 symbols (555 total rows/files).
+- StratLake feature build ran (10 feature parquet files; 305 Q1 feature rows loaded).
+- Optional archive checkpoint remained off (`CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`); no archive was created.
+- Dry-run export preview printed; no export artifact was created.
+- Required config files present (`universe.yml`, `paths.yml`, `strategies.yml`).
+
+**Caveats retained:**
+
+- Non-blocking pip resolver warning for `toolz` / `ibis-framework`.
+- Final-summary `q1_bars_rows_loaded: 0` normalization mismatch (bar data and feature data correct).
+- No native time-series artifact discovered at the expected path; plot used summary metrics.
+- `RuntimeWarning` for `BuyAndHoldStrategy` in native smoke stderr (not the selected strategy; did not block completion).
+- `stratlake-backtest` and `stratlake-run-backtest` were not available in the environment.
+- Archive/restore/export success not claimed beyond preview/dry-run surfaces.
+- Executed artifact must not be committed.
+
+## M10.6 completion stance
+
+`notebook_07_colab_smoke_passed_with_notes`
+
+---
+
 ## M10.2 completion stance
 
 `notebook_07_command_runtime_surfaces_classified`

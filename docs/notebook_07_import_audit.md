@@ -22,7 +22,7 @@ StratLake sessions, run ingestion, build features, run native strategy smoke, ex
 fallback diagnostics, create archives, restore archives, inspect live runtime data, or
 mutate the source notebook.
 
-Manual Colab smoke status is `colab_smoke_pending`. Colab smoke is deferred to M10.6.
+Manual Colab smoke status is `colab_smoke_passed_with_notes`. Issue #82 recorded the smoke result from an executed artifact audit.
 
 ## Notebook Identity
 
@@ -47,7 +47,7 @@ Manual Colab smoke status is `colab_smoke_pending`. Colab smoke is deferred to M
   Sanitized Execution Coverage.
 - Documentation/audit issue: Issue #81 — M10.5 Update Notebook 07 Index, Import Audit,
   Staging Docs, and Development Docs.
-- Colab smoke issue: Issue #82 (planned) — M10.6 Colab Smoke Test Notebook 07.
+- Colab smoke issue: Issue #82 — M10.6 Colab Smoke Test Notebook 07 from Committed Source.
 - Source-cleaning commit: `f5617c103f2edd91f44d597c8328a7c7390b022f`.
 
 ## Import Status
@@ -56,8 +56,9 @@ Current audited status:
 
 - Import status: `imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`,
-  `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`.
-- Manual Colab smoke status: `colab_smoke_pending` (deferred to M10.6).
+  `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`,
+  `colab_smoke_passed_with_notes`.
+- Manual Colab smoke status: `colab_smoke_passed_with_notes`.
 - Merge-readiness status: not claimed; reserved for the Milestone 10 closeout path.
 
 ## Staging History
@@ -83,6 +84,8 @@ Milestone 10 staging facts:
   and execution-readiness boundary checks.
 - M10.5 records the import audit, staging classification updates, and
   index/development documentation.
+- M10.6 recorded the manual Colab smoke result as `colab_smoke_passed_with_notes` from
+  an executed artifact audit.
 
 No committed outputs, execution counts, Colab runtime metadata, generated data,
 archive/restore artifacts, feature files, session manifests, Drive folders, logs,
@@ -305,24 +308,124 @@ python -m pytest
 | Source-readiness/sanitized validation tests | 29 pytest tests | M10.4 |
 | Manual Colab smoke | Deferred | M10.6 |
 
+## M10.6 Manual Colab Smoke Result
+
+**Status:** `colab_smoke_passed_with_notes`
+
+An executed Colab Notebook 07 artifact was audited outside the repository as part of
+Issue #82. The artifact is smoke evidence only and must not be committed.
+
+### Output and execution summary
+
+| Property | Value |
+|---|---|
+| Total cells | 50 |
+| Code cells | 27 |
+| Executed code cells | 27 |
+| Code cells with outputs | 26 |
+| Error outputs | 0 |
+| Tracebacks in stream output | 0 |
+| Display outputs | Present (expected for executed artifact) |
+| Plot output | Present (expected for executed artifact) |
+
+### Runtime evidence
+
+- Package install cell ran. A non-blocking pip resolver warning appeared for
+  `toolz` / `ibis-framework`; the notebook completed successfully.
+- Google Drive mounted successfully at `/content/drive`.
+- `DRIVE_FOLDER_NAME` was manually configured as `TEST1`; Drive paths were created under
+  `/content/drive/MyDrive/TEST1`.
+- Fintech session initialized:
+  `FINTECH_SESSION_ID = session_20260604_205600_fintech_stratlake_input`
+- StratLake session initialized:
+  `STRATLAKE_SESSION_ID = stratlake_q1_feature_consumption`
+- Alpaca credential setup completed without printing key values; confirmation message was
+  displayed.
+- Required config files present: `configs/universe.yml`, `configs/paths.yml`,
+  `configs/strategies.yml`.
+- Initial Fintech curated daily-bar discovery found no local files; optional padded
+  daily-bars backfill ran.
+- Padded daily-bars backfill completed for five symbols over 2025-11-03 to 2026-04-15
+  (`AAPL`, `MSFT`, `NVDA`, `SPY`, `QQQ`); 555 total daily-bar rows reported; 555 daily-bar
+  parquet files generated.
+- Initial StratLake feature discovery found no feature parquet outputs; optional feature
+  build ran and completed.
+- Feature parquet files after optional build: 10.
+- Loaded feature sample shape: 555 × 16; Q1 feature rows loaded: 305.
+- Native StratLake strategy smoke executed:
+  ```
+  stratlake-run-strategy --strategies-config configs/strategies.yml \
+    --strategy momentum_v1 --start 2026-01-02 --end 2026-03-31
+  ```
+- Native smoke return code: 0.
+- Native smoke run ID: `momentum_v1_single_11cbb3e87db6`.
+- Native smoke QA status: PASS.
+- Native smoke QA rows: 300; QA symbols: 5; trades: 44; turnover: 0.15.
+- Native smoke cumulative return: -0.006464; Sharpe ratio: -0.144188.
+- Notebook-local fallback diagnostic was correctly skipped because native smoke completed
+  (`RUN_NOTEBOOK_LOCAL_FALLBACK_SMOKE = not native_smoke_completed` → `False`).
+- Strategy command discovery output:
+  - `stratlake-run-strategy`: available
+  - `stratlake-backtest`: not available
+  - `stratlake-run-backtest`: not available
+  - `python -m src.cli.run_strategy`: available
+  - `python -m src.cli.backtest`: available
+- Dry-run export cell printed the `stratlake-session-export --dry-run` command
+  (preview/dry-run only; no export artifact was created).
+- Optional StratLake archive checkpoint remained off:
+  `CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`; no archive was created.
+- Final handoff summary referenced Notebook 08 formal strategy/backtest artifacts.
+
+### Caveats and notes (why `passed_with_notes` rather than `passed`)
+
+1. Non-blocking pip resolver warning: `ibis-framework` expected `toolz<1`; `toolz 1.1.0`
+   was installed. Notebook completed successfully.
+2. Final summary reported `q1_bars_rows_loaded: 0` even though feature rows loaded
+   successfully and 555 daily-bar files were generated. This appears to be a daily-bar
+   sample normalization issue where the sampled bar frame did not expose both `symbol` and
+   `date` columns as expected. Native strategy smoke passed despite this caveat.
+3. No native strategy time-series artifact was discovered at the expected path; the plot
+   cell used native smoke summary metrics instead.
+4. Native smoke stderr included a `RuntimeWarning` around `BuyAndHoldStrategy` degenerate
+   behavior. The selected strategy (`momentum_v1`) still completed with return code 0 and
+   QA status PASS.
+5. `stratlake-backtest` and `stratlake-run-backtest` were not available in the Colab
+   environment. This is expected for the current package version.
+6. StratLake archive creation was not executed (`CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION
+   = False`).
+7. Restore commands remained preview-only; no archive existed to restore.
+8. `stratlake-session-export --dry-run` was printed as a dry-run preview; no session
+   export artifact was created.
+9. The executed artifact contains outputs, runtime paths, session IDs, generated-data
+   displays, and plot images; it must not be committed as repository source.
+
+### Non-committed artifact boundary
+
+The executed notebook artifact, generated daily-bar parquet files, generated feature
+parquet files, Drive folders, smoke-test plot images, native smoke output, runtime
+summaries, session manifests, and any credentials remain outside committed repository
+source. The committed source notebook remains output-free and execution-count-null.
+
 ## Explicit Non-Claims
 
 This audit does not claim that Notebook 07:
 
-- Has been smoke-tested in a live Colab environment (deferred to M10.6).
-- Has had packages installed successfully.
-- Has had Google Drive mounted successfully.
-- Has had Alpaca credentials validated.
-- Has run a successful daily-bars backfill.
-- Has run a successful StratLake feature build.
-- Has run native strategy smoke successfully.
-- Has produced fallback diagnostic outputs that are committed or treated as authoritative.
-- Has run a dry-run export successfully.
-- Has created, exported, or restored any archive.
-- Has produced any generated data, runtime artifacts, archive packs, or committed outputs.
-- Has confirmed upstream `stratlake-run-strategy`, `stratlake-session-archive-bootstrap`,
-  or `stratlake-session-archive-restore-bootstrap` contracts beyond their presence as
-  source references.
+- Has formal strategy/backtest correctness (native smoke is a smoke/QA check only).
+- Has formal strategy/backtest correctness established (native smoke is a QA/smoke check
+  only; it does not constitute a validated backtest or performance result).
+- Has created, exported, or restored an archive (archive creation remained
+  `CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`; restore remained preview-only).
+- Has produced a session export artifact (`stratlake-session-export --dry-run` was
+  printed as a dry-run preview; no export artifact was created).
+- Has produced fallback diagnostic outputs that are committed or treated as authoritative
+  (fallback was skipped because native smoke completed).
+- Has produced any committed generated data, runtime artifacts, archive packs, or
+  notebook outputs (all remain outside repository source).
+- Has confirmed upstream `stratlake-session-archive-bootstrap` or
+  `stratlake-session-archive-restore-bootstrap` contracts (commands were not executed in
+  the smoke run; upstream contracts remain unverified beyond source reference).
+- Has confirmed `stratlake-backtest` or `stratlake-run-backtest` availability (these were
+  not available in the Colab environment during the smoke run).
 
 ## Runtime and Manual Boundaries
 
