@@ -4,7 +4,8 @@ default_targets = [
   "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
   "notebooks/02_fintech_session_persistence_save_restore.ipynb",
   "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
-  "notebooks/04_stratlake_feature_series_index_setup.ipynb"
+  "notebooks/04_stratlake_feature_series_index_setup.ipynb",
+  "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
 ]
 require_installed_commands = false
 allow_missing_commands = true
@@ -65,3 +66,13 @@ optional_flags = [
 name = "stratlake-init-session"
 subcommands = []
 required_flags = ["--root", "--project-name", "--marketlake-root", "--drive-root", "--enable-drive-persistence", "--notebook-configs"]
+
+[[commands]]
+name = "stratlake-build-features"
+subcommands = []
+required_flags = ["--timeframe", "--start", "--end", "--tickers", "--marketlake-root"]
+
+[[commands]]
+name = "stratlake-session-export"
+subcommands = []
+required_flags = ["--root", "--drive-root", "--include-features", "--include-artifacts", "--include-configs", "--dry-run"]

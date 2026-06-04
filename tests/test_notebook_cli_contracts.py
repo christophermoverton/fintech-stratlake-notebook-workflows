@@ -204,6 +204,15 @@ def test_config_includes_notebook_04_target():
     assert "notebooks/04_stratlake_feature_series_index_setup.ipynb" in targets
 
 
+def test_config_includes_notebook_05_target():
+    targets = CONFIG["notebook_cli_contracts"]["default_targets"]
+
+    assert (
+        "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+        in targets
+    )
+
+
 def test_config_includes_stratlake_init_session_contract():
     contracts = cli_contracts.command_contracts(CONFIG)
 
@@ -255,6 +264,95 @@ def test_validator_accepts_notebook_02_contracts_without_installed_commands(monk
     )
     assert all(example.command != "fintech-save-session" for example in report.examples)
     assert all(example.command != "fintech-restore-session" for example in report.examples)
+    assert report.help_checks == 0
+    assert report.warnings
+    assert not report.findings
+
+
+def test_validator_accepts_notebook_05_contracts_without_installed_commands(monkeypatch):
+    monkeypatch.setattr(cli_contracts.shutil, "which", lambda _command: None)
+
+    report = cli_contracts.validate_targets(
+        [
+            REPO_ROOT
+            / "notebooks"
+            / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+        ],
+        CONFIG,
+    )
+
+    assert report.examples
+    assert any(
+        example.command == "fintech-init-project"
+        and example.source_kind == "shell"
+        and {"--root", "--notebooks", "--with-session", "--session-name"} <= example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "stratlake-init-session"
+        and example.source_kind == "shell"
+        and {
+            "--root",
+            "--project-name",
+            "--marketlake-root",
+            "--drive-root",
+            "--enable-drive-persistence",
+            "--notebook-configs",
+        }
+        <= example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backfill-daily"
+        and example.source_kind == "shell"
+        and {"--symbols", "--start", "--end", "--out", "--feed", "--source", "--window"}
+        <= example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "stratlake-build-features"
+        and example.source_kind == "shell"
+        and {"--timeframe", "--start", "--end", "--tickers", "--marketlake-root"}
+        <= example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "stratlake-session-export"
+        and example.source_kind == "shell"
+        and {
+            "--root",
+            "--drive-root",
+            "--include-features",
+            "--include-artifacts",
+            "--include-configs",
+            "--dry-run",
+        }
+        <= example.flags
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backup-data"
+        and example.subcommand == "pack"
+        and example.source_kind == "preview"
+        and {
+            "--workspace-root",
+            "--source-dataset-root",
+            "--backup-root",
+            "--backup-id",
+            "--shard-size-mb",
+        }
+        <= example.flags
+        for example in report.examples
+    )
+    availability_only = {
+        "fintech-save-session",
+        "fintech-restore-session",
+        "stratlake-session-import",
+        "stratlake-session-archive-bootstrap",
+        "stratlake-session-archive-restore-bootstrap",
+    }
+    for command in availability_only:
+        assert all(example.command != command for example in report.examples)
     assert report.help_checks == 0
     assert report.warnings
     assert not report.findings
@@ -333,7 +431,9 @@ def test_notebook_02_dry_run_examples_are_not_executed(monkeypatch):
                 "--shard-size-mb --target-dataset-root --backup-pack-dir "
                 "--restore-root --overwrite-policy inspect "
                 "--project-name --marketlake-root --drive-root "
-                "--enable-drive-persistence --notebook-configs"
+                "--enable-drive-persistence --notebook-configs "
+                "--timeframe --tickers --include-features --include-artifacts "
+                "--include-configs"
             ),
             stderr="",
         )
