@@ -4,7 +4,7 @@
 
 This document records the M8.2 command-surface classification for
 `notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb`
-before Notebook 05 CLI contract and registry coverage is added in M8.3.
+and records the post-M8.3 status of Notebook 05 CLI contract and registry coverage.
 
 Notebook 05 is the first imported notebook in the series that performs live Fintech
 daily-bars ingestion and live StratLake feature generation in a manual Colab runtime.
@@ -62,7 +62,7 @@ only inspect source, notebook hygiene, and static command forms.
 
 ## Command Classification Table
 
-| Command / surface | Source location / section | Observed form | Classification | Live in Notebook 05? | Side effects | Registry / contract action for M8.3 | Notes / blockers |
+| Command / surface | Source location / section | Observed form | Classification | Live in Notebook 05? | Side effects | Registry / contract status | Notes / blockers |
 |---|---|---|---|---|---|---|---|
 | `pip install pandas-market-calendars` | Cell `729b15e6`; Install required presentation packages | `!pip install "pandas-market-calendars>=5.0"` | `live_manual_runtime` | Yes, manual Colab only | Installs package into runtime | Keep ignored by registry validators; repository validation skips package install | Network/package install; not a repo validation command. |
 | `pip install fintech-market-ingestion` | Cell `729b15e6`; Install required presentation packages | `!pip install -i https://test.pypi.org/simple/ fintech-market-ingestion` | `live_manual_runtime` | Yes, manual Colab only | Installs upstream Fintech CLI package | Keep ignored by registry validators; repository validation skips package install | Network/package install; version surface is not validated here. |
@@ -90,8 +90,8 @@ only inspect source, notebook hygiene, and static command forms.
 | `stratlake-build-features` | Cell `ad8ee301`; Build Q1 daily features with StratLake | `!stratlake-build-features --timeframe 1D --start 2025-01-01 --end 2025-04-01 --tickers ... --marketlake-root ...` | `live_manual_runtime` | Yes | Generates StratLake feature outputs under `/content` StratLake workspace | Add NB05 live command coverage; verify upstream flags and `1D` timeframe value | First live feature-generation command in imported series; never repository validation. |
 | Generated feature parquet inspection | Cell `a566d607`; Inspect generated StratLake feature files | `(STRATLAKE_ROOT / "data").rglob("*.parquet")` | `notebook_python_runtime` | Yes, after feature build | Reads generated feature outputs | No CLI registry action | Runtime output inspection only; generated files must stay out of Git. |
 | `stratlake-session-export --dry-run` | Cell `773f1d97`; Optional: export the feature session snapshot to Drive | `!stratlake-session-export --root ... --drive-root ... --include-features --include-artifacts --include-configs --dry-run` | `live_manual_runtime_dry_run` | Yes, dry-run only | Should preview export plan without writing export payload | Add NB05 dry-run command coverage; verify flags and boolean/value semantics | Notebook 05 does not run a live export; only dry-run is source-visible. |
-| `stratlake-session-archive-bootstrap` preview string | Cell `un9-BO0hx8gw`; Optional: archive the StratLake feature session | Printed f-string with `--root`, `--archive-id`, `--archive-collision-policy overwrite_allowed`, `--drive-root`, `--copy-policy overwrite_allowed`, include/validate/inspect flags | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | Prints archive preview only | M8.3 must verify command existence, flags, and allowed values before registry coverage | StratLake archive command remains unverified in current registry. |
-| `stratlake-session-archive-restore-bootstrap` preview string | Cell `un9-BO0hx8gw`; Optional: archive the StratLake feature session | Printed f-string with `--root`, `--archive-id`, `--drive-root`, `--copy-policy overwrite_allowed`, include/validate/inspect flags | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | Prints restore preview only | M8.3 must verify command existence, flags, and allowed values before registry coverage | Restore preview only; not live Notebook 05 execution. |
+| `stratlake-session-archive-bootstrap` preview string | Cell `un9-BO0hx8gw`; Optional: archive the StratLake feature session | Printed f-string with `--root`, `--archive-id`, `--archive-collision-policy overwrite_allowed`, `--drive-root`, `--copy-policy overwrite_allowed`, include/validate/inspect flags | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | Prints archive preview only | Deferred pending command existence, flags, and allowed value verification before registry coverage | StratLake archive command remains unverified in current registry. |
+| `stratlake-session-archive-restore-bootstrap` preview string | Cell `un9-BO0hx8gw`; Optional: archive the StratLake feature session | Printed f-string with `--root`, `--archive-id`, `--drive-root`, `--copy-policy overwrite_allowed`, include/validate/inspect flags | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | Prints restore preview only | Deferred pending command existence, flags, and allowed value verification before registry coverage | Restore preview only; not live Notebook 05 execution. |
 | Optional commented `stratlake-session-archive-bootstrap` | Cell `un9-BO0hx8gw`; Optional: archive the StratLake feature session | Commented `# !stratlake-session-archive-bootstrap ...` | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | None unless user manually uncomments in Colab | Keep manual guidance unless intentionally promoted in a future issue | Would create archive artifacts if uncommented; not repository validation. |
 
 ## Availability-Check-Only Commands
@@ -100,7 +100,7 @@ The following commands appear in the `required_commands` checklist in cell `f36c
 Checklist presence means only that the notebook expects them to be installed in the
 manual Colab runtime. It does not make them live Notebook 05 execution.
 
-| Command | Notebook 05 status | M8.3 action |
+| Command | Notebook 05 status | Post-M8.3 status |
 |---|---|---|
 | `fintech-save-session` | `availability_check_only` | Keep out of live NB05 scope unless a separate source-visible command is added. |
 | `fintech-restore-session` | `availability_check_only` | Keep excluded from backup-pack restore path; do not reintroduce as valid restore syntax for NB05. |
@@ -201,27 +201,20 @@ Issue #63 completed the following:
 - Deferred StratLake archive/bootstrap preview validation until upstream command flags are
   verified.
 
-## M8.3 Handoff
+## Post-M8.3 Follow-up
 
-Issue #63 should:
+Remaining follow-up after M8.3:
 
-- Add CLI contract/registry coverage for source-visible live Notebook 05 commands.
-- Add Notebook 05 to CLI contract and registry default targets only after command shapes are resolved.
-- Validate source shape for `fintech-init-project` in Notebook 05 and extend `confirmed_from` if unchanged.
-- Validate source shape for `stratlake-init-session` in Notebook 05, preserving `--marketlake-root`.
-- Validate source shape for `fintech-backfill-daily`, including `--symbols`, `--start 2025-01-01`, `--end 2025-04-01`, `--out`, `--feed iex`, `--source session_{FINTECH_SESSION_ID}`, and `--window month`.
-- Validate source shape for `stratlake-build-features`, including `--timeframe 1D`, the Q1 date window, `--tickers`, and `--marketlake-root`.
-- Validate source shape for `stratlake-session-export --dry-run` and keep it classified as dry-run only.
 - Maintain `fintech-backup-data pack` and commented restore guidance on the registry-confirmed flag forms.
-- Confirm `stratlake-session-archive-bootstrap` flags, including archive collision/copy policy values and include/validate/inspect flags.
-- Confirm `stratlake-session-archive-restore-bootstrap` flags and policy values.
+- Confirm `stratlake-session-archive-bootstrap` flags, including archive collision/copy policy values and include/validate/inspect flags, before promoting those previews into confirmed registry coverage.
+- Confirm `stratlake-session-archive-restore-bootstrap` flags and policy values before promoting those previews into confirmed registry coverage.
 - Keep availability-check-only commands out of live Notebook 05 command scope.
 - Keep commented restore/archive examples classified as manual guidance unless intentionally promoted.
 - Keep repository validation non-executing for package install, Drive, credentials, ingestion, feature generation, export, archive, restore, and runtime data inspection.
 
 ## Non-Claims
 
-M8.2 did not:
+This source classification did not:
 
 - run any Notebook 05 CLI command,
 - install packages,
@@ -233,7 +226,7 @@ M8.2 did not:
 - create archives,
 - restore archives,
 - validate live Colab runtime behavior,
-- update Notebook 05 CLI registry or contract configs,
 - claim manual Colab smoke success.
 
-This document is a source classification and M8.3 handoff only.
+This document is a source classification record and post-M8.3 follow-up note. Manual
+Colab smoke remains outside its scope.

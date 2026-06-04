@@ -53,6 +53,7 @@ python scripts/validate_notebook_cli_registry.py --config config/notebook_cli_re
 python scripts/validate_notebook_cli_registry.py notebooks/02_fintech_session_persistence_save_restore.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_backup_pack_and_restore.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/04_stratlake_feature_series_index_setup.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
@@ -84,6 +85,7 @@ notebooks/01_fintech_daily_bars_extraction_backfill.ipynb
 notebooks/02_fintech_session_persistence_save_restore.ipynb
 notebooks/03_fintech_archive_backup_pack_and_restore.ipynb
 notebooks/04_stratlake_feature_series_index_setup.ipynb
+notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb
 ```
 
 ## Pytest Notebook Execution Harness
@@ -153,6 +155,12 @@ Optional focused Notebook 04 check:
 python scripts/validate_notebook_cli_registry.py notebooks/04_stratlake_feature_series_index_setup.ipynb --config config/notebook_cli_registry.toml
 ```
 
+Optional focused Notebook 05 check:
+
+```bash
+python scripts/validate_notebook_cli_registry.py notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb --config config/notebook_cli_registry.toml
+```
+
 The registry validator checks command and subcommand identity plus argument semantics against `config/cli_command_registry.toml` and `config/notebook_cli_registry.toml`. It validates supported versus unsupported flags, boolean flags receiving values, value flags missing values, constrained `allowed_values`, `argparse_required`, `notebook_contract_required`, and conditional `required_when` behavior. It also rejects excluded command candidates, including `fintech-restore-session`, when they appear as valid current notebook syntax.
 
 Like the other repository-side validators, it is non-executing and does not run upstream CLI workflows.
@@ -193,7 +201,42 @@ These operations remain manual Colab-only. The `FINTECH_SESSION_ID`, `STRATLAKE_
 
 The `fintech-backup-data pack` and `fintech-backup-data restore` preview strings in Notebook 04 use registry-confirmed flag shapes (updated in M7.3). They are printed as human-readable guidance only; they are never executed by repository validation.
 
-Notebook 05 (StratLake Q1 feature data generation) is future tutorial continuity only and is not yet imported or implemented.
+## Notebook 05 Runtime Boundary
+
+Notebook 05 (`notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb`) is a manual Colab workflow for live Q1 Fintech daily-bars ingestion and downstream StratLake feature generation. It keeps the Notebook 04 dual-session pattern:
+
+```text
+FINTECH_SESSION_ID   -> upstream ingestion / curated-data workspace
+STRATLAKE_SESSION_ID -> downstream feature/research workspace
+MARKETLAKE_ROOT      -> explicit Fintech-to-StratLake curated-data handoff
+```
+
+Repository validation for Notebook 05 uses source-only readiness, CLI contract/registry validation, and sanitized execution. It does **not**:
+
+- Install packages from TestPyPI or PyPI.
+- Mount Google Drive.
+- Prompt for or read Alpaca credentials.
+- Call Alpaca.
+- Run `fintech-init-project` or `stratlake-init-session`.
+- Run `fintech-backfill-daily`.
+- Run `stratlake-build-features`.
+- Run `stratlake-session-export`.
+- Create Drive session folders or archive directories.
+- Write runtime ticker/config files.
+- Create daily bars directories.
+- Inspect generated daily bars or generated feature outputs.
+- Create, export, restore, or inspect archives.
+- Mutate the Notebook 05 source file.
+
+These operations remain manual Colab-only. Alpaca credentials should be handled only
+through Colab Secrets or a hidden prompt in manual runtime, never committed or printed.
+Google Drive remains persistence/archive/session storage only; active app work stays
+under `/content`.
+
+Notebook 05 preserves `FINTECH_SESSION_ID`, `STRATLAKE_SESSION_ID`, `MARKETLAKE_ROOT`,
+the Q1 window `2025-01-01` to `2025-04-01`, `fintech-backfill-daily`,
+`stratlake-build-features`, and `stratlake-session-export --dry-run` as source-visible
+workflow guidance. Manual Colab smoke remains `colab_smoke_pending`.
 
 ## Manual Colab Smoke Testing
 
@@ -227,6 +270,7 @@ The harness does not execute notebooks. It also skips cells that should not be l
 - Artifact-producing or upstream command cells.
 - Notebook 03 archive backup-pack cells that create demo files, create backup packs, validate or inspect runtime backup packs, restore data, or inspect restored files.
 - Notebook 04 cells that install packages, mount Google Drive, run `fintech-init-project`, run `stratlake-init-session`, create Drive session folders, enumerate Drive sessions, inspect `MARKETLAKE_ROOT`, or construct archive/restore command previews from runtime-derived session variables.
+- Notebook 05 cells that install packages, mount Google Drive, read Alpaca credentials, run `fintech-init-project`, run `stratlake-init-session`, run `fintech-backfill-daily`, run `stratlake-build-features`, run `stratlake-session-export`, create Drive folders, write ticker/config files, create daily-bars directories, inspect generated data, mutate `os.chdir(...)`, or construct archive/export/restore previews from runtime-derived variables.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 
@@ -240,7 +284,10 @@ The harness does not:
 - Prompt for credentials.
 - Install packages.
 - Run market-data ingestion.
+- Call Alpaca.
+- Generate daily bars.
 - Run archive or restore commands.
+- Export sessions.
 - Create demo `.parquet` placeholder files.
 - Validate or inspect runtime backup packs.
 - Run StratLake feature generation, strategy execution, backtests, or artifact generation.
