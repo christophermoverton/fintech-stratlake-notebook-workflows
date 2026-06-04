@@ -28,7 +28,7 @@ source-only and sanitized.
 | Relationship to Notebook 05 | Forward orientation only; Notebook 05 is not yet imported |
 | Staging category | `needs_cleanup` before import; `source_safe_after_cleanup` after Issue #53 |
 | Import status | `imported` after Issue #53 |
-| Manual Colab smoke status | `colab_smoke_pending` |
+| Manual Colab smoke status | `colab_smoke_passed_with_notes` |
 
 ## Source Review Facts
 
