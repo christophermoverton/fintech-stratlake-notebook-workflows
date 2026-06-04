@@ -306,7 +306,7 @@ python -m pytest
 | Command/runtime surface classification | Documented | M10.2 |
 | Static CLI/source invariant tests | 91 pytest tests | M10.3 |
 | Source-readiness/sanitized validation tests | 29 pytest tests | M10.4 |
-| Manual Colab smoke | Deferred | M10.6 |
+| Manual Colab smoke | Passed with notes | M10.6 |
 
 ## M10.6 Manual Colab Smoke Result
 
@@ -410,7 +410,6 @@ source. The committed source notebook remains output-free and execution-count-nu
 
 This audit does not claim that Notebook 07:
 
-- Has formal strategy/backtest correctness (native smoke is a smoke/QA check only).
 - Has formal strategy/backtest correctness established (native smoke is a QA/smoke check
   only; it does not constitute a validated backtest or performance result).
 - Has created, exported, or restored an archive (archive creation remained
@@ -487,6 +486,13 @@ Notebook 07 does not implement formal backtesting. The fallback diagnostic is la
 `notebook_local_fallback_diagnostic` / `feature_rank_fallback` and must not be treated as
 authoritative strategy output. Formal strategy/backtest artifacts and authoritative
 performance results belong in Notebook 08.
+
+## M10.7 Closeout Reference
+
+M10.7 (Issue #83) records the final merge-readiness status in
+`docs/milestone_10_merge_readiness.md`. That document consolidates the full M10 issue
+trail, commit trail, validation evidence, smoke result, caveats, non-claims, and
+merge-readiness decision.
 
 ## Completion Stance
 

@@ -229,6 +229,25 @@ Issue #82 audited an executed Notebook 07 artifact from a live Colab run.
 
 ---
 
+## M10.7 merge readiness
+
+M10.7 (Issue #83) records the final Milestone 10 merge-readiness closeout.
+
+**Final decision:** `ready_for_review_or_merge_with_notes`
+
+**Merge-readiness doc:** `docs/milestone_10_merge_readiness.md`
+
+All M10 source-only validation, static CLI/source invariant coverage, source-readiness/sanitized
+validation, documentation, and manual Colab smoke testing are complete. The smoke caveats are
+documented and non-blocking for M10 import merge. Repository source is clean, output-free, and
+free of runtime artifacts. Notebook 08 formal strategy/backtest work is deferred.
+
+## M10.7 completion stance
+
+`notebook_07_merge_ready_with_smoke_notes`
+
+---
+
 ## M10.2 completion stance
 
 `notebook_07_command_runtime_surfaces_classified`
