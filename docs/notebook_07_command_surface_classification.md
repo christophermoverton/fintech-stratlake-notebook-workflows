@@ -177,3 +177,17 @@ Passing source checks (no outputs, no secret patterns, clean metadata, readiness
 **not** mean that live Colab runtime has succeeded. Source checks validate the committed
 notebook artifact. Runtime success requires live execution in a Colab or local environment
 with installed packages, valid credentials, and available network access.
+
+## Import audit cross-reference
+
+The full Notebook 07 import audit — including source notebook name, target path, cell
+counts, cleaning decisions, workflow sections, source-safe defaults, preserved invariants,
+command-surface summary, test/validation coverage, and explicit non-claims — is recorded in
+[docs/notebook_07_import_audit.md](notebook_07_import_audit.md).
+
+For notebook index status and Colab smoke status, see
+[docs/notebook_index.md](notebook_index.md).
+
+For Notebook 07 runtime/development notes including the execution boundary and what
+repository validation does and does not cover, see
+[docs/notebook_development_environment.md](notebook_development_environment.md).

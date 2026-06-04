@@ -55,6 +55,7 @@ python scripts/validate_notebook_cli_registry.py notebooks/03_fintech_archive_ba
 python scripts/validate_notebook_cli_registry.py notebooks/04_stratlake_feature_series_index_setup.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb --config config/notebook_cli_registry.toml
+python scripts/validate_notebook_cli_registry.py notebooks/07_stratlake_feature_consumption_baseline_research.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
@@ -88,6 +89,7 @@ notebooks/03_fintech_archive_backup_pack_and_restore.ipynb
 notebooks/04_stratlake_feature_series_index_setup.ipynb
 notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb
 notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb
+notebooks/07_stratlake_feature_consumption_baseline_research.ipynb
 ```
 
 ## Pytest Notebook Execution Harness
@@ -167,6 +169,12 @@ Optional focused Notebook 06 check:
 
 ```bash
 python scripts/validate_notebook_cli_registry.py notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb --config config/notebook_cli_registry.toml
+```
+
+Optional focused Notebook 07 check:
+
+```bash
+python scripts/validate_notebook_cli_registry.py notebooks/07_stratlake_feature_consumption_baseline_research.ipynb --config config/notebook_cli_registry.toml
 ```
 
 The registry validator checks command and subcommand identity plus argument semantics against `config/cli_command_registry.toml` and `config/notebook_cli_registry.toml`. It validates supported versus unsupported flags, boolean flags receiving values, value flags missing values, constrained `allowed_values`, `argparse_required`, `notebook_contract_required`, and conditional `required_when` behavior. It also rejects excluded command candidates, including `fintech-restore-session`, when they appear as valid current notebook syntax.
@@ -301,6 +309,72 @@ Sanitized execution is conservative and validates source structure, source invar
 and skip behavior. It does not prove live Colab runtime behavior. Manual Colab smoke
 for Notebook 06 is `colab_smoke_passed_with_notes` (recorded in Issue #74).
 
+## Notebook 07 Runtime Boundary
+
+Notebook 07 (`notebooks/07_stratlake_feature_consumption_baseline_research.ipynb`) is a
+feature-consumption, baseline research-smoke, native strategy-smoke, archive-checkpoint
+preview, and Notebook 08 handoff notebook after Notebook 06. It is not a formal backtest
+notebook, strategy framework notebook, or authoritative performance notebook. It keeps
+the dual-session pattern:
+
+```text
+FINTECH_SESSION_NAME   -> upstream ingestion / curated-data session
+STRATLAKE_SESSION_NAME -> downstream feature/research session
+MARKETLAKE_ROOT        -> explicit Fintech-to-StratLake curated-data handoff
+```
+
+Active Colab runtime work belongs under `/content`. Google Drive is persistence, archive,
+and session storage only. Google Drive must not become the active app workspace.
+
+Users must set `DRIVE_FOLDER_NAME` before creating Drive folders. The committed source
+uses `DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"` as a placeholder and guards
+Drive folder creation with a `raise ValueError`.
+
+Alpaca credentials are runtime-only. They must be provided through Colab Secrets
+(`userdata.get(...)`) or a hidden prompt (`getpass.getpass(...)`) in manual runtime.
+They must never be committed or printed. The notebook includes a confirmation message:
+`ALPACA_API_KEY_ID and ALPACA_API_SECRET_KEY are set but not printed.`
+
+Repository validation for Notebook 07 uses source-only readiness (M10.4) and static
+CLI/source invariant tests (M10.3). It does **not**:
+
+- Install packages from TestPyPI or PyPI.
+- Mount Google Drive.
+- Prompt for or read Alpaca credentials.
+- Call Alpaca.
+- Run `fintech-init-project` or `stratlake-init-session`.
+- Create Drive session/archive folders.
+- Write runtime ticker/config files.
+- Run `fintech-backfill-daily`.
+- Run `stratlake-build-features`.
+- Run native strategy smoke (`stratlake-run-strategy`).
+- Execute the notebook-local fallback diagnostic.
+- Display smoke-test plots.
+- Run `stratlake-session-export --dry-run`.
+- Execute `subprocess.run(...)` for archive/restore.
+- Inspect generated daily bars or feature outputs.
+- Create, export, restore, or inspect archives.
+- Construct the final JSON handoff summary from runtime-derived values.
+- Mutate the Notebook 07 source file.
+
+These operations remain manual Colab-only. Optional actions guarded by false-default
+booleans (`CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION`, `RESTORE_FINTECH_ARCHIVE`,
+`RESTORE_STRATLAKE_ARCHIVE`, `FORCE_DAILY_BARS_BACKFILL`, `FORCE_FEATURE_BUILD`) are
+preview/manual only and are never triggered by repository validation.
+
+Native strategy smoke (`stratlake-run-strategy`) is the preferred validation path when
+`STRATEGIES_CONFIG.exists()`. The fallback diagnostic (`notebook_local_fallback_diagnostic` /
+`feature_rank_fallback`) is secondary and non-authoritative; it runs only when
+`RUN_NOTEBOOK_LOCAL_FALLBACK_SMOKE = not native_smoke_completed`.
+
+`stratlake-session-archive-bootstrap` and `stratlake-session-archive-restore-bootstrap`
+remain preview/manual guidance. Their source presence is a reference check only; upstream
+contract verification is deferred.
+
+Manual Colab smoke for Notebook 07 is `colab_smoke_pending`. Colab smoke is deferred to
+M10.6 (Issue #82). Until M10.6 is recorded, do not claim native strategy smoke,
+archive/export/restore success, or live Colab runtime success for Notebook 07.
+
 ## Validation Layer Distinction
 
 Repository validation for source notebooks operates at four distinct layers:
@@ -363,6 +437,16 @@ The harness does not execute notebooks. It also skips cells that should not be l
 - Notebook 04 cells that install packages, mount Google Drive, run `fintech-init-project`, run `stratlake-init-session`, create Drive session folders, enumerate Drive sessions, inspect `MARKETLAKE_ROOT`, or construct archive/restore command previews from runtime-derived session variables.
 - Notebook 05 cells that install packages, mount Google Drive, read Alpaca credentials, run `fintech-init-project`, run `stratlake-init-session`, run `fintech-backfill-daily`, run `stratlake-build-features`, run `stratlake-session-export`, create Drive folders, write ticker/config files, create daily-bars directories, inspect generated data, mutate `os.chdir(...)`, or construct archive/export/restore previews from runtime-derived variables.
 - Notebook 06 cells that install packages, mount Google Drive, read Alpaca credentials, run `fintech-init-project`, run `stratlake-init-session`, run `fintech-backfill-daily`, run `stratlake-build-features`, run `stratlake-session-export --dry-run`, call `subprocess.run(...)` for archive/restore, create Drive session/archive folders, write ticker/config files, inspect generated daily bars or feature outputs (`pd.read_parquet(...)`, `rglob("*.parquet")`), call `display(...)`, construct archive/restore previews from runtime-derived session paths, check CLI availability via `required_workflow_commands` (which raises `RuntimeError` when CLIs are absent), or construct the final JSON handoff summary from runtime-derived values.
+- Notebook 07 cells that install packages, mount Google Drive (`drive.mount(...)`), read
+  Alpaca credentials (`userdata.get(...)`, `getpass.getpass(...)`), run
+  `fintech-init-project`, run `stratlake-init-session`, run `fintech-backfill-daily`,
+  run `stratlake-build-features`, run native strategy smoke (`stratlake-run-strategy`),
+  run notebook-local fallback diagnostic, display smoke-test plots, run
+  `stratlake-session-export --dry-run`, call `subprocess.run(...)` for archive/restore,
+  create Drive session/archive folders, write ticker/config files, inspect generated
+  daily bars or feature outputs, construct archive/bootstrap/restore previews from
+  runtime-derived session paths, or construct the final JSON handoff summary from
+  runtime-derived values.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 

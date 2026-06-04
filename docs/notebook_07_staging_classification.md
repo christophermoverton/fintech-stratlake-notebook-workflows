@@ -173,6 +173,30 @@ M10.4 adds source-only readiness and sanitized notebook validation coverage for 
 
 ---
 
+## M10.5 documentation and audit scope
+
+M10.5 creates the repository-facing documentation and audit layer for the Notebook 07 import.
+
+**Files created or updated in M10.5**:
+- `docs/notebook_07_import_audit.md` — full import audit (source notebook name, target path, cell counts, cleaning decisions, workflow sections, source-safe defaults, preserved invariants, command-surface summary, test/validation coverage, non-claims, runtime boundaries).
+- `docs/notebook_index.md` — Notebook 07 row added; audit cross-references updated.
+- `docs/notebook_development_environment.md` — Notebook 07 runtime boundary section added; static check commands, readiness config target list, and skipped-cells list updated.
+- `README.md` — Notebook 07 added to workflow sequence with conservative description and no live smoke claim.
+- `docs/notebook_07_staging_classification.md` (this file) — M10.5 scope recorded.
+
+**Scope boundary**:
+- No notebook source changes were made.
+- No notebook cells were executed.
+- No generated outputs, plots, data, archives, restored files, or credentials were added.
+- Live Colab, native strategy smoke, archive/export/restore success are not claimed.
+- Colab smoke remains deferred to M10.6.
+
+## M10.5 completion stance
+
+`notebook_07_import_documented_source_safe`
+
+---
+
 ## M10.2 completion stance
 
 `notebook_07_command_runtime_surfaces_classified`
