@@ -17,7 +17,7 @@ mount Google Drive, prompt for or read credentials, call Alpaca, initialize Fint
 StratLake sessions, run ingestion, build features, export sessions, create archives,
 restore archives, inspect live runtime data, or mutate the source notebook.
 
-Manual Colab smoke is recorded as `colab_smoke_pending`.
+Manual Colab smoke is recorded as `colab_smoke_passed_with_notes`.
 
 ## Notebook Identity
 
@@ -38,8 +38,8 @@ Manual Colab smoke is recorded as `colab_smoke_pending`.
 Current audited status:
 
 - Import status: `imported`.
-- Validation status: `cleaned`, `static_validated`, `readiness_validated`, `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`, `colab_smoke_pending`.
-- Manual Colab smoke status: `colab_smoke_pending`.
+- Validation status: `cleaned`, `static_validated`, `readiness_validated`, `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`, `colab_smoke_passed_with_notes`.
+- Manual Colab smoke status: `colab_smoke_passed_with_notes`.
 - Merge-readiness status: not claimed; reserved for the Milestone 8 closeout path.
 
 ## Staging History
@@ -59,8 +59,9 @@ Milestone 8 staging facts:
 - M8.3 added CLI contract and registry coverage for source-visible live and dry-run command forms.
 - M8.4 added Notebook 05 to source-only readiness and sanitized execution coverage.
 - M8.5 records the import audit, staging classification, and index/development documentation.
-- M8.6 did not perform a live Colab smoke run in this repository session, so the smoke
-  status remains `colab_smoke_pending`.
+- M8.6 recorded an uploaded executed Colab-returned Notebook 05 smoke artifact as
+  `colab_smoke_passed_with_notes`. The executed artifact is smoke evidence only and is
+  not committed as repository source.
 
 No committed outputs, execution counts, Colab runtime metadata, generated data,
 archive/restore artifacts, feature files, session manifests, Drive folders, logs,
@@ -207,35 +208,90 @@ The repository-side validation stack for Notebook 05 passed during M8.4/M8.5/M8.
 
 These are source-only repository checks. They are not manual Colab smoke evidence.
 
-## Manual Colab Smoke Result (Issue #66)
+## Manual Colab Smoke Record (Issue #66)
 
-**Final status: `colab_smoke_pending`**
+**Final status: `colab_smoke_passed_with_notes`**
 
-No live Google Colab smoke run was performed for Issue #66 in this repository session.
-The committed Notebook 05 source was not run in Colab, Google Drive was not mounted,
-Alpaca credentials were not read, and no live Fintech or StratLake CLI workflow was
-executed.
+An uploaded executed Colab-returned Notebook 05 artifact was reviewed for Issue #66.
+That artifact showed a successful live Colab run of the core Notebook 05 workflow while
+also containing outputs, non-null execution counts, and Colab metadata. It is smoke
+evidence only. The cleaned repository source notebook remains unchanged and must stay
+output-free.
 
 Smoke-test metadata:
 
 | Field | Value |
 |---|---|
-| Smoke status | `colab_smoke_pending` |
-| Date recorded | 2026-06-04 |
-| Commit SHA available for smoke | `f6c525daca8486c0f3e20c767bfadc72d7aaab64` |
+| Smoke status | `colab_smoke_passed_with_notes` |
+| Smoke date | `2026-06-04` |
+| Evidence source | Uploaded executed Colab-returned Notebook 05 artifact reviewed for Issue #66 |
+| Repository source status | Cleaned source notebook remains unchanged and output-free |
 | Notebook path | `notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb` |
-| Runtime tested | Not run in Colab |
-| Package versions observed in Colab | Not observed |
-| Drive mount | Not attempted |
-| Fintech session initialization | Not attempted |
-| StratLake session initialization | Not attempted |
-| Q1 daily-bars ingestion | Not attempted |
-| StratLake feature generation | Not attempted |
-| `stratlake-session-export --dry-run` | Not attempted |
+| Uploaded artifact status | Executed Colab artifact; not committed |
 
-Because no live run was performed, this audit does not claim `colab_smoke_passed`,
-`colab_smoke_passed_with_notes`, `colab_smoke_failed_needs_rerun`, or
-`colab_smoke_refactored_needs_rerun`.
+Confirmed smoke results:
+
+| Surface | Result |
+|---|---|
+| Cell count | 48 total cells: 25 markdown, 23 code |
+| Executed code cells | 20 code cells executed; 20 code cells contained outputs |
+| Error outputs | None found |
+| Unexecuted code cells | 3 optional/manual guidance cells |
+| Package install | Completed |
+| Installed package versions | `pandas-market-calendars-5.4.0`, `fintech-market-ingestion-0.11.0`, `stratlake-trade-engine-0.44.0` |
+| Pip warning | Non-blocking resolver warning: `ibis-framework 9.5.0` requires `toolz<1`, while `toolz 1.1.0` was installed |
+| CLI availability | Passed for all required Fintech and StratLake commands in the checklist |
+| Google Drive mount | Succeeded at `/content/drive` |
+| Runtime Drive folder | `DRIVE_FOLDER_NAME` manually set to `TEST1` for the smoke run only |
+| Active roots | `FINTECH_ROOT=/content/fintech-market-ingestion-demo`; `STRATLAKE_ROOT=/content/stratlake-trade-engine-demo`; `MARKETLAKE_ROOT=/content/fintech-market-ingestion-demo/data/curated` |
+| Drive boundary | Drive used under `/content/drive/MyDrive/TEST1` as persistence/archive/session storage, not as active workspace |
+| `fintech-init-project` | Completed |
+| `FINTECH_SESSION_ID` extraction | Succeeded; observed pattern `session_<date>_<time>_fintech_stratlake_input_<date>_<time>` with smoke timestamps `20260604 140833` and `20260604 140828` |
+| `stratlake-init-session` | Completed with explicit `--marketlake-root` |
+| StratLake config checks | `configs/universe.yml`: FOUND; `configs/paths.yml`: FOUND |
+| `STRATLAKE_SESSION_ID` extraction | Succeeded; observed pattern `stratlake_q1_features_<date>_<time>` with smoke timestamp `20260604 140828` |
+| Drive session/archive folder setup | Completed for Fintech and StratLake roots |
+| Runtime ticker files | Created for `AAPL`, `MSFT`, and `NVDA` |
+| Alpaca credentials | Loaded without printing key or secret |
+| `fintech-backfill-daily` | Completed for start `2025-01-01`, end `2025-04-01`, feed `iex`, window `month` |
+| Ingestion rows | `AAPL`: 60 rows; `MSFT`: 60 rows; `NVDA`: 60 rows; total 180 rows |
+| Curated daily-bars inspection | `DAILY_BARS_ROOT` existed; 180 daily-bars parquet files found |
+| `MARKETLAKE_ROOT` inspection | Path existed; 180 parquet files found |
+| `stratlake-build-features` | Completed with explicit `MARKETLAKE_ROOT=/content/fintech-market-ingestion-demo/data/curated` and timeframe `1D` |
+| Feature run summary | Wrote `artifacts/feature_runs/<utc-run-timestamp>/summary.json` in the runtime workspace; observed timestamp corresponded to 2026-06-04 14:10:31Z |
+| Feature output inspection | Confirmed 3 generated feature parquet files |
+| Feature parquet paths | `features_daily/symbol=AAPL/year=2025/part-0.parquet`; `features_daily/symbol=MSFT/year=2025/part-0.parquet`; `features_daily/symbol=NVDA/year=2025/part-0.parquet` |
+| `stratlake-session-export --dry-run` | Completed successfully |
+| Dry-run export result | Categories: configs, artifacts, features, session_metadata; `dry_run: true`; `copied: 0`; `skipped: 0`; `overwritten: 0` |
+
+Required CLI availability checklist commands resolved in the smoke artifact:
+
+- `fintech-init-project`
+- `fintech-backfill-daily`
+- `fintech-save-session`
+- `fintech-restore-session`
+- `fintech-backup-data`
+- `stratlake-init-session`
+- `stratlake-build-features`
+- `stratlake-session-export`
+- `stratlake-session-import`
+- `stratlake-session-archive-bootstrap`
+- `stratlake-session-archive-restore-bootstrap`
+
+The result is recorded as `colab_smoke_passed_with_notes` rather than
+`colab_smoke_passed` because:
+
+- The uploaded smoke notebook is an executed artifact and must not be committed.
+- It contains outputs, non-null execution counts, and top-level Colab metadata.
+- The runtime Drive folder name `TEST1` is smoke-only and must not replace the repository
+  placeholder.
+- Optional Fintech backup-pack restore guidance was not executed.
+- Optional Fintech archive pack preview/commented pack guidance was not executed.
+- Optional StratLake archive/bootstrap and restore preview guidance was not executed.
+- StratLake archive/bootstrap command surfaces remain manual guidance pending upstream
+  verification.
+- Generated runtime artifacts, session manifests, daily bars, feature parquet files,
+  Drive folders, logs, screenshots, and credentials must remain out of Git.
 
 ## Explicit Non-Claims
 
@@ -257,13 +313,13 @@ M8 repository validation did not:
 - validate live Colab runtime behavior,
 - claim manual Colab smoke success.
 
-Manual Colab smoke remains `colab_smoke_pending`.
+Manual Colab smoke is recorded as `colab_smoke_passed_with_notes`.
 
 ## Follow-Up Notes
 
 - Issue #67 should confirm merge readiness, final validation output, and any remaining
   non-claims.
-- A future Colab smoke issue should record a real Colab run before changing
-  `colab_smoke_pending` to a pass/fail smoke status.
+- Issue #67 should preserve the smoke caveats: the executed Colab artifact is evidence
+  only and must not replace the cleaned repository notebook source.
 - StratLake archive/bootstrap preview flags remain manual guidance pending upstream CLI
   verification.

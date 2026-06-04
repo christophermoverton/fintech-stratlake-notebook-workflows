@@ -28,7 +28,7 @@ Colab and Google Drive, not in Git.
 | Relationship to Notebook 04 | Continues the dual-session Fintech/StratLake handoff into feature generation |
 | Staging category | `source_safe_after_cleanup` after Issue #61 |
 | Import status | `imported` |
-| Manual Colab smoke status | `colab_smoke_pending` |
+| Manual Colab smoke status | `colab_smoke_passed_with_notes` |
 
 ## Source Review Facts
 
@@ -198,16 +198,23 @@ Repository validation does not:
 
 ## Manual Colab Smoke Status
 
-Manual Colab smoke remains `colab_smoke_pending`. Issue #66 did not perform a live
-Google Colab run in this repository session, so no runtime success, failure, package
-version, Drive mount, Alpaca credential, ingestion, feature-generation, export, archive,
-or restore evidence is claimed. No M8 repository validation result should be read as
-live Colab runtime evidence.
+Issue #66 records manual Colab smoke as `colab_smoke_passed_with_notes` based on an
+uploaded executed Colab-returned Notebook 05 artifact. The smoke artifact confirmed the
+core Q1 ingestion-to-feature-generation flow: package install, CLI availability, Drive
+mount, Fintech and StratLake session initialization, Q1 daily-bars ingestion, curated
+daily-bars inspection, Q1 feature generation, generated feature-output inspection, and
+`stratlake-session-export --dry-run`.
+
+The executed smoke artifact is not repository source and must not be committed. It
+contained outputs, non-null execution counts, and Colab metadata. Optional Fintech
+backup/restore and StratLake archive/bootstrap preview cells were not executed, and
+StratLake archive/bootstrap command surfaces remain manual guidance pending upstream
+verification. Generated outputs remain runtime-only and never committed.
 
 ## Known Follow-Up Items
 
 - Issue #67 should review final merge readiness and preserve all non-claims.
-- A future Colab smoke issue should record manual Colab evidence only after a real
-  Colab run is performed.
+- Issue #67 should preserve the `colab_smoke_passed_with_notes` caveats and confirm the
+  cleaned repository notebook source remains output-free.
 - StratLake archive/bootstrap preview flags should stay manual guidance until upstream
   command contracts are verified.

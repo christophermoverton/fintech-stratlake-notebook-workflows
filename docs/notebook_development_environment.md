@@ -236,7 +236,11 @@ under `/content`.
 Notebook 05 preserves `FINTECH_SESSION_ID`, `STRATLAKE_SESSION_ID`, `MARKETLAKE_ROOT`,
 the Q1 window `2025-01-01` to `2025-04-01`, `fintech-backfill-daily`,
 `stratlake-build-features`, and `stratlake-session-export --dry-run` as source-visible
-workflow guidance. Manual Colab smoke remains `colab_smoke_pending`.
+workflow guidance. Issue #66 records manual Colab smoke as
+`colab_smoke_passed_with_notes` from an uploaded executed artifact. That executed
+artifact must not be committed as repository source; developers must still clear
+outputs, reset execution counts, strip runtime metadata, and avoid committing runtime
+files.
 
 ## Manual Colab Smoke Testing
 
