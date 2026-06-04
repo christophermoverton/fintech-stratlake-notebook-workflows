@@ -243,7 +243,7 @@ This document does not claim that Notebook 06:
 - Executed archives or restores in CI.
 - Executed Google Drive mutation in CI.
 - Used credentials in CI.
-- Passed Colab smoke test (smoke is pending).
+- Passed plain Colab smoke; the recorded result is `colab_smoke_passed_with_notes` because archive creation and restore remained preview-only and StratLake archive/bootstrap contracts remain unverified beyond availability.
 - Verified `stratlake-session-archive-bootstrap` or `stratlake-session-archive-restore-bootstrap` upstream contracts.
 - Used Google Drive as the active app workspace.
 - Is a strategy or backtest notebook.
