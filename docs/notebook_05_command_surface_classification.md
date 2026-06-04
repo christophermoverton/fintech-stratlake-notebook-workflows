@@ -80,12 +80,12 @@ only inspect source, notebook hygiene, and static command forms.
 | Colab secrets / Alpaca credential prompt | Cell `c1206418`; Configure Alpaca API credentials from Colab Secrets | `google.colab.userdata`; `getpass.getpass(...)`; sets `os.environ[...]` | `notebook_python_runtime` | Yes, manual Colab only | Reads credentials, sets runtime env vars | No CLI registry action; keep skipped in source validation | Does not print key/secret; repository validation must not prompt or read credentials. |
 | `FINTECH_TICKERS_FILE.write_text(...)` | Cell `b7dea0a0`; Prepare the Fintech ticker file and daily bars output path | `FINTECH_CONFIGS_ROOT.mkdir(...)`; `FINTECH_TICKERS_FILE.write_text(...)` | `notebook_python_runtime` | Yes | Creates runtime ticker file under `/content` Fintech workspace | No CLI registry action | Generated runtime file must not be committed. |
 | `DAILY_BARS_ROOT.mkdir(...)` | Cell `b7dea0a0`; Prepare the Fintech ticker file and daily bars output path | `DAILY_BARS_ROOT = MARKETLAKE_ROOT / "bars_daily"`; `.mkdir(...)` | `notebook_python_runtime` | Yes | Creates local curated-data output directory under `/content` | No CLI registry action | Keeps active data under local `/content` workspace. |
-| Optional `fintech-backup-data restore` commented example | Cell `U74qVc08x8gu`; Optional: restore Fintech curated data before ingestion | Commented `# !fintech-backup-data restore --root ... --archive-id ... --drive-root ... --target-root ... --copy-policy overwrite_allowed ...` | `optional_commented_manual_restore`; `contract_mismatch_or_unverified` | No | None unless user manually uncomments in Colab | M8.3 must confirm or update flags; do not validate as current supported syntax yet | Uses older-looking flags; registry-confirmed restore uses `--backup-pack-dir`, `--restore-root`, `--overwrite-policy`. Do not reintroduce `fintech-restore-session`. |
+| Optional `fintech-backup-data restore` commented example | Cell `U74qVc08x8gu`; Optional: restore Fintech curated data before ingestion | Commented `# !fintech-backup-data restore --backup-pack-dir ... --restore-root ... --overwrite-policy fail` | `optional_commented_manual_restore` | No | None unless user manually uncomments in Colab | M8.3 updated this guidance to the registry-confirmed backup-pack restore shape | Do not reintroduce `fintech-restore-session` as the backup-pack restore path. |
 | `fintech-backfill-daily` | Cell `a4dbb67a`; Extract Q1 daily bars into the local Fintech curated-data workspace | `!fintech-backfill-daily --symbols ... --start 2025-01-01 --end 2025-04-01 --out ... --feed iex --source session_{FINTECH_SESSION_ID} --window month` | `live_manual_runtime` | Yes | Calls Alpaca/data provider and writes curated daily bars under `/content` | Add NB05 live command coverage; validate flags and Q1 dates/source shape | This is live ingestion and must never run in repo validation. |
 | Daily bars parquet inspection | Cell `ca096520`; Inspect extracted Q1 daily bars | `DAILY_BARS_ROOT.rglob("*.parquet")`; `.exists()` | `notebook_python_runtime` | Yes, after ingestion | Reads runtime generated data paths | No CLI registry action | Runtime data inspection only; repository validation must not inspect generated data. |
 | `MARKETLAKE_ROOT.rglob("*.parquet")` | Cell `4879f15f`; Precheck the upstream curated-data root | `MARKETLAKE_ROOT.rglob("*.parquet")`; `.exists()` | `notebook_python_runtime` | Yes, before feature build | Reads Fintech curated-data workspace | No CLI registry action | Confirms input availability; does not generate data itself. |
-| `fintech-backup-data pack` preview string | Cell `vqhdHkjVx8gu`; Optional: archive the Fintech Q1 curated-data input | Printed f-string: `fintech-backup-data pack --root ... --dataset-root ... --archive-id ... --drive-root ... --copy-policy overwrite_allowed --validate-after-copy --inspect-after-copy` | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | Prints preview only | M8.3 must confirm or update flags before registry coverage | Uses older-looking flags; registry-confirmed pack uses `--workspace-root`, `--source-dataset-root`, `--backup-root`, `--backup-id`, `--shard-size-mb`. |
-| Optional commented `fintech-backup-data pack` | Cell `vqhdHkjVx8gu`; Optional: archive the Fintech Q1 curated-data input | Commented `# !fintech-backup-data pack ...` with same preview flags | `preview_manual_guidance`; `contract_mismatch_or_unverified` | No | None unless user manually uncomments in Colab | M8.3 must confirm or update flags before treating as supported | Archive pack creation is manual guidance and must not run in repository validation. |
+| `fintech-backup-data pack` preview string | Cell `vqhdHkjVx8gu`; Optional: archive the Fintech Q1 curated-data input | Printed f-string: `fintech-backup-data pack --workspace-root ... --source-dataset-root ... --backup-root ... --backup-id ... --shard-size-mb 512` | `preview_manual_guidance` | No | Prints preview only | M8.3 updated this preview to the registry-confirmed pack shape and added static coverage | Archive pack creation remains manual guidance and must not run in repository validation. |
+| Optional commented `fintech-backup-data pack` | Cell `vqhdHkjVx8gu`; Optional: archive the Fintech Q1 curated-data input | Commented `# !fintech-backup-data pack ...` with same registry-confirmed flags | `preview_manual_guidance` | No | None unless user manually uncomments in Colab | M8.3 updated this guidance to the registry-confirmed pack shape | Archive pack creation is manual guidance and must not run in repository validation. |
 | `os.chdir(STRATLAKE_ROOT)` | Cell `ad8ee301`; Build Q1 daily features with StratLake | `os.chdir(STRATLAKE_ROOT)` before CLI invocation | `notebook_python_runtime` | Yes | Mutates runtime current working directory | No CLI registry action | Ensures relative StratLake outputs land under the intended `/content` workspace. |
 | `stratlake-build-features` | Cell `ad8ee301`; Build Q1 daily features with StratLake | `!stratlake-build-features --timeframe 1D --start 2025-01-01 --end 2025-04-01 --tickers ... --marketlake-root ...` | `live_manual_runtime` | Yes | Generates StratLake feature outputs under `/content` StratLake workspace | Add NB05 live command coverage; verify upstream flags and `1D` timeframe value | First live feature-generation command in imported series; never repository validation. |
 | Generated feature parquet inspection | Cell `a566d607`; Inspect generated StratLake feature files | `(STRATLAKE_ROOT / "data").rglob("*.parquet")` | `notebook_python_runtime` | Yes, after feature build | Reads generated feature outputs | No CLI registry action | Runtime output inspection only; generated files must stay out of Git. |
@@ -145,9 +145,9 @@ fintech-backup-data pack
   --shard-size-mb ...
 ```
 
-M8.3 must either verify that the Notebook 05 preview reflects a newer upstream CLI surface
-or update the preview to the registry-confirmed form. Do not silently validate the current
-preview flags as supported.
+M8.3 resolution: Notebook 05 was updated to the registry-confirmed pack form already used
+by Notebook 04. Static validators now cover the printed pack preview source. This remains
+manual guidance only and is not executed by repository validation.
 
 ### `fintech-backup-data restore`
 
@@ -173,15 +173,33 @@ fintech-backup-data restore
   --overwrite-policy ...
 ```
 
-M8.3 must confirm or update this commented guidance. `fintech-restore-session` must not be
-promoted as the backup-pack restore path.
+M8.3 resolution: the optional commented restore guidance was updated to the
+registry-confirmed backup-pack restore form. It remains commented manual guidance only.
+`fintech-restore-session` must not be promoted as the backup-pack restore path.
 
 ### StratLake archive/export family
 
-Notebook 05 uses `stratlake-session-export` only with `--dry-run`, and shows
+Notebook 05 uses `stratlake-session-export` only with `--dry-run`; M8.3 added static
+coverage for that dry-run source shape. Notebook 05 still shows
 `stratlake-session-archive-bootstrap` plus `stratlake-session-archive-restore-bootstrap`
-only as printed/commented guidance. M8.3 must verify the current upstream StratLake CLI
-surfaces before adding registry entries for these commands or their flags.
+only as printed/commented guidance. These archive/bootstrap surfaces remain deferred
+pending current upstream StratLake CLI verification.
+
+## M8.3 Resolution
+
+Issue #63 completed the following:
+
+- Added Notebook 05 to `config/notebook_cli_contracts.toml`.
+- Added Notebook 05 to `config/notebook_cli_registry.toml`.
+- Added static registry coverage for `stratlake-build-features`.
+- Added static registry coverage for `stratlake-session-export --dry-run`.
+- Extended existing source coverage for `fintech-init-project`, `fintech-backfill-daily`,
+  `stratlake-init-session`, and `fintech-backup-data pack`.
+- Corrected Notebook 05 Fintech backup pack and optional restore guidance to the
+  registry-confirmed flag forms.
+- Kept availability-check-only commands out of live Notebook 05 scope.
+- Deferred StratLake archive/bootstrap preview validation until upstream command flags are
+  verified.
 
 ## M8.3 Handoff
 
@@ -194,8 +212,7 @@ Issue #63 should:
 - Validate source shape for `fintech-backfill-daily`, including `--symbols`, `--start 2025-01-01`, `--end 2025-04-01`, `--out`, `--feed iex`, `--source session_{FINTECH_SESSION_ID}`, and `--window month`.
 - Validate source shape for `stratlake-build-features`, including `--timeframe 1D`, the Q1 date window, `--tickers`, and `--marketlake-root`.
 - Validate source shape for `stratlake-session-export --dry-run` and keep it classified as dry-run only.
-- Confirm or update `fintech-backup-data pack` preview flags before registering the preview surface.
-- Confirm or update the commented `fintech-backup-data restore` guidance before registering or validating it.
+- Maintain `fintech-backup-data pack` and commented restore guidance on the registry-confirmed flag forms.
 - Confirm `stratlake-session-archive-bootstrap` flags, including archive collision/copy policy values and include/validate/inspect flags.
 - Confirm `stratlake-session-archive-restore-bootstrap` flags and policy values.
 - Keep availability-check-only commands out of live Notebook 05 command scope.
