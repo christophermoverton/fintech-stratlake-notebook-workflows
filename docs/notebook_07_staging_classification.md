@@ -1,0 +1,262 @@
+# Notebook 07 Staging Classification
+
+## Purpose
+
+Notebook 07 has been staged as cleaned repository source after M10.1. This document
+classifies what is source-safe, manual runtime, conditional runtime, diagnostic,
+preview-only, or deferred in the committed notebook.
+
+The staged notebook is a **feature-consumption and baseline research-smoke** notebook. It
+consumes the Notebook 06 Fintech → StratLake feature handoff outputs, runs a native
+StratLake CLI strategy smoke test where available, and includes a notebook-local fallback
+diagnostic as a non-authoritative secondary path. A final handoff summary points toward
+Notebook 08 for formal strategy/backtest artifacts.
+
+Staging classification describes the repository posture of each area. It is not a claim
+that any live Colab runtime surface has been executed or validated.
+
+---
+
+## Staging status
+
+| Property | Value |
+|---|---|
+| Target path | `notebooks/07_stratlake_feature_consumption_baseline_research.ipynb` |
+| Source role | Feature consumption, baseline research smoke, archive checkpoint preview, Notebook 08 handoff |
+| Total cells | 50 (23 markdown, 27 code) |
+| Output-free | Yes — all code-cell outputs cleared |
+| Execution counts reset | Yes — all execution counts set to `null` |
+| Top-level Colab metadata stripped | Yes — `colab` key removed; only `kernelspec` and `language_info` retained |
+| Cell-level metadata minimized | Yes — all cell `metadata` fields set to `{}` |
+| Drive root guarded | Yes — `DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"` placeholder with `raise ValueError` guard in cells 08 and 14 |
+| Archive checkpoint default | `CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False` (changed from `True` in M10.1) |
+| Hardcoded private Drive path | Removed — replaced by `DRIVE_FOLDER_NAME` placeholder pattern |
+| Generated artifacts committed | None |
+
+---
+
+## Staging classification table
+
+| Area | Staging classification | Reason | Follow-up issue |
+|---|---|---|---|
+| Notebook 07 source import | `repository_source_only` | Notebook staged at target path; output-free, metadata clean, Drive root guarded, archive off-by-default | M10.1 complete |
+| Command/runtime surface classification | `documentation` | Every major command, runtime, and diagnostic surface classified by category and default behavior | M10.2 (this issue) |
+| CLI/source contract coverage | `source_only_static_coverage` | Static checks for command shape and flag syntax; no live registry or end-to-end verification | M10.3 |
+| Source-only readiness checks | `source_hygiene_validation` | Notebook execution-readiness script; source hygiene scan; no live cell execution | M10.4 |
+| Docs/index/README updates | `documentation` | Update repository-level index or README to reference Notebook 07 | M10.5 |
+| Colab smoke | `live_manual_validation` | Live Colab runtime execution; result recording; smoke completion stance | M10.6 |
+| Merge readiness | `final_milestone_gate` | Final review, PR checks, merge to main | M10.7 |
+
+---
+
+## Manual runtime surfaces
+
+The following surfaces require live Colab or local runtime execution. None are validated by
+committed source checks alone.
+
+| Surface | Classification | Default |
+|---|---|---|
+| `!pip install` — package installs (cells 01–02) | `live_manual_runtime` | Runs on fresh runtime |
+| `drive.mount("/content/drive")` — Google Drive mount (cell 06) | `live_manual_runtime` | Colab-only; no-op outside Colab |
+| Alpaca credential prompts — `userdata` / `getpass` (cell 16) | `live_manual_runtime` | Prompts at runtime; no committed values |
+| `fintech-init-project` — Fintech session initialization (cell 10) | `live_manual_runtime` | Runs unless `FINTECH_SESSION_ID_OVERRIDE` is set |
+| `stratlake-init-session` — StratLake session initialization (cell 12) | `live_manual_runtime` | Runs unless `STRATLAKE_SESSION_ID_OVERRIDE` is set |
+| `fintech-backup-data restore` — optional Fintech archive restore (cell 18) | `optional_commented_manual_restore` | `RESTORE_FINTECH_ARCHIVE = False`; preview-only by default |
+| `stratlake-session-archive-restore-bootstrap` — optional StratLake restore (cell 18) | `optional_commented_manual_restore` | `RESTORE_STRATLAKE_ARCHIVE = False`; preview-only by default |
+| `fintech-backfill-daily` — optional daily-bars backfill (cell 25) | `live_manual_runtime_conditional` | Runs when `RUN_SMALL_DAILY_BARS_BACKFILL = True` and bars are missing |
+| `stratlake-build-features` — optional feature build (cell 31) | `live_manual_runtime_conditional` | Runs when `RUN_FEATURE_BUILD_IF_MISSING = True` and features are missing |
+| `stratlake-run-strategy` — native strategy smoke test (cell 37) | `native_strategy_smoke` + `live_manual_runtime` | Runs when `RUN_NATIVE_BASELINE_SMOKE = True` and `configs/strategies.yml` exists |
+| `stratlake-session-export --dry-run` — dry-run session export (cell 45) | `live_manual_runtime_dry_run` | Runs by default; catches `FileNotFoundError` gracefully |
+| `stratlake-session-archive-bootstrap` — optional archive checkpoint (cell 47) | `preview_manual_guidance` + `source_hygiene_guard` | `CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`; preview-only by default |
+
+---
+
+## Notebook-local and diagnostic surfaces
+
+The following surfaces run inside the notebook Python environment and are classified
+as inspection, diagnostic, or visualization only.
+
+| Surface | Classification | Notes |
+|---|---|---|
+| CLI availability checks (cell 04) | `availability_check_only` | Detects command presence; does not prove contract behavior |
+| `DRIVE_FOLDER_NAME` placeholder + `raise ValueError` guards (cells 08, 14) | `source_hygiene_guard` | Repository safety; user must set `DRIVE_FOLDER_NAME` before Drive folder creation |
+| Session path / Drive path construction (cells 08, 14) | `notebook_python_runtime` | Path variables computed from session IDs and Drive root |
+| Config file presence check (cell 20) | `runtime_inspection` | Raises `FileNotFoundError` if `universe.yml` or `paths.yml` is absent |
+| Daily-bar parquet discovery and coverage (cells 22–23, 26) | `runtime_inspection` | Scans `MARKETLAKE_ROOT`; no files created |
+| Feature parquet discovery (cells 28) | `runtime_inspection` | Scans candidate roots under `STRATLAKE_ROOT`; no files created |
+| Sample loading and Q1 filtering (cells 33, 35) | `runtime_inspection` + `notebook_python_runtime` | Loads parquet samples for downstream diagnostics |
+| NaN coverage diagnostic (cell 35) | `runtime_inspection` | Reports feature NaN fractions for Q1 analysis window |
+| Native smoke stdout parsing and artifact discovery (cell 37) | `notebook_python_runtime` | Parses stable human-readable CLI output; does not re-implement strategy logic |
+| Native smoke outcome display (cell 38) | `runtime_inspection` | Summary DataFrame of native smoke status; `fallback_needed` field |
+| Fallback feature/forward-return merge diagnostic (cell 40) | `fallback_diagnostic_only` | Runs only when native smoke did not complete; explicitly non-canonical |
+| Smoke-test plot (cell 41) | `runtime_visualization` | No committed plot output |
+| Strategy/backtest command discovery (cell 43) | `availability_check_only` + `preview_manual_guidance` | Availability guidance only; not registry confirmation |
+| Handoff summary dictionary (cell 49) | `notebook_python_runtime` + `runtime_inspection` | Runtime JSON summary; not committed |
+
+---
+
+## Repository source exclusions
+
+The following items must not appear in committed Notebook 07 source.
+
+- Executed cell outputs (stdout, stderr, display output)
+- Non-null execution counts
+- Colab top-level metadata (`colab` key)
+- Cell-level runtime metadata (Colab IDs, widget state)
+- Generated plots or inline figures
+- Displayed DataFrame tables
+- Feature parquet files
+- Daily-bar parquet files
+- Session manifests or session JSON files
+- Archive packs or backup pack directories
+- Restored data files
+- API credentials or private key values
+- Hardcoded private Drive folder paths
+- Colab runtime state or profile data
+- Execution logs or output logs
+- Screenshots or screen captures
+- Runtime JSON summaries
+- Any generated artifacts from live cell execution
+
+All of these exclusions were verified as absent in the M10.1 staged source. Validation
+commands `scan_for_secret_patterns.py`, `check_notebooks_no_outputs.py`, and
+`validate_repo_cleanliness.py` confirm this at the repository level.
+
+---
+
+## M10.3 static coverage scope
+
+M10.3 adds static, source-only test coverage for Notebook 07 command references, source guards, and workflow invariants.
+
+**Primary test file**: `tests/test_notebook_07_static_cli_contracts.py`
+
+**Config changes in M10.3**:
+- `config/notebook_cli_registry.toml`: NB07 added to `default_targets`
+- `config/notebook_cli_contracts.toml`: NB07 added to `default_targets`; `--notebooks` moved to `optional_flags` for `fintech-init-project`; `--colab-profile` added to `optional_flags`
+- `config/cli_command_registry.toml`: `--colab-profile` added to `fintech-init-project` flags (NB07 provenance, `notebook_contract_required = false`); `--notebooks` changed to `notebook_contract_required = false`
+
+**Scope boundary**:
+- Static tests parse the committed notebook JSON only
+- No cells executed, no CLI commands run, no PATH availability checked
+- No live archive, export, or restore behavior confirmed
+- Native strategy smoke success not claimed (deferred to M10.6)
+- Command-discovery candidates remain availability guidance only
+
+## M10.4 source-only readiness and sanitized validation scope
+
+M10.4 adds source-only readiness and sanitized notebook validation coverage for Notebook 07.
+
+**Primary test file**: `tests/test_notebook_07_source_readiness.py`
+
+**Config changes in M10.4**:
+- `config/notebook_test.toml`: NB07 added to `default_targets` so the shared execution-readiness harness covers it automatically
+- `config/notebook_test.toml`: `/content/drive/MyDrive/fintech-stratlake-tutorial` added to `forbidden_committed_path_fragments`
+
+**What M10.4 validates**:
+- Sanitized notebook metadata: no widget state, no Colab runtime metadata, no accelerator metadata, no cell-level execution timing metadata, no inline image/DataFrame outputs
+- Notebook identity: title phrases (Notebook 07, StratLake Feature Consumption, Baseline Research Smoke, Archive Checkpoint) present in source
+- Credential safety: Alpaca env-var names allowed; actual values not present; credentials prompted via `userdata.get()` or `getpass.getpass()` at runtime; notebook includes confirmation that values are not printed
+- Runtime artifact exclusions: all code-cell outputs empty; no MIME bundles committed
+- Execution-readiness boundaries: Drive mount guarded by `IN_COLAB`; backfill and feature build conditional on missing data or force flags; native smoke governed by `RUN_NATIVE_BASELINE_SMOKE` and `STRATEGIES_CONFIG.exists()`; fallback diagnostic conditional on native smoke not completing; archive and restore execution behind false-default boolean guards
+- Generic readiness config coverage: NB07 present in `notebook_test.toml` and hardcoded tutorial Drive path in forbidden fragments
+
+**Scope boundary**:
+- All checks are source-only and deterministic
+- No notebook cells are executed
+- No CLI commands are run
+- No live Colab, native strategy, archive, export, restore, package install, or credential success is claimed
+- Colab smoke validation remains deferred to M10.6
+
+## M10.4 completion stance
+
+`notebook_07_source_readiness_sanitized_validation_covered`
+
+---
+
+## M10.5 documentation and audit scope
+
+M10.5 creates the repository-facing documentation and audit layer for the Notebook 07 import.
+
+**Files created or updated in M10.5**:
+- `docs/notebook_07_import_audit.md` — full import audit (source notebook name, target path, cell counts, cleaning decisions, workflow sections, source-safe defaults, preserved invariants, command-surface summary, test/validation coverage, non-claims, runtime boundaries).
+- `docs/notebook_index.md` — Notebook 07 row added; audit cross-references updated.
+- `docs/notebook_development_environment.md` — Notebook 07 runtime boundary section added; static check commands, readiness config target list, and skipped-cells list updated.
+- `README.md` — Notebook 07 added to workflow sequence with conservative description and no live smoke claim.
+- `docs/notebook_07_staging_classification.md` (this file) — M10.5 scope recorded.
+
+**Scope boundary**:
+- No notebook source changes were made.
+- No notebook cells were executed.
+- No generated outputs, plots, data, archives, restored files, or credentials were added.
+- Live Colab, native strategy smoke, archive/export/restore success are not claimed.
+- Colab smoke remains deferred to M10.6.
+
+## M10.5 completion stance
+
+`notebook_07_import_documented_source_safe`
+
+---
+
+## M10.6 manual Colab smoke status
+
+**Result:** `colab_smoke_passed_with_notes`
+
+Issue #82 audited an executed Notebook 07 artifact from a live Colab run.
+
+**Summary:**
+
+- Native StratLake strategy smoke (`stratlake-run-strategy --strategy momentum_v1`) returned exit code 0 with QA status PASS, 300 QA rows, 5 symbols, 44 trades.
+- Notebook-local fallback diagnostic was correctly skipped (`RUN_NOTEBOOK_LOCAL_FALLBACK_SMOKE = False`) because native smoke completed.
+- Padded daily-bars backfill ran for 5 symbols (555 total rows/files).
+- StratLake feature build ran (10 feature parquet files; 305 Q1 feature rows loaded).
+- Optional archive checkpoint remained off (`CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`); no archive was created.
+- Dry-run export preview printed; no export artifact was created.
+- Required config files present (`universe.yml`, `paths.yml`, `strategies.yml`).
+
+**Caveats retained:**
+
+- Non-blocking pip resolver warning for `toolz` / `ibis-framework`.
+- Final-summary `q1_bars_rows_loaded: 0` normalization mismatch (bar data and feature data correct).
+- No native time-series artifact discovered at the expected path; plot used summary metrics.
+- `RuntimeWarning` for `BuyAndHoldStrategy` in native smoke stderr (not the selected strategy; did not block completion).
+- `stratlake-backtest` and `stratlake-run-backtest` were not available in the environment.
+- Archive/restore/export success not claimed beyond preview/dry-run surfaces.
+- Executed artifact must not be committed.
+
+## M10.6 completion stance
+
+`notebook_07_colab_smoke_passed_with_notes`
+
+---
+
+## M10.7 merge readiness
+
+M10.7 (Issue #83) records the final Milestone 10 merge-readiness closeout.
+
+**Final decision:** `ready_for_review_or_merge_with_notes`
+
+**Merge-readiness doc:** `docs/milestone_10_merge_readiness.md`
+
+All M10 source-only validation, static CLI/source invariant coverage, source-readiness/sanitized
+validation, documentation, and manual Colab smoke testing are complete. The smoke caveats are
+documented and non-blocking for M10 import merge. Repository source is clean, output-free, and
+free of runtime artifacts. Notebook 08 formal strategy/backtest work is deferred.
+
+## M10.7 completion stance
+
+`notebook_07_merge_ready_with_smoke_notes`
+
+---
+
+## M10.2 completion stance
+
+`notebook_07_command_runtime_surfaces_classified`
+
+All major Notebook 07 command, runtime, native strategy-smoke, fallback diagnostic,
+restore/export/archive, and visualization surfaces have been classified in
+`docs/notebook_07_command_surface_classification.md`. Staging posture, manual runtime
+boundaries, and repository source exclusions are documented in this file.
+
+No notebook cells were modified in M10.2. No generated runtime artifacts were committed.
+Colab smoke validation remains deferred to M10.6.
+

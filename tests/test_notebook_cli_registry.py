@@ -492,6 +492,12 @@ def test_config_includes_notebook_06_registry_target():
     assert "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb" in targets
 
 
+def test_config_includes_notebook_07_registry_target():
+    targets = SETTINGS.get("default_targets", [])
+
+    assert "notebooks/07_stratlake_feature_consumption_baseline_research.ipynb" in targets
+
+
 def test_notebook_05_passes_with_zero_registry_failures():
     target = (
         REPO_ROOT
@@ -710,12 +716,13 @@ def test_registry_validation_does_not_mutate_source_notebooks():
         REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb",
         REPO_ROOT / "notebooks" / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
         REPO_ROOT / "notebooks" / "06_stratlake_feature_validation_archive_and_handoff.ipynb",
+        REPO_ROOT / "notebooks" / "07_stratlake_feature_consumption_baseline_research.ipynb",
     ]
     before = {path: file_digest(path) for path in targets}
 
     report = cli_registry.validate_targets(targets, MODEL, SETTINGS)
 
-    assert report.targets_checked == 7
+    assert report.targets_checked == 8
     after = {path: file_digest(path) for path in targets}
     assert before == after
 
@@ -785,3 +792,95 @@ def test_validate_notebook_cli_registry_subprocess_smoke_notebook_06_only():
         capture_output=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_notebook_07_passes_with_zero_registry_failures():
+    """
+    Notebook 07 uses fintech-init-project with --colab-profile (without --notebooks).
+    The registry records --colab-profile as a recognized optional flag and
+    --notebooks as notebook_contract_required = false, so NB07's init pattern
+    is accepted without findings.
+
+    Most NB07 strategic commands (stratlake-run-strategy, stratlake-build-features,
+    stratlake-session-export, archive/restore bootstrap) use subprocess.run calls
+    rather than !magic cells.  The registry validator does not extract those as
+    shell examples — they are covered by static source checks in
+    tests/test_notebook_07_static_cli_contracts.py.
+    """
+    target = (
+        REPO_ROOT
+        / "notebooks"
+        / "07_stratlake_feature_consumption_baseline_research.ipynb"
+    )
+    report = cli_registry.validate_targets([target], MODEL, SETTINGS)
+
+    assert report.examples
+    assert not report.findings
+    assert any(
+        example.command == "fintech-init-project"
+        and example.classification == "manual_only_live"
+        and {"--root", "--with-session", "--session-name"} <= example.flag_names()
+        and "--colab-profile" in example.flag_names()
+        for example in report.examples
+    ), "NB07 fintech-init-project must include --root, --with-session, --session-name, --colab-profile"
+    assert any(
+        example.command == "stratlake-init-session"
+        and example.classification == "manual_only_live"
+        and {"--root", "--project-name", "--marketlake-root", "--drive-root"}
+        <= example.flag_names()
+        and "--enable-drive-persistence" in example.flag_names()
+        and "--notebook-configs" in example.flag_names()
+        for example in report.examples
+    )
+    assert any(
+        example.command == "fintech-backfill-daily"
+        and {"--symbols", "--start", "--end", "--out", "--feed", "--source", "--window"}
+        <= example.flag_names()
+        for example in report.examples
+    )
+    # Availability-only commands must not appear as live registry examples in NB07.
+    availability_only = {
+        "fintech-save-session",
+        "fintech-restore-session",
+        "stratlake-session-import",
+        "stratlake-session-archive-bootstrap",
+        "stratlake-session-archive-restore-bootstrap",
+    }
+    for command in availability_only:
+        assert all(example.command != command for example in report.examples), (
+            f"{command} must not appear as a live registry example in NB07"
+        )
+
+
+def test_validate_notebook_cli_registry_subprocess_smoke_notebook_07_only():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "validate_notebook_cli_registry.py"),
+            "notebooks/07_stratlake_feature_consumption_baseline_research.ipynb",
+            "--config",
+            str(REPO_ROOT / "config" / "notebook_cli_registry.toml"),
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_registry_model_includes_colab_profile_for_fintech_init_project():
+    """
+    --colab-profile was added to fintech-init-project in M10.3 after Notebook 07
+    introduced it as an alternative to --notebooks.  Verify the registry model
+    records it as a recognized optional flag.
+    """
+    init_entry = MODEL.commands["fintech-init-project"]
+
+    assert "--colab-profile" in init_entry.flags, (
+        "--colab-profile must be registered for fintech-init-project. "
+        "Notebook 07 uses this flag instead of --notebooks."
+    )
+    assert init_entry.flags["--colab-profile"].notebook_contract_required is False, (
+        "--colab-profile must be notebook_contract_required = false (optional)."
+    )
