@@ -349,6 +349,106 @@ def test_notebook_04_sanitized_does_not_invoke_shell_or_drive():
         assert "!stratlake-" not in stripped
 
 
+def test_notebook_05_is_in_readiness_and_execution_targets():
+    notebook_05 = "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+
+    assert notebook_05 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_05 in execution["notebook_execution"]["default_targets"]
+
+
+def test_notebook_05_source_preserves_q1_feature_generation_workflow():
+    source_notebook = (
+        REPO_ROOT
+        / "notebooks"
+        / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+    )
+    notebook = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in notebook.cells)
+
+    assert "FINTECH_SESSION_ID" in source
+    assert "STRATLAKE_SESSION_ID" in source
+    assert "MARKETLAKE_ROOT" in source
+    assert "--marketlake-root {MARKETLAKE_ROOT_STR}" in source
+    assert "--marketlake-root {MARKETLAKE_ROOT.as_posix()}" in source
+    assert "--start 2025-01-01" in source
+    assert "--end 2025-04-01" in source
+    assert "fintech-init-project" in source
+    assert "stratlake-init-session" in source
+    assert "fintech-backfill-daily" in source
+    assert "stratlake-build-features" in source
+    assert "stratlake-session-export" in source
+    assert "--dry-run" in source
+    assert 'DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"' in source
+    assert 'FINTECH_SESSION_ID = FINTECH_SESSION_MANIFEST["session_id"]' in source
+    assert "STRATLAKE_SESSION_ID = (" in source
+
+
+def test_notebook_05_sanitized_copy_removes_runtime_cells():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = (
+        REPO_ROOT
+        / "notebooks"
+        / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+    )
+
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    assert kept_code > 0
+    assert "!pip install" not in sanitized_sources
+    assert "%pip" not in sanitized_sources
+    assert "drive.mount(" not in sanitized_sources
+    assert "google.colab" not in sanitized_sources
+    assert "userdata.get(" not in sanitized_sources
+    assert "getpass.getpass(" not in sanitized_sources
+    assert "ALPACA_API_KEY_ID" not in sanitized_sources
+    assert "ALPACA_API_SECRET_KEY" not in sanitized_sources
+    assert "!fintech-init-project" not in sanitized_sources
+    assert "!stratlake-init-session" not in sanitized_sources
+    assert "!fintech-backfill-daily" not in sanitized_sources
+    assert "!stratlake-build-features" not in sanitized_sources
+    assert "!stratlake-session-export" not in sanitized_sources
+    assert "!fintech-backup-data" not in sanitized_sources
+    assert "!stratlake-session-archive-bootstrap" not in sanitized_sources
+    assert "!stratlake-session-archive-restore-bootstrap" not in sanitized_sources
+    assert ".mkdir(" not in sanitized_sources
+    assert ".write_text(" not in sanitized_sources
+    assert "os.chdir(" not in sanitized_sources
+    assert 'rglob("*.parquet")' not in sanitized_sources
+    assert "FINTECH_ROOT" not in sanitized_sources
+    assert "STRATLAKE_ROOT" not in sanitized_sources
+    assert "MARKETLAKE_ROOT" not in sanitized_sources
+    assert "FINTECH_SESSION_MANIFEST" not in sanitized_sources
+    assert "STRATLAKE_SESSION_FILE" not in sanitized_sources
+    assert "feature_candidates" not in sanitized_sources
+
+
+def test_notebook_05_sanitized_does_not_invoke_shell_drive_or_credentials():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = (
+        REPO_ROOT
+        / "notebooks"
+        / "05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb"
+    )
+
+    sanitized, skipped, _ = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    for line in sanitized_sources.splitlines():
+        stripped = line.lstrip()
+        assert not stripped.startswith("!"), f"Shell command leaked into sanitized output: {line!r}"
+        assert not stripped.startswith("%"), f"Magic command leaked into sanitized output: {line!r}"
+        assert "drive.mount(" not in stripped
+        assert "userdata.get(" not in stripped
+        assert "getpass.getpass(" not in stripped
+        assert "!fintech-" not in stripped
+        assert "!stratlake-" not in stripped
+
+
 def test_issue_14_readiness_command_remains_compatible():
     result = subprocess.run(
         [
@@ -390,6 +490,8 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         "drive.mount(",
         "userdata.get(",
         "getpass.getpass(",
+        "ALPACA_API_KEY_ID",
+        "ALPACA_API_SECRET_KEY",
         "!fintech-init-project",
         "!fintech-backfill",
         "!fintech-save-session",
@@ -410,9 +512,14 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         ".mkdir(",
         "!stratlake-init-session",
         "!stratlake-build-features",
+        "!stratlake-session-export",
         "STRATLAKE_ROOT",
         "available_fintech_sessions",
         "MARKETLAKE_ROOT",
+        ".write_text(",
+        "os.chdir(",
+        'rglob("*.parquet")',
+        "feature_candidates",
     ]
     for fragment in unsafe_fragments:
         assert fragment not in sanitized_sources
