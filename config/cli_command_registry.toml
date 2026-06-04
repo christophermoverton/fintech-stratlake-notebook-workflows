@@ -30,6 +30,7 @@ confirmed_from = [
   "fintech-stratlake-notebook-workflows:notebooks/04_stratlake_feature_series_index_setup.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
   "fintech-stratlake-notebook-workflows:notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
+  "fintech-stratlake-notebook-workflows:notebooks/07_stratlake_feature_consumption_baseline_research.ipynb",
   "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml",
   "fintech-stratlake-notebook-workflows:docs/notebook_01_import_audit.md",
   "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md",
@@ -37,10 +38,11 @@ confirmed_from = [
 ]
 upstream_source_status = "confirmed_from_implementation"
 notes = [
-  "Notebook 01, Notebook 02, Notebook 05, and Notebook 06 use this command to initialize a local /content Fintech workspace/session.",
+  "Notebook 01, Notebook 02, Notebook 05, Notebook 06, and Notebook 07 use this command to initialize a local /content Fintech workspace/session.",
   "Live project initialization creates runtime workspace state and is manual Colab-only.",
-  "`--notebooks` is a standalone boolean flag.",
-  "`--with-session` is a standalone boolean flag."
+  "`--notebooks` is a standalone boolean flag; present in NB01-06 but not required by NB07 (uses --colab-profile instead).",
+  "`--with-session` is a standalone boolean flag.",
+  "`--colab-profile` is a standalone boolean flag introduced in Notebook 07 (M10.1); its upstream argparse definition is pending source verification."
 ]
 unsupported_patterns = [
   { pattern = "--notebooks <value>", reason = "`--notebooks` is a standalone boolean flag, not a value-taking option.", confirmed_from = ["fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] },
@@ -49,8 +51,9 @@ unsupported_patterns = [
 
 [commands.flags]
 "--root" = { kind = "value", argparse_required = false, notebook_contract_required = true, default_behavior = "current_directory", confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
-"--notebooks" = { kind = "boolean", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
+"--notebooks" = { kind = "boolean", argparse_required = false, notebook_contract_required = false, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:docs/notebook_02_import_audit.md", "fintech-stratlake-notebook-workflows:docs/milestone_4_merge_readiness.md"] }
 "--with-session" = { kind = "boolean", argparse_required = false, notebook_contract_required = true, confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
+"--colab-profile" = { kind = "boolean", argparse_required = false, notebook_contract_required = false, confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/07_stratlake_feature_consumption_baseline_research.ipynb"] }
 "--session-name" = { kind = "value", argparse_required = false, notebook_contract_required = true, default_value = "None", confirmed_from = ["fintech-market-ingestion:src/cli/init_project.py", "fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb", "fintech-stratlake-notebook-workflows:config/notebook_cli_contracts.toml"] }
 "--help" = { kind = "boolean", argparse_required = false, notebook_contract_required = false, classifications = ["safe_help"], confirmed_from = ["fintech-stratlake-notebook-workflows:notebooks/00_setup_and_storage_overview.ipynb", "fintech-stratlake-notebook-workflows:notebooks/01_fintech_daily_bars_extraction_backfill.ipynb", "fintech-stratlake-notebook-workflows:notebooks/02_fintech_session_persistence_save_restore.ipynb"] }
 

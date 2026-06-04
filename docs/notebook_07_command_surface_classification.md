@@ -124,6 +124,43 @@ registry or confirmed in a live smoke session.
 
 ---
 
+## M10.3 static CLI/source coverage
+
+M10.3 adds static, source-only test coverage for the Notebook 07 command references, guards, and workflow invariants classified in this document.
+
+**Coverage location**: `tests/test_notebook_07_static_cli_contracts.py`
+
+**What the static tests check** (source text and structural checks only):
+- Notebook path exists at the expected target
+- No committed outputs, no non-null execution counts, no top-level Colab metadata
+- Expected Fintech CLI references (`fintech-init-project`, `fintech-backfill-daily`, `fintech-save-session`, `fintech-restore-session`, `fintech-backup-data`)
+- Expected StratLake CLI references (`stratlake-init-session`, `stratlake-build-features`, `stratlake-session-export`, `stratlake-session-import`, `stratlake-session-archive-bootstrap`, `stratlake-session-archive-restore-bootstrap`)
+- Native strategy smoke references: `RUN_NATIVE_BASELINE_SMOKE = True`, `NATIVE_STRATEGY_NAME = "momentum_v1"`, `STRATEGY_START = ANALYSIS_START`, `STRATEGY_END = ANALYSIS_END`, `stratlake-run-strategy`, `--strategies-config`, `native_smoke_completed`, `RUN_NOTEBOOK_LOCAL_FALLBACK_SMOKE = not native_smoke_completed`
+- Strategy/backtest discovery candidates as source text references: `stratlake-run-strategy`, `stratlake-backtest`, `stratlake-run-backtest`, `python -m src.cli.run_strategy`, `python -m src.cli.backtest`
+- Drive placeholder guard: `DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"`, `Path("/content/drive/MyDrive") / DRIVE_FOLDER_NAME`, `raise ValueError(...)` guard; absence of hardcoded `/content/drive/MyDrive/fintech-stratlake-tutorial`
+- Archive checkpoint guard: `CREATE_STRATLAKE_ARCHIVE_AFTER_CONSUMPTION = False`; absence of `True`; archive flag shape; preview text
+- Dry-run export: `--dry-run`, `--include-features`, `--include-artifacts`, `--include-configs`, `STRATLAKE_DRIVE_SESSION_ROOT_STR`, `FileNotFoundError` handling
+- Restore preview: `RESTORE_FINTECH_ARCHIVE = False`, `RESTORE_STRATLAKE_ARCHIVE = False`, `--validate-after-copy`, `--inspect-after-copy`, boolean guard checks
+- Fallback diagnostic labeling: `notebook_local_fallback_diagnostic`, `feature_rank_fallback`, `if not RUN_NOTEBOOK_LOCAL_FALLBACK_SMOKE:`
+- Notebook 08 handoff: `Notebook 08`, `Formal StratLake strategy/backtest artifacts`
+- Analysis window values: `ANALYSIS_START = "2026-01-02"`, `ANALYSIS_END = "2026-03-31"`, `BACKFILL_START = "2025-11-03"`, `BACKFILL_END = "2026-04-15"`, backfill symbols
+
+**What the static tests do NOT check**:
+- Tests do not execute notebook cells
+- Tests do not execute CLI commands
+- Tests do not confirm PATH availability for any command
+- Tests do not verify live archive, export, or restore behavior
+- Tests do not confirm native strategy smoke has succeeded
+- Command-discovery candidates remain availability guidance only in tests and in the notebook
+- Archive/bootstrap command contracts remain unverified unless checked upstream or in live smoke
+
+**Registry and contracts scope for NB07**:
+- NB07 is added to `config/notebook_cli_registry.toml` and `config/notebook_cli_contracts.toml` default targets (M10.3).
+- `--colab-profile` was added to `fintech-init-project` in `config/cli_command_registry.toml` as a recognized optional flag, with NB07 as the `confirmed_from` source. Its upstream argparse definition is pending source verification.
+- `--notebooks` was changed to `notebook_contract_required = false` in the registry because NB07 intentionally omits it in favor of `--colab-profile`.
+- The contracts validator produces extraction artifacts for NB07's restore preview cell (both restore command lists in one cell), documented in the contracts test. Full restore preview flag coverage is in `tests/test_notebook_07_static_cli_contracts.py`.
+- Most NB07 strategic commands (`stratlake-run-strategy`, `stratlake-build-features`, `stratlake-session-export`, archive/restore bootstrap) use `subprocess.run` calls rather than `!` magic cells and are not extracted by the registry/contracts validators as shell examples. They are covered exclusively by the standalone static test file.
+
 ## Source validation vs runtime validation
 
 | Milestone | Scope |

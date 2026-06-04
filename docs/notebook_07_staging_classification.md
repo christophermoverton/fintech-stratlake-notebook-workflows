@@ -124,6 +124,24 @@ commands `scan_for_secret_patterns.py`, `check_notebooks_no_outputs.py`, and
 
 ---
 
+## M10.3 static coverage scope
+
+M10.3 adds static, source-only test coverage for Notebook 07 command references, source guards, and workflow invariants.
+
+**Primary test file**: `tests/test_notebook_07_static_cli_contracts.py`
+
+**Config changes in M10.3**:
+- `config/notebook_cli_registry.toml`: NB07 added to `default_targets`
+- `config/notebook_cli_contracts.toml`: NB07 added to `default_targets`; `--notebooks` moved to `optional_flags` for `fintech-init-project`; `--colab-profile` added to `optional_flags`
+- `config/cli_command_registry.toml`: `--colab-profile` added to `fintech-init-project` flags (NB07 provenance, `notebook_contract_required = false`); `--notebooks` changed to `notebook_contract_required = false`
+
+**Scope boundary**:
+- Static tests parse the committed notebook JSON only
+- No cells executed, no CLI commands run, no PATH availability checked
+- No live archive, export, or restore behavior confirmed
+- Native strategy smoke success not claimed (deferred to M10.6)
+- Command-discovery candidates remain availability guidance only
+
 ## M10.2 completion stance
 
 `notebook_07_command_runtime_surfaces_classified`

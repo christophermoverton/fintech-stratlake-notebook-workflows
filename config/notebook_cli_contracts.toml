@@ -6,7 +6,8 @@ default_targets = [
   "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
   "notebooks/04_stratlake_feature_series_index_setup.ipynb",
   "notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb",
-  "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb"
+  "notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb",
+  "notebooks/07_stratlake_feature_consumption_baseline_research.ipynb"
 ]
 require_installed_commands = false
 allow_missing_commands = true
@@ -15,7 +16,8 @@ safe_help_only = true
 [[commands]]
 name = "fintech-init-project"
 subcommands = []
-required_flags = ["--root", "--notebooks", "--with-session", "--session-name"]
+required_flags = ["--root", "--with-session", "--session-name"]
+optional_flags = ["--notebooks", "--colab-profile"]
 
 [[commands]]
 name = "fintech-backfill-daily"
