@@ -2,8 +2,8 @@
 
 ## Summary
 
-This audit records the Milestone 7 import of Notebook 04 for Issues #53–#56, and the
-documentation update from Issue #57.
+This audit records the Milestone 7 import of Notebook 04 for Issues #53–#56, the
+documentation update from Issue #57, and the Colab smoke evidence recorded in Issue #59.
 
 Notebook 04 was imported as a cleaned, output-free Colab workflow source file at
 `notebooks/04_stratlake_feature_series_index_setup.ipynb`. It introduces the
@@ -15,7 +15,7 @@ Repository validation for Notebook 04 is source-only and sanitized. It does not 
 package installation, mount Google Drive, initialize Fintech or StratLake sessions,
 create Drive directories, enumerate Drive sessions, inspect runtime curated data, run
 archive or restore commands, generate StratLake features, or mutate source notebooks.
-Manual Colab smoke evidence is not yet recorded; it remains `pending`.
+Manual Colab smoke is recorded as `colab_smoke_passed_with_notes` per Issue #59.
 
 Notebook 05 (StratLake Q1 feature data generation) is forward tutorial continuity only
 and is not yet imported or implemented.
@@ -38,8 +38,8 @@ and is not yet imported or implemented.
 Current audited status:
 
 - Import status: `imported`.
-- Validation status: `cleaned`, `static_validated`, `readiness_validated`, `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`.
-- Manual Colab smoke status: `colab_smoke_pending`.
+- Validation status: `cleaned`, `static_validated`, `readiness_validated`, `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`, `audit_recorded`, `colab_smoke_passed_with_notes`.
+- Manual Colab smoke status: `colab_smoke_passed_with_notes` (Issue #59).
 - Merge-readiness status: not claimed; reserved for M7.6 closeout.
 
 ## Staging History
@@ -190,6 +190,87 @@ Notebook 05 does not exist in the repository. It is not imported, not implemente
 not claimed as part of any M7 deliverable. StratLake feature generation remains deferred
 to future tutorial work.
 
+## Manual Colab Smoke Result (Issue #59)
+
+**Final status: `colab_smoke_passed_with_notes`**
+
+The captured smoke run was not a clean top-to-bottom execution from committed source in a
+fresh runtime. Cells were rerun out of order after session initialization, producing
+timestamp and Drive-root inconsistencies. Because those conditions prevent claiming a
+clean `colab_smoke_passed`, this audit records the status as `passed-with-notes`.
+
+### Observed Successful Evidence
+
+The following operations were confirmed to work in the smoke-test session:
+
+| Operation | Result |
+|---|---|
+| `fintech-market-ingestion` package install | `fintech-market-ingestion==0.11.0` installed from TestPyPI |
+| `stratlake-trade-engine` package install | `stratlake-trade-engine==0.44.0` installed from TestPyPI |
+| `pandas-market-calendars` package install | Installed successfully |
+| CLI availability check (`shutil.which`) | All 9 commands resolved under `/usr/local/bin` |
+| Google Drive mount | Mounted at `/content/drive` |
+| `fintech-init-project` execution | Fintech session workspace created; session manifest generated |
+| `FINTECH_SESSION_ID` extraction | Extracted from the generated session manifest |
+| `stratlake-init-session` execution | `.stratlake/session.json` and `.stratlake/path_resolution.json` produced |
+| `STRATLAKE_SESSION_ID` extraction | Extracted from the generated session metadata |
+| Drive session/archive path creation | Session-scoped and archive-scoped Drive directories created |
+| Shared readiness check | Confirmed expected local and Drive roots existed |
+
+### Smoke-Test Notes
+
+The following conditions prevent claiming a clean `colab_smoke_passed`:
+
+1. **Non-linear execution**: Cells were rerun after session initialization; the captured
+   run was not a clean single-pass top-to-bottom execution from committed source.
+2. **Drive folder name inconsistency**: `DRIVE_FOLDER_NAME` appeared to change after
+   session initialization. `stratlake-init-session` output referenced
+   `/content/drive/MyDrive/REPLACE_WITH_DRIVE_FOLDER_NAME` while later Drive path cells
+   referenced `/content/drive/MyDrive/TRADE1`.
+3. **Timestamp mismatch**: Runtime session IDs and path setup timestamps did not match
+   across the captured outputs, consistent with out-of-order cell execution.
+4. **Restore preview not executed**: The optional `fintech-backup-data restore` preview
+   cell was not executed during this smoke run.
+5. **`MARKETLAKE_ROOT` was empty**: This is acceptable for Notebook 04 setup-only scope.
+   An empty `MARKETLAKE_ROOT` does not indicate a failure. However, it does not prove
+   curated-data restore or feature-generation readiness. Those belong to Notebook 05.
+
+### Drive Archive Mismatch Interpretation
+
+Existing Drive archive folders from prior user sessions (e.g. a user-named Drive folder
+containing `sessions/.../daily-bars-session_...`) visible in Drive screenshots are
+**prior user-selected archive material**. They are not produced by Notebook 04 and are
+not automatically targeted by Notebook 04's freshly instanced `FINTECH_SESSION_ID` /
+`FINTECH_ARCHIVE_ID` defaults.
+
+Notebook 04 is a setup/bridge notebook. Its default behavior derives fresh session
+identifiers from runtime timestamps and creates new Drive paths scoped to those fresh IDs.
+Binding to a prior archive requires the user to intentionally update
+`RESTORE_FINTECH_SESSION_ID` / `RESTORE_FINTECH_ARCHIVE_ID` and follow the optional
+curated-data restore guidance before running StratLake feature generation.
+
+This mismatch is **expected behavior**, not a bug in Notebook 04.
+
+### What the Smoke Test Does Not Claim
+
+- Repository validation was not run as part of the smoke test; repository validators
+  remain source-only and sanitized as documented.
+- Curated-data restore was not performed; `MARKETLAKE_ROOT` was empty throughout.
+- StratLake feature generation was not performed; that belongs to Notebook 05.
+- Notebook 05 does not exist in this repository and is not claimed as implemented.
+- No runtime artifacts, session manifests, Drive folders, archive packs, restored data,
+  or executed notebook outputs were committed to the repository.
+
+### Path to Clean Pass
+
+A clean `colab_smoke_passed` upgrade requires a fresh Colab rerun where:
+
+- `DRIVE_FOLDER_NAME` is set exactly once before any setup/runtime cells execute.
+- Cells run in clean linear order from the top without reruns.
+- Both pack and restore preview cells are executed and their outputs verified.
+- The readiness check output is internally consistent (matching session IDs and timestamps).
+- No outputs are committed back to the repository.
+
 ## M7.5 Validation Results
 
 | Command | Result |
@@ -209,8 +290,10 @@ to future tutorial work.
 
 ## Known Follow-up Items for M7.6
 
-- Manual Colab smoke for Notebook 04 remains `pending`. M7.6 may record smoke evidence
-  if available, or explicitly carry forward `colab_smoke_pending` status.
+- Manual Colab smoke for Notebook 04 is recorded as `colab_smoke_passed_with_notes`.
+  A clean top-to-bottom rerun with `DRIVE_FOLDER_NAME` set exactly once, all cells run
+  in linear order, and both preview cells executed would allow upgrading to
+  `colab_smoke_passed`. That upgrade is deferred to a future issue if desired.
 - `stratlake-init-session` upstream source verification (pyproject entry point, CLI
   implementation file, flag confirmation against `stratlake-trade-engine` source) remains
   pending. Current registry flags are smoke-test-confirmed only.

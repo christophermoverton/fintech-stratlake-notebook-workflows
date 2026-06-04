@@ -354,8 +354,40 @@ All markdown cells are kept as-is.
 - Session manifest creation.
 - Source notebook mutation.
 
+## Manual Colab Smoke Status (Issue #59)
+
+Manual Colab smoke for Notebook 04 is recorded as `colab_smoke_passed_with_notes`.
+
+The smoke-test session confirmed package install, CLI availability, Drive mount, Fintech
+session initialization, `FINTECH_SESSION_ID` extraction, StratLake session initialization,
+`STRATLAKE_SESSION_ID` extraction, Drive path creation, and the shared readiness check.
+
+The captured run was not a clean top-to-bottom execution; some cells were rerun, producing
+timestamp/Drive-root inconsistencies. The restore preview cell was not executed.
+`MARKETLAKE_ROOT` existed but was empty — acceptable for setup-only scope.
+
+Existing Drive archive folders from prior user sessions (e.g. a user-named Drive folder
+containing `sessions/.../daily-bars-session_...`) are not produced by Notebook 04 and
+are not automatically targeted by its freshly instanced `FINTECH_SESSION_ID` /
+`FINTECH_ARCHIVE_ID` defaults. This is expected behavior.
+
+### Required for a Clean `colab_smoke_passed` Upgrade
+
+If claiming `colab_smoke_passed` in a future rerun, the following must be confirmed:
+
+- `DRIVE_FOLDER_NAME` is set exactly once before any setup or runtime cells run.
+- All cells execute in clean linear order from the top without reruns.
+- The `fintech-backup-data pack` preview cell (`nb04_pack_preview`) runs and prints
+  registry-confirmed flags.
+- The `fintech-backup-data restore` preview cell (`BWLYWDVttgH8`) runs and prints
+  registry-confirmed flags.
+- The readiness check output (`1a86c0cb`) is internally consistent with matching session
+  IDs and timestamps from the same runtime context.
+- No outputs are committed to the repository.
+
 ## Known Follow-up Items for M7.6
 
-- Manual Colab smoke for Notebook 04 remains `pending`.
+- Manual Colab smoke status: `colab_smoke_passed_with_notes` (Issue #59). Clean rerun
+  to upgrade to `colab_smoke_passed` is deferred if desired.
 - `stratlake-init-session` upstream source verification remains pending.
 - Notebook 05 remains future tutorial continuity only; it is not implemented.
