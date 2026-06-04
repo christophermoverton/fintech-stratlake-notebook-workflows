@@ -19,7 +19,7 @@ mount Google Drive, prompt for or read credentials, call Alpaca, initialize Fint
 StratLake sessions, run ingestion, build features, create archives, restore archives,
 inspect live runtime data, or mutate the source notebook.
 
-Manual Colab smoke status is `colab_smoke_pending`.
+Manual Colab smoke status is `colab_smoke_passed_with_notes`.
 
 ## Notebook Identity
 
@@ -33,7 +33,7 @@ Manual Colab smoke status is `colab_smoke_pending`.
 - CLI coverage issue: Issue #71 — M9.3 Add Notebook 06 CLI Contract and Registry Coverage.
 - Execution-readiness issue: Issue #72 — M9.4 Add Notebook 06 Source-Only Readiness and Sanitized Execution Coverage.
 - Documentation/audit issue: Issue #73 — M9.5 Update Notebook 06 Index, Import Audit, Staging Docs, and Dev Docs.
-- Colab smoke issue: Issue #74 — M9.6 Colab Smoke Test Notebook 06 (pending).
+- Colab smoke issue: Issue #74 — M9.6 Colab Smoke Test Notebook 06.
 
 ## Import Status
 
@@ -42,9 +42,9 @@ Current audited status:
 - Import status: `imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`,
   `sanitized_execution_validated`, `cli_contract_validated`, `cli_registry_validated`,
-  `audit_recorded`.
-- Manual Colab smoke status: `colab_smoke_pending`.
-- Merge-readiness status: not claimed; reserved for the Milestone 9 closeout path.
+  `audit_recorded`, `colab_smoke_passed_with_notes`.
+- Manual Colab smoke status: `colab_smoke_passed_with_notes`.
+- Merge-readiness status: not claimed; reserved for the Milestone 9 closeout path (M9.7).
 
 ## Staging History
 
@@ -203,13 +203,66 @@ containing package installs, Drive mounts, credential access, session initializa
 backfill, feature building, archive/restore commands, filesystem mutation, generated
 data inspection, `display(...)`, or `pd.read_parquet(...)` are skipped or no-oped.
 
-## Manual Colab Smoke Status
+## Manual Colab Smoke Result
 
-`colab_smoke_pending`.
+**Status:** `colab_smoke_passed_with_notes`
 
-No live Colab smoke test has been run from committed M9 source. Manual Colab smoke
-remains reserved for Issue #74 (M9.6). Do not treat sanitized execution results as
-evidence of live runtime correctness.
+An executed Colab Notebook 06 artifact was reviewed outside the repository as part of
+Issue #74. The artifact is smoke evidence only and must not be committed.
+
+**Artifact summary:**
+
+- Total cells: 43
+- Code cells executed: 21/21
+- Error outputs: none
+- Tracebacks: none
+
+**Runtime checks passed:**
+
+- Package install completed.
+- Required workflow commands found: `fintech-init-project`, `fintech-backfill-daily`,
+  `fintech-save-session`, `fintech-restore-session`, `fintech-backup-data`,
+  `stratlake-init-session`, `stratlake-build-features`, `stratlake-session-export`,
+  `stratlake-session-import`.
+- Optional/unverified preview commands found: `stratlake-session-archive-bootstrap`,
+  `stratlake-session-archive-restore-bootstrap`.
+- Google Drive mounted successfully.
+- Fintech session initialized; session manifest created; `FINTECH_SESSION_ID` extracted.
+- StratLake session initialized; notebook config bundle generated (`universe.yml`,
+  `paths.yml` found and previewed).
+- Drive session/archive folders created under configured Drive root.
+- Alpaca credentials configured without printing secret values.
+- Q1 setup confirmed: `AAPL`, `MSFT`, `NVDA`; `2025-01-01` to `2025-04-01`.
+- Daily-bars backfill ran (no local files existed); 180 total rows across 3 symbols written.
+- Fintech daily-bars handoff validation found 180 parquet files; sample read succeeded.
+- Fintech backup pack preview used registry-current syntax; remained preview-only
+  (`CREATE_FINTECH_ARCHIVE = False`).
+- StratLake feature build ran (no local feature files existed).
+- Feature validation found 3 feature parquet files; sample read succeeded
+  (shape: 60 rows × 15 columns).
+- All portability/session checks passed: Fintech session ID present, StratLake session
+  ID present, session IDs distinct, `MARKETLAKE_ROOT` exists, `universe.yml` exists,
+  `paths.yml` exists, Fintech Drive backup root exists, StratLake Drive archive root
+  exists, daily bars present, feature files present.
+- `stratlake-session-export --dry-run` completed; copied/skipped/overwritten counts all 0.
+- StratLake archive/bootstrap and restore commands remained preview-only.
+- Final handoff summary printed expected Fintech and StratLake session/feature/archive paths.
+
+**Notes and caveats (why `passed_with_notes` rather than `passed`):**
+
+1. Package install produced a non-blocking pip resolver warning: `ibis-framework`
+   expected `toolz<1`; `toolz 1.1.0` was installed. Notebook completed successfully.
+2. Fintech backup archive creation was not executed (`CREATE_FINTECH_ARCHIVE = False`).
+3. StratLake archive/bootstrap creation was not executed (`CREATE_STRATLAKE_ARCHIVE = False`).
+4. Restore previews showed archive packs did not exist, as expected because archive
+   creation remained preview-only.
+5. `stratlake-session-archive-bootstrap` and `stratlake-session-archive-restore-bootstrap`
+   were available in the Colab environment but were not executed; this smoke run should
+   not be treated as full upstream contract verification for those commands.
+6. The executed artifact contains outputs, runtime paths, session IDs, and
+   generated-data displays; it must not be committed as repository source.
+7. The final summary `"next_notebook"` string renders with an em dash in source but
+   may appear as mojibake in some terminal JSON output; source is clean.
 
 ## Runtime and Manual Boundaries
 
@@ -311,10 +364,7 @@ file list.
 
 ## Remaining Follow-Ups
 
-- **M9.6**: Run manual Colab smoke test for Notebook 06. Record outcome as
-  `colab_smoke_passed`, `colab_smoke_passed_with_notes`, or
-  `colab_smoke_failed_needs_rerun`. Do not commit executed notebook outputs.
-- **M9.7**: Close Milestone 9 merge readiness once M9.6 smoke status is recorded.
+- **M9.7**: Close Milestone 9 merge readiness. M9.6 smoke is complete with notes.
 - **Optional future cleanup**: Narrow legacy restore flags in
   `config/notebook_cli_contracts.toml` if it can be done without breaking older
   notebook compatibility. Not required for M9.
@@ -328,10 +378,11 @@ This audit does not claim that Notebook 06:
 - Committed daily bars.
 - Executed live backfills in CI.
 - Executed live StratLake feature builds in CI.
-- Executed archives or restores in CI.
+- Executed archive creation (archive creation remained preview-only in the smoke run).
+- Executed restore (restore remained preview-only in the smoke run).
 - Executed Google Drive mutation in CI.
 - Used credentials in CI.
-- Passed Colab smoke test (smoke is pending).
-- Verified `stratlake-session-archive-bootstrap` or `stratlake-session-archive-restore-bootstrap` upstream contracts.
+- Committed executed notebook outputs (the executed Colab artifact must not be committed).
+- Fully verified `stratlake-session-archive-bootstrap` or `stratlake-session-archive-restore-bootstrap` upstream contracts (commands were available but not executed in the smoke run).
 - Used Google Drive as the active app workspace.
 - Is a strategy or backtest notebook.

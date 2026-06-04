@@ -117,7 +117,7 @@ Notebook 00, Notebook 01, Notebook 02, Notebook 03, Notebook 04, Notebook 05, an
 - Notebook 03 - Fintech archive backup pack and restore
 - Notebook 04 - StratLake feature-series index and dual-session setup (imported; bridge/setup notebook, not feature generation)
 - Notebook 05 - StratLake Q1 feature data generation with Fintech daily bars (imported; manual Colab live ingestion and feature generation; source-only validated)
-- Notebook 06 - StratLake feature validation, archive, and handoff (imported; validation/archive-preview/handoff checkpoint; source-only and sanitized validated; manual Colab smoke pending)
+- Notebook 06 - StratLake feature validation, archive, and handoff (imported; validation/archive-preview/handoff checkpoint; source-only and sanitized validated; manual Colab smoke passed with notes)
 - Notebook 07 - feature consumption and native strategy smoke test
 - Notebook 08 - single-strategy backtest and artifact review
 - Notebook 09 - multi-strategy comparison and research review

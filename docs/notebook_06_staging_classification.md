@@ -29,7 +29,7 @@ Colab and Google Drive, not in Git.
 | Relationship to Notebook 07 | Prepares the validated feature session for Notebook 07 strategy/backtest work |
 | Staging category | `source_safe_after_cleanup` after Issue #69 |
 | Import status | `imported` |
-| Manual Colab smoke status | `colab_smoke_pending` |
+| Manual Colab smoke status | `colab_smoke_passed_with_notes` |
 
 ## Notebook Role
 
@@ -93,8 +93,8 @@ Milestone 9 review confirmed:
 | Source-only readiness validated | Complete — Issue #72 |
 | Sanitized execution validated | Complete — Issue #72 |
 | Audit recorded | Complete — Issue #73 |
-| Manual Colab smoke | Pending — Issue #74 |
-| Milestone merge readiness | Pending — Issue #75 (M9.7) |
+| Manual Colab smoke | Complete with notes — Issue #74 |
+| Milestone merge readiness | Pending — M9.7 |
 
 ## Repository Source Status
 
@@ -152,7 +152,7 @@ must never be executed by repository validation or committed to Git:
 | pytest (notebook execution) | Pass — 47/47 | `tests/test_notebook_execution.py` |
 | pytest (CLI contracts) | Pass | `tests/test_notebook_cli_contracts.py` |
 | pytest (CLI registry) | Pass | `tests/test_notebook_cli_registry.py` |
-| Manual Colab smoke | Pending | Issue #74 |
+| Manual Colab smoke | Pass with notes — Issue #74 | Issue #74 |
 
 ## Command Coverage Matrix
 
@@ -200,24 +200,36 @@ substitute for manual Colab smoke testing.
 
 ## Colab Smoke Status
 
-`colab_smoke_pending`.
+`colab_smoke_passed_with_notes` — Issue #74.
 
-No live Colab smoke test has been run from committed M9 source. Manual Colab smoke is
-reserved for Issue #74 (M9.6). The following surfaces require manual Colab confirmation:
+An executed Colab Notebook 06 artifact was reviewed outside the repository. All 21
+code cells executed without errors or tracebacks.
 
-- Package install and CLI availability.
-- Google Drive mount and session/archive folder creation.
-- Alpaca credentials via Colab Secrets.
-- `fintech-init-project` and `FINTECH_SESSION_ID` extraction.
-- `stratlake-init-session` and `STRATLAKE_SESSION_ID` extraction.
-- StratLake notebook config verification.
-- Optional `fintech-backup-data restore` preview execution.
-- Fintech daily-bars backfill (if needed) and handoff validation.
-- `stratlake-build-features` (if needed) and feature validation.
-- Session portability checks.
-- `stratlake-session-export --dry-run`.
-- Optional archive and restore-readiness previews.
-- Final JSON handoff summary.
+**Confirmed in smoke run:**
+
+- Package install and CLI availability (all required commands found; both optional
+  archive/bootstrap commands also found but not executed).
+- Google Drive mounted; session/archive folders created.
+- Alpaca credentials configured without printing secret values.
+- `fintech-init-project` ran; `FINTECH_SESSION_ID` extracted.
+- `stratlake-init-session` ran; `STRATLAKE_SESSION_ID` extracted; notebook configs generated.
+- `universe.yml` and `paths.yml` previewed.
+- Q1 daily-bars backfill ran; 180 rows across 3 symbols.
+- Fintech daily-bars handoff validated.
+- StratLake feature build ran; 3 feature parquet files found; sample shape (60, 15).
+- All portability/session checks passed.
+- `stratlake-session-export --dry-run` completed.
+- Final JSON handoff summary printed.
+
+**Notes (why `passed_with_notes`):**
+
+- Non-blocking pip resolver warning (`toolz 1.1.0` vs `ibis-framework` expectation).
+- `CREATE_FINTECH_ARCHIVE = False` — Fintech archive creation not executed.
+- `CREATE_STRATLAKE_ARCHIVE = False` — StratLake archive creation not executed.
+- Restore previews showed archive packs did not exist (expected; archive creation was preview-only).
+- `stratlake-session-archive-bootstrap` and `stratlake-session-archive-restore-bootstrap`
+  were available but not executed; upstream contracts remain unverified beyond availability.
+- Executed artifact must not be committed.
 
 ## Non-Claims
 
@@ -238,14 +250,16 @@ This document does not claim that Notebook 06:
 
 ## Merge Readiness Handoff Notes
 
-Notebook 06 is ready for docs/index handoff (M9.5 complete). It is not yet final
-milestone merge-ready until:
+M9.6 manual Colab smoke is complete with notes. All core runtime checks passed; archive
+creation and restore remained preview-only; StratLake archive/bootstrap commands remain
+unverified beyond availability.
 
-- M9.6: Manual Colab smoke is run and recorded.
-- M9.7: Milestone 9 merge readiness is confirmed.
+Notebook 06 is not yet final milestone merge-ready until:
 
-Do not close M9 merge readiness in M9.5. Record smoke outcome in M9.6 and use it to
-inform M9.7 merge readiness decisions.
+- M9.7: Milestone 9 merge readiness is confirmed using M9.6 smoke status.
+
+Do not close M9 merge readiness in M9.6. M9.7 should use `colab_smoke_passed_with_notes`
+as the recorded smoke outcome when making merge-readiness decisions.
 
 ## Committed Source
 

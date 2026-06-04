@@ -299,7 +299,7 @@ until upstream contract verification occurs.
 
 Sanitized execution is conservative and validates source structure, source invariants,
 and skip behavior. It does not prove live Colab runtime behavior. Manual Colab smoke
-for Notebook 06 is `colab_smoke_pending` (reserved for Issue #74).
+for Notebook 06 is `colab_smoke_passed_with_notes` (recorded in Issue #74).
 
 ## Validation Layer Distinction
 
