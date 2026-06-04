@@ -261,8 +261,8 @@ Issue #74. The artifact is smoke evidence only and must not be committed.
    not be treated as full upstream contract verification for those commands.
 6. The executed artifact contains outputs, runtime paths, session IDs, and
    generated-data displays; it must not be committed as repository source.
-7. The final summary `"next_notebook"` string renders with an em dash in source but
-   may appear as mojibake in some terminal JSON output; source is clean.
+7. The final summary `"next_notebook"` string now uses a proper em dash in source
+   (`\u2014`) so rendered and JSON output stay clean.
 
 ## Runtime and Manual Boundaries
 
