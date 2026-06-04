@@ -88,6 +88,8 @@ def safe_prefix_lines(source: str) -> list[str]:
             "PREVIOUS_BACKUP_PACK_DIR",
             "FINTECH_ROOT",
             "RESTORE_ROOT",
+            "STRATLAKE_ROOT",
+            "MARKETLAKE_ROOT",
         )
     ):
         return []
@@ -287,6 +289,66 @@ def test_notebook_02_has_archive_restore_preflight_guardrails():
     assert "RuntimeError" in source
 
 
+def test_notebook_04_is_in_readiness_and_execution_targets():
+    notebook_04 = "notebooks/04_stratlake_feature_series_index_setup.ipynb"
+    readiness = load_toml(READINESS_CONFIG)
+    execution = load_toml(EXECUTION_CONFIG)
+
+    assert notebook_04 in readiness["notebook_validation"]["default_targets"]
+    assert notebook_04 in execution["notebook_execution"]["default_targets"]
+
+
+def test_notebook_04_source_preserves_dual_session_ids():
+    source_notebook = REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb"
+    notebook = nbformat.read(source_notebook, as_version=4)
+    source = "\n".join(cell_source(cell) for cell in notebook.cells)
+
+    assert "FINTECH_SESSION_ID" in source
+    assert "STRATLAKE_SESSION_ID" in source
+    assert "MARKETLAKE_ROOT" in source
+    assert "fintech-init-project" in source
+    assert "stratlake-init-session" in source
+
+
+def test_notebook_04_sanitized_copy_removes_runtime_cells():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb"
+
+    sanitized, skipped, kept_code = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    assert skipped + kept_code > 0
+
+    assert "!pip install" not in sanitized_sources
+    assert "drive.mount(" not in sanitized_sources
+    assert "google.colab" not in sanitized_sources
+    assert "!fintech-init-project" not in sanitized_sources
+    assert "!stratlake-init-session" not in sanitized_sources
+    assert "!stratlake-build-features" not in sanitized_sources
+    assert ".mkdir(" not in sanitized_sources
+    assert "STRATLAKE_ROOT" not in sanitized_sources
+    assert "MARKETLAKE_ROOT" not in sanitized_sources
+    assert "available_fintech_sessions" not in sanitized_sources
+
+
+def test_notebook_04_sanitized_does_not_invoke_shell_or_drive():
+    config = load_toml(EXECUTION_CONFIG)
+    source_notebook = REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb"
+
+    sanitized, skipped, _ = build_sanitized_notebook(source_notebook, config)
+    sanitized_sources = "\n".join(sanitized_code_sources(sanitized))
+
+    assert skipped > 0
+    for line in sanitized_sources.splitlines():
+        stripped = line.lstrip()
+        assert not stripped.startswith("!"), f"Shell command leaked into sanitized output: {line!r}"
+        assert "drive.mount(" not in stripped
+        assert "!pip install" not in stripped
+        assert "!fintech-backup-data" not in stripped
+        assert "!stratlake-" not in stripped
+
+
 def test_issue_14_readiness_command_remains_compatible():
     result = subprocess.run(
         [
@@ -346,6 +408,11 @@ def test_sanitized_execution_does_not_mutate_source(source_notebook, tmp_path):
         "available_drive_sessions",
         "DAILY_BARS_ROOT.rglob",
         ".mkdir(",
+        "!stratlake-init-session",
+        "!stratlake-build-features",
+        "STRATLAKE_ROOT",
+        "available_fintech_sessions",
+        "MARKETLAKE_ROOT",
     ]
     for fragment in unsafe_fragments:
         assert fragment not in sanitized_sources

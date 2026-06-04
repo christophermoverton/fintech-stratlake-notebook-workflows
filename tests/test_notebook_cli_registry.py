@@ -101,6 +101,7 @@ def test_build_registry_model_contains_expected_commands_and_subcommands():
     assert "fintech-backfill-daily" in MODEL.commands
     assert "fintech-save-session" in MODEL.commands
     assert "fintech-backup-data" in MODEL.commands
+    assert "stratlake-init-session" in MODEL.commands
 
     backup_entry = MODEL.commands["fintech-backup-data"]
     assert backup_entry.subcommands == ("pack", "validate", "inspect", "restore")
@@ -109,13 +110,40 @@ def test_build_registry_model_contains_expected_commands_and_subcommands():
     assert ("fintech-backup-data", "inspect") in MODEL.subcommands
     assert ("fintech-backup-data", "restore") in MODEL.subcommands
 
+    stratlake_entry = MODEL.commands["stratlake-init-session"]
+    assert stratlake_entry.subcommands == ()
+    assert "--root" in stratlake_entry.flags
+    assert "--project-name" in stratlake_entry.flags
+    assert "--marketlake-root" in stratlake_entry.flags
+    assert "--drive-root" in stratlake_entry.flags
+    assert "--enable-drive-persistence" in stratlake_entry.flags
+    assert "--notebook-configs" in stratlake_entry.flags
+    assert stratlake_entry.flags["--enable-drive-persistence"].kind == "boolean"
+    assert stratlake_entry.flags["--notebook-configs"].kind == "boolean"
+    assert stratlake_entry.flags["--marketlake-root"].notebook_contract_required is True
 
-def test_registry_exclusions_and_no_current_stratlake_commands():
+
+def test_registry_exclusions_and_stratlake_init_session_promoted():
     assert "fintech-restore-session" in MODEL.excluded
     assert "fintech-restore-session" not in MODEL.commands
 
+    # stratlake-trade-engine commands placeholder still exists as excluded grouping
     assert "stratlake-trade-engine commands" in MODEL.excluded
-    assert not any(command.startswith("stratlake") for command in MODEL.commands)
+
+    # stratlake-init-session is promoted to live NB04 scope (M7.3)
+    assert "stratlake-init-session" in MODEL.commands
+    assert "stratlake-init-session" not in MODEL.excluded
+
+    # all other stratlake commands remain excluded from valid NB04 scope
+    excluded_stratlake = [
+        "stratlake-build-features",
+        "stratlake-session-export",
+        "stratlake-session-import",
+        "stratlake-session-archive-bootstrap",
+        "stratlake-session-archive-restore-bootstrap",
+    ]
+    for command in excluded_stratlake:
+        assert command not in MODEL.commands, f"{command} should not be in registry commands"
 
 
 def test_required_flag_schema_and_restore_semantics():
@@ -350,6 +378,7 @@ def test_excluded_stratlake_placeholder_does_not_make_concrete_command_valid(tmp
         REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb",
         REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb",
         REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb",
+        REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb",
     ],
     ids=lambda path: path.name,
 )
@@ -396,18 +425,66 @@ def test_notebook_03_passes_with_zero_registry_failures():
     assert all(example.command != "fintech-restore-session" for example in report.examples)
 
 
+def test_notebook_04_passes_with_zero_registry_failures():
+    target = REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb"
+    report = cli_registry.validate_targets([target], MODEL, SETTINGS)
+
+    assert report.examples
+    assert not report.findings
+    # fintech-init-project live shell is classified manual_only_live
+    assert any(
+        example.command == "fintech-init-project"
+        and example.source_kind == "shell"
+        and example.classification == "manual_only_live"
+        and {"--root", "--notebooks", "--with-session", "--session-name"} <= example.flag_names()
+        for example in report.examples
+    )
+    # stratlake-init-session live shell is classified manual_only_live
+    assert any(
+        example.command == "stratlake-init-session"
+        and example.source_kind == "shell"
+        and example.classification == "manual_only_live"
+        and {"--root", "--project-name", "--marketlake-root", "--drive-root"} <= example.flag_names()
+        and "--enable-drive-persistence" in example.flag_names()
+        and "--notebook-configs" in example.flag_names()
+        for example in report.examples
+    )
+    # availability-check-only commands are not treated as live NB04 commands
+    availability_only = {
+        "fintech-save-session",
+        "stratlake-build-features",
+        "stratlake-session-export",
+        "stratlake-session-import",
+        "stratlake-session-archive-bootstrap",
+        "stratlake-session-archive-restore-bootstrap",
+    }
+    for command in availability_only:
+        assert all(example.command != command for example in report.examples), (
+            f"{command} should not appear as a live registry example in NB04"
+        )
+    # fintech-restore-session is not present
+    assert all(example.command != "fintech-restore-session" for example in report.examples)
+
+
+def test_config_includes_notebook_04_registry_target():
+    targets = SETTINGS.get("default_targets", [])
+
+    assert "notebooks/04_stratlake_feature_series_index_setup.ipynb" in targets
+
+
 def test_registry_validation_does_not_mutate_source_notebooks():
     targets = [
         REPO_ROOT / "notebooks" / "00_setup_and_storage_overview.ipynb",
         REPO_ROOT / "notebooks" / "01_fintech_daily_bars_extraction_backfill.ipynb",
         REPO_ROOT / "notebooks" / "02_fintech_session_persistence_save_restore.ipynb",
         REPO_ROOT / "notebooks" / "03_fintech_archive_backup_pack_and_restore.ipynb",
+        REPO_ROOT / "notebooks" / "04_stratlake_feature_series_index_setup.ipynb",
     ]
     before = {path: file_digest(path) for path in targets}
 
     report = cli_registry.validate_targets(targets, MODEL, SETTINGS)
 
-    assert report.targets_checked == 4
+    assert report.targets_checked == 5
     after = {path: file_digest(path) for path in targets}
     assert before == after
 

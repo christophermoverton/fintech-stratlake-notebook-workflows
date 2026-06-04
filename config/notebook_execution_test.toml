@@ -3,7 +3,8 @@ default_targets = [
   "notebooks/00_setup_and_storage_overview.ipynb",
   "notebooks/01_fintech_daily_bars_extraction_backfill.ipynb",
   "notebooks/02_fintech_session_persistence_save_restore.ipynb",
-  "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb"
+  "notebooks/03_fintech_archive_backup_pack_and_restore.ipynb",
+  "notebooks/04_stratlake_feature_series_index_setup.ipynb"
 ]
 execute_sanitized_copy = true
 full_notebook_execution_enabled = false
@@ -41,7 +42,15 @@ cell_source_contains = [
   "available_drive_sessions",
   "SOURCE_DATASET_ROOT.rglob",
   "DAILY_BARS_ROOT.rglob",
-  ".mkdir("
+  ".mkdir(",
+  "!stratlake-init-session",
+  "!stratlake-build-features",
+  "!stratlake-session-export",
+  "!stratlake-session-import",
+  "!stratlake-session-archive",
+  "STRATLAKE_ROOT",
+  "available_fintech_sessions",
+  "MARKETLAKE_ROOT"
 ]
 
 [temporary_execution]
