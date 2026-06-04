@@ -2,7 +2,7 @@
 
 ## Summary
 
-This audit records the Milestone 8 import of Notebook 05 for Issues #61 through #65.
+This audit records the Milestone 8 import of Notebook 05 for Issues #61 through #66.
 
 Notebook 05 was imported as a cleaned, output-free Colab workflow source file at
 `notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb`.
@@ -31,6 +31,7 @@ Manual Colab smoke is recorded as `colab_smoke_pending`.
 - CLI coverage issue: Issue #63 - M8.3 Add Notebook 05 CLI Contract and Registry Coverage.
 - Execution-readiness issue: Issue #64 - M8.4 Add Notebook 05 Source-Only Readiness and Sanitized Execution Coverage.
 - Documentation/audit issue: Issue #65 - M8.5 Update Notebook 05 Index, Import Audit, Staging Docs, and Dev Docs.
+- Colab smoke issue: Issue #66 - M8.6 Colab Smoke Test Notebook 05.
 
 ## Import Status
 
@@ -58,6 +59,8 @@ Milestone 8 staging facts:
 - M8.3 added CLI contract and registry coverage for source-visible live and dry-run command forms.
 - M8.4 added Notebook 05 to source-only readiness and sanitized execution coverage.
 - M8.5 records the import audit, staging classification, and index/development documentation.
+- M8.6 did not perform a live Colab smoke run in this repository session, so the smoke
+  status remains `colab_smoke_pending`.
 
 No committed outputs, execution counts, Colab runtime metadata, generated data,
 archive/restore artifacts, feature files, session manifests, Drive folders, logs,
@@ -186,7 +189,7 @@ Notebook 05 live workflow cells are manual Colab-only. Repository validation mus
 
 ## Validation Results
 
-The repository-side validation stack for Notebook 05 passed during M8.4/M8.5 work:
+The repository-side validation stack for Notebook 05 passed during M8.4/M8.5/M8.6 work:
 
 | Command | Result |
 |---|---|
@@ -203,6 +206,36 @@ The repository-side validation stack for Notebook 05 passed during M8.4/M8.5 wor
 | `python -m pytest` | Passed |
 
 These are source-only repository checks. They are not manual Colab smoke evidence.
+
+## Manual Colab Smoke Result (Issue #66)
+
+**Final status: `colab_smoke_pending`**
+
+No live Google Colab smoke run was performed for Issue #66 in this repository session.
+The committed Notebook 05 source was not run in Colab, Google Drive was not mounted,
+Alpaca credentials were not read, and no live Fintech or StratLake CLI workflow was
+executed.
+
+Smoke-test metadata:
+
+| Field | Value |
+|---|---|
+| Smoke status | `colab_smoke_pending` |
+| Date recorded | 2026-06-04 |
+| Commit SHA available for smoke | `f6c525daca8486c0f3e20c767bfadc72d7aaab64` |
+| Notebook path | `notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb` |
+| Runtime tested | Not run in Colab |
+| Package versions observed in Colab | Not observed |
+| Drive mount | Not attempted |
+| Fintech session initialization | Not attempted |
+| StratLake session initialization | Not attempted |
+| Q1 daily-bars ingestion | Not attempted |
+| StratLake feature generation | Not attempted |
+| `stratlake-session-export --dry-run` | Not attempted |
+
+Because no live run was performed, this audit does not claim `colab_smoke_passed`,
+`colab_smoke_passed_with_notes`, `colab_smoke_failed_needs_rerun`, or
+`colab_smoke_refactored_needs_rerun`.
 
 ## Explicit Non-Claims
 
@@ -228,9 +261,9 @@ Manual Colab smoke remains `colab_smoke_pending`.
 
 ## Follow-Up Notes
 
-- Issue #66 should perform and record manual Colab smoke only if the live workflow is
-  actually run in Colab with credentials, Drive, ingestion, and feature generation.
 - Issue #67 should confirm merge readiness, final validation output, and any remaining
   non-claims.
+- A future Colab smoke issue should record a real Colab run before changing
+  `colab_smoke_pending` to a pass/fail smoke status.
 - StratLake archive/bootstrap preview flags remain manual guidance pending upstream CLI
   verification.

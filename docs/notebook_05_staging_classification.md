@@ -198,12 +198,16 @@ Repository validation does not:
 
 ## Manual Colab Smoke Status
 
-Manual Colab smoke remains `colab_smoke_pending`. No M8 repository validation result
-should be read as live Colab runtime evidence.
+Manual Colab smoke remains `colab_smoke_pending`. Issue #66 did not perform a live
+Google Colab run in this repository session, so no runtime success, failure, package
+version, Drive mount, Alpaca credential, ingestion, feature-generation, export, archive,
+or restore evidence is claimed. No M8 repository validation result should be read as
+live Colab runtime evidence.
 
 ## Known Follow-Up Items
 
-- Issue #66 should record manual Colab smoke only after a real Colab run is performed.
 - Issue #67 should review final merge readiness and preserve all non-claims.
+- A future Colab smoke issue should record manual Colab evidence only after a real
+  Colab run is performed.
 - StratLake archive/bootstrap preview flags should stay manual guidance until upstream
   command contracts are verified.
