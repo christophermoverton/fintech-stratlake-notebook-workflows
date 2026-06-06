@@ -57,6 +57,9 @@ python scripts/validate_notebook_cli_registry.py notebooks/05_stratlake_q1_featu
 python scripts/validate_notebook_cli_registry.py notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_cli_registry.py notebooks/07_stratlake_feature_consumption_baseline_research.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python scripts/validate_notebook_execution_readiness.py notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb
+python -m pytest tests/test_notebook_08_static_cli_restore_artifact_review.py -q
+python -m pytest tests/test_notebook_08_source_readiness.py -q
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
 python -m pytest tests/test_notebook_execution.py
@@ -90,6 +93,7 @@ notebooks/04_stratlake_feature_series_index_setup.ipynb
 notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipynb
 notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb
 notebooks/07_stratlake_feature_consumption_baseline_research.ipynb
+notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb
 ```
 
 ## Pytest Notebook Execution Harness
@@ -385,6 +389,63 @@ images. It must not be committed as repository source. Repository source remains
 output-free and execution-count-null. Archive/export/restore success is not claimed
 beyond dry-run/preview surfaces.
 
+## Notebook 08 Runtime Boundary
+
+Notebook 08 (`notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb`) is a
+native StratLake strategy/backtest artifact review notebook after Notebook 07. It can
+reattach to the Notebook 07 StratLake archive/session checkpoint shape when a
+user-configured Drive root is available. It is not a notebook-side strategy framework,
+not a notebook-side backtest implementation, and not an authoritative performance report.
+
+Repository validation for Notebook 08 uses source-only static coverage and source-readiness
+tests. It does **not**:
+
+- Install packages from TestPyPI or PyPI.
+- Mount Google Drive.
+- Prompt for or read Alpaca credentials.
+- Run `fintech-init-project` or `stratlake-init-session`.
+- Create Drive session/archive folders.
+- Run `stratlake-session-archive-restore-bootstrap`.
+- Restore Notebook 07 archive contents.
+- Run native strategy execution or backtests (`stratlake-run-strategy`).
+- Parse live native strategy stdout.
+- Discover or load live native artifacts.
+- Generate plots or benchmark review outputs.
+- Run `stratlake-session-archive-bootstrap`.
+- Construct the final handoff summary from runtime-derived values.
+- Mutate the Notebook 08 source file.
+
+These operations remain manual Colab/runtime-only. The committed source keeps
+`DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"` guarded, keeps
+`RUN_STRATLAKE_ARCHIVE_RESTORE = False`, and keeps
+`RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False`. `RUN_FINTECH_INIT_PROJECT = True`,
+`RUN_STRATLAKE_INIT_SESSION = True`, and `RUN_NATIVE_STRATEGY_BACKTEST = True` are
+intended live workflow gates, not source-import evidence.
+
+Notebook 08 source validation is covered by
+`tests/test_notebook_08_static_cli_restore_artifact_review.py`,
+`tests/test_notebook_08_source_readiness.py`, and `config/notebook_test.toml`. These tests
+inspect notebook JSON/source text only. They do not require Colab, Drive, Alpaca
+credentials, archive packs, native strategy artifacts, plots, or generated reports.
+
+Manual Colab smoke for Notebook 08 is `colab_smoke_passed_with_notes`. Issue #90
+recorded an uploaded executed artifact where archive restore ran, checksum passed, native
+`momentum_v1` strategy execution returned code 0 with QA PASS, artifact discovery found
+candidate native artifacts, `signals.parquet` loaded as a plottable time-series artifact,
+and plot/benchmark review outputs rendered.
+
+Caveats: package install emitted a non-blocking `toolz` / `ibis-framework` resolver
+warning; restore validation and inspection reported warnings limited to optional DuckDB
+snapshot metadata/logical-group coverage; native stderr included a degenerate-signal
+warning for `BuyAndHoldStrategy`, not the selected `momentum_v1` strategy; execution
+counts were not perfectly contiguous, so the artifact is recorded as uploaded executed
+smoke evidence rather than proof of pristine restart-and-run-all ordering.
+
+The executed artifact contains outputs, Colab metadata, runtime displays, embedded plot
+output, and a concrete runtime Drive folder value. It must remain outside Git. The
+repository still does not claim archive checkpoint refresh success, all-strategy coverage,
+Notebook 09 validation, or authoritative strategy/backtest performance.
+
 ## Validation Layer Distinction
 
 Repository validation for source notebooks operates at four distinct layers:
@@ -457,6 +518,15 @@ The harness does not execute notebooks. It also skips cells that should not be l
   daily bars or feature outputs, construct archive/bootstrap/restore previews from
   runtime-derived session paths, or construct the final JSON handoff summary from
   runtime-derived values.
+- Notebook 08 cells that install packages, mount Google Drive (`drive.mount(...)`), read
+  Alpaca credentials (`userdata.get(...)`, `getpass.getpass(...)`), run
+  `fintech-init-project`, run `stratlake-init-session`, create Drive session/archive
+  folders, inspect or restore Notebook 07 archive packs, run
+  `stratlake-session-archive-restore-bootstrap`, run native strategy execution
+  (`stratlake-run-strategy`), parse live native stdout, discover or load generated native
+  artifacts (`pd.read_parquet(...)`, `pd.read_csv(...)`), display plots or benchmark
+  review outputs, run `stratlake-session-archive-bootstrap`, or construct the final
+  Notebook 09 handoff summary from runtime-derived values.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 
