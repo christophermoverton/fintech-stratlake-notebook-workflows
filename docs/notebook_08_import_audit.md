@@ -2,7 +2,7 @@
 
 ## Summary
 
-This audit records the Milestone 11 import of Notebook 08 for Issues #85 through #89.
+This audit records the Milestone 11 import of Notebook 08 for Issues #85 through #90.
 
 Notebook 08 was imported as a cleaned, output-free source notebook at
 `notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb`. It is a conservative
@@ -19,8 +19,9 @@ mount Google Drive, prompt for or read credentials, initialize Fintech or StratL
 sessions, restore archives, run native strategy backtests, refresh archive checkpoints,
 generate plots, inspect live artifacts, or mutate the source notebook.
 
-Manual Colab smoke status is `pending`. M11.6 is the first issue intended to exercise and
-document live runtime behavior.
+Manual Colab smoke status is `colab_smoke_passed_with_notes`. M11.6 recorded the smoke
+result from an uploaded executed artifact audit. The executed artifact is runtime evidence
+only and is not committed.
 
 ## Notebook Identity
 
@@ -43,6 +44,7 @@ document live runtime behavior.
   Sanitized Validation Coverage.
 - Documentation/audit issue: Issue #89 - M11.5 Update Notebook 08 Import Audit, Index,
   Development Docs, and README.
+- Colab smoke issue: Issue #90 - M11.6 Colab Smoke Test Notebook 08 from Committed Source.
 
 ## Commit Trail
 
@@ -59,8 +61,8 @@ Current audited status:
 
 - Import status: `imported`.
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`,
-  `pytest_validated`, `audit_recorded`, `colab_smoke_pending`.
-- Manual Colab smoke status: `pending`.
+  `pytest_validated`, `audit_recorded`, `colab_smoke_passed_with_notes`.
+- Manual Colab smoke status: `colab_smoke_passed_with_notes`.
 - Merge-readiness status: pending M11.7 closeout.
 
 ## Staging History
@@ -81,6 +83,8 @@ Current audited status:
   `config/notebook_test.toml`.
 - M11.5 records this audit and updates the notebook index, development docs, and README
   handoff references.
+- M11.6 recorded the manual Colab smoke result as `colab_smoke_passed_with_notes` from
+  an uploaded executed artifact audit.
 
 No committed outputs, execution counts, Colab runtime metadata, generated data,
 archive/restore artifacts, plots, logs, session manifests, Drive folders, credentials,
@@ -202,25 +206,122 @@ python -m pytest
 | M11.3 / #87 | Complete - static CLI/restore/artifact coverage added |
 | M11.4 / #88 | Complete - source-readiness/sanitized validation added |
 | M11.5 / #89 | Complete - docs/index/README audit updates |
-| M11.6 / #90 | Pending - Colab smoke from committed source |
+| M11.6 / #90 | Complete - Colab smoke passed with notes from uploaded executed artifact |
 | M11.7 / #91 | Pending - merge-readiness closeout |
+
+## M11.6 Manual Colab Smoke Result
+
+**Status:** `colab_smoke_passed_with_notes`
+
+An executed Colab Notebook 08 artifact was audited outside the repository as part of
+Issue #90. The artifact is smoke evidence only and must not be committed.
+
+### Executed artifact summary
+
+| Property | Value |
+|---|---|
+| Total cells | 41 |
+| Markdown cells | 20 |
+| Code cells | 21 |
+| Executed code cells | 21 |
+| Code cells with outputs | 21 |
+| Error outputs | 0 |
+| Output types | stream, display-data, embedded plot image |
+
+The executed artifact contains Colab metadata, display outputs, HTML tables, embedded plot
+output, a runtime Drive folder value, and execution state. The committed source keeps
+outputs cleared, execution counts null, Colab metadata stripped, and
+`DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"`.
+
+### Runtime evidence observed
+
+- Package installation ran. A non-blocking pip resolver warning appeared for
+  `ibis-framework` requiring `toolz<1` while `toolz 1.1.0` was installed.
+- Google Drive mounted successfully.
+- Alpaca runtime environment was configured without printing raw credential values.
+- Fintech session initialization ran through `fintech-init-project`.
+- StratLake session initialization ran through `stratlake-init-session`.
+- The Notebook 07 StratLake archive checkpoint was found under the configured Drive root.
+- Archive restore was manually enabled in the executed artifact and
+  `stratlake-session-archive-restore-bootstrap` executed.
+- Restore reported `Status: restored`, checksum status `passed`, planned files `39`,
+  restored files `39`, and skipped files `0`.
+- Restore validation and inspection statuses were `warning`; warnings were limited to
+  optional DuckDB snapshot metadata/logical-group coverage.
+- Restored StratLake configs, features, and artifacts were present.
+- Feature parquet files observed after restore: `10`.
+- Artifact files/directories observed after restore: `28`.
+- Native StratLake workspace input paths were present.
+- Native strategy registry loaded from `configs/strategies.yml`.
+- Native strategy command executed for `momentum_v1` over `2026-01-02` to `2026-03-31`.
+- Native strategy return code was `0`; QA status was `PASS`.
+- Parsed native strategy review rows were produced.
+- Native artifact discovery found `27` candidate artifacts.
+- Native time-series artifact `signals.parquet` loaded with shape `(300, 30)`.
+- Plot and benchmark review cells produced runtime outputs.
+- Final handoff summary rendered with archive pack present, restore enabled, native
+  strategy completed, `27` artifact candidates, and `300` native time-series rows.
+- Archive checkpoint refresh remained off:
+  `RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False`; the checkpoint command was previewed only
+  and was not executed.
+
+### Native strategy review values
+
+| Metric | Observed value |
+|---|---|
+| Strategy | `momentum_v1` |
+| Run id | `momentum_v1_single_11cbb3e87db6` |
+| Cumulative return | `-0.006464` |
+| Sharpe ratio | `-0.144188` |
+| Long / short / flat | `27%` / `41%` / `32%` |
+| Trades | `44` |
+| Turnover | `0.15` |
+| Average holding | `4.7 bars` |
+| QA rows / symbols | `300` / `5` |
+| Benchmark return | `-12%` |
+| Excess return | `+12%` |
+| Correlation | `-0.36` |
+
+These parsed values are smoke review evidence for the observed single-strategy workflow.
+They are not authoritative performance claims.
+
+### Smoke caveats and notes
+
+1. The package install step emitted a non-blocking `toolz` / `ibis-framework` resolver
+   warning.
+2. Archive restore completed, but validation and inspection statuses were `warning`
+   because optional DuckDB snapshot metadata/logical group coverage was missing.
+3. Native strategy stderr included a degenerate-signal warning for `BuyAndHoldStrategy`,
+   not for the selected `momentum_v1` strategy.
+4. Execution counts were not perfectly contiguous, so this is recorded as uploaded
+   executed smoke artifact evidence, not proof of a pristine restart-and-run-all sequence.
+5. The uploaded artifact used a concrete runtime Drive folder value for manual smoke. That
+   value is acceptable as runtime evidence only and must not replace the committed
+   placeholder.
+6. No raw Alpaca secret values were observed in plain-text output.
+7. Base64 image/output data may contain secret-like false-positive substrings and must not
+   be treated as source-safe.
+8. The executed artifact contains outputs, runtime displays, embedded plot output, Colab
+   metadata, and runtime state; it must remain outside Git.
 
 ## Explicit Non-Claims
 
 This audit does not claim that Notebook 08:
 
-- Has restored the Notebook 07 archive.
+- Fully proves the archive restore/export/checkpoint system; M11.6 observed one restore
+  path with optional DuckDB snapshot warnings, and checkpoint refresh was not executed.
 - Has created, exported, refreshed, or validated an archive checkpoint.
-- Has run native StratLake strategy execution or backtesting.
-- Has produced correct or authoritative strategy metrics.
-- Has produced correct benchmark comparisons.
-- Has produced or validated plot outputs.
-- Has discovered or validated native artifacts.
-- Has completed the final handoff summary at runtime.
+- Has authoritative strategy or backtest performance results.
+- Has tested all strategies or multi-strategy comparison.
+- Has produced correct or authoritative benchmark comparisons.
+- Has produced or validated plot outputs beyond observed runtime review output.
+- Has validated native artifacts beyond observed discovery/loading review surfaces.
+- Has validated Notebook 09 behavior.
 
-All of those are live runtime concerns and remain pending until explicitly smoke-tested
-and documented. The committed source is a source-safe review workflow, not runtime proof.
+M11.6 smoke documented one observed single-strategy artifact-review runtime path with
+notes. The committed source remains a source-safe review workflow, not authoritative
+runtime proof.
 
 ## Completion Stance
 
-`notebook_08_documented_indexed_for_smoke_handoff`
+`notebook_08_colab_smoke_passed_with_notes`

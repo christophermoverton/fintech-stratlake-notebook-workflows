@@ -428,9 +428,23 @@ Notebook 08 source validation is covered by
 inspect notebook JSON/source text only. They do not require Colab, Drive, Alpaca
 credentials, archive packs, native strategy artifacts, plots, or generated reports.
 
-Colab smoke for Notebook 08 is deferred to M11.6. Until that smoke is executed and
-documented, the repository does not claim archive restore, native strategy/backtest,
-artifact-review, benchmark, plot, checkpoint, or handoff success.
+Manual Colab smoke for Notebook 08 is `colab_smoke_passed_with_notes`. Issue #90
+recorded an uploaded executed artifact where archive restore ran, checksum passed, native
+`momentum_v1` strategy execution returned code 0 with QA PASS, artifact discovery found
+candidate native artifacts, `signals.parquet` loaded as a plottable time-series artifact,
+and plot/benchmark review outputs rendered.
+
+Caveats: package install emitted a non-blocking `toolz` / `ibis-framework` resolver
+warning; restore validation and inspection reported warnings limited to optional DuckDB
+snapshot metadata/logical-group coverage; native stderr included a degenerate-signal
+warning for `BuyAndHoldStrategy`, not the selected `momentum_v1` strategy; execution
+counts were not perfectly contiguous, so the artifact is recorded as uploaded executed
+smoke evidence rather than proof of pristine restart-and-run-all ordering.
+
+The executed artifact contains outputs, Colab metadata, runtime displays, embedded plot
+output, and a concrete runtime Drive folder value. It must remain outside Git. The
+repository still does not claim archive checkpoint refresh success, all-strategy coverage,
+Notebook 09 validation, or authoritative strategy/backtest performance.
 
 ## Validation Layer Distinction
 
