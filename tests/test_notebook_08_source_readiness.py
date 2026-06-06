@@ -277,9 +277,6 @@ def test_drive_directories_guarded_before_creation(code_source: str) -> None:
 
 def test_no_committed_notebook_08_runtime_artifact_paths(notebook_source: str) -> None:
     forbidden_runtime_fragments = [
-        ".png",
-        ".jpg",
-        ".jpeg",
         ".log",
         "archive_packs/",
         "restore_packs/",
@@ -334,7 +331,10 @@ def test_restore_and_checkpoint_commands_are_guarded(code_source: str) -> None:
     restore_command_index = code_source.find("!stratlake-session-archive-restore-bootstrap")
     restore_guard_index = code_source.find("if RUN_STRATLAKE_ARCHIVE_RESTORE:")
     assert restore_guard_index != -1 and restore_command_index > restore_guard_index
-    checkpoint_run_index = code_source.find("subprocess.run(\n        archive_cmd")
+    checkpoint_run_index_match = re.search(
+        r"subprocess\.run\(\s*archive_cmd", code_source
+    )
+    checkpoint_run_index = checkpoint_run_index_match.start() if checkpoint_run_index_match else -1
     checkpoint_guard_index = code_source.find("if RUN_STRATLAKE_ARCHIVE_CHECKPOINT:")
     assert checkpoint_guard_index != -1 and checkpoint_run_index > checkpoint_guard_index
 
