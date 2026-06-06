@@ -2,7 +2,7 @@
 
 ## Summary
 
-This audit records the Milestone 11 import of Notebook 08 for Issues #85 through #90.
+This audit records the Milestone 11 import of Notebook 08 for Issues #85 through #91.
 
 Notebook 08 was imported as a cleaned, output-free source notebook at
 `notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb`. It is a conservative
@@ -45,6 +45,8 @@ only and is not committed.
 - Documentation/audit issue: Issue #89 - M11.5 Update Notebook 08 Import Audit, Index,
   Development Docs, and README.
 - Colab smoke issue: Issue #90 - M11.6 Colab Smoke Test Notebook 08 from Committed Source.
+- Merge-readiness issue: Issue #91 - M11.7 Milestone 11 Merge Readiness Closeout for
+  Notebook 08.
 
 ## Commit Trail
 
@@ -54,6 +56,8 @@ only and is not committed.
 | M11.2 / #86 | `a6ee69f` | Classify Notebook 08 command restore strategy and artifact surfaces |
 | M11.3 / #87 | `78b4fcb` | Add Notebook 08 static CLI restore and artifact review coverage |
 | M11.4 / #88 | `4e4104b` | Add Notebook 08 source readiness and sanitized validation coverage |
+| M11.5 / #89 | `01d2c62` | Document Notebook 08 import audit index and smoke handoff |
+| M11.6 / #90 | `bc622c0` | Record Notebook 08 Colab smoke passed with notes |
 
 ## Import Status
 
@@ -63,7 +67,7 @@ Current audited status:
 - Validation status: `cleaned`, `static_validated`, `readiness_validated`,
   `pytest_validated`, `audit_recorded`, `colab_smoke_passed_with_notes`.
 - Manual Colab smoke status: `colab_smoke_passed_with_notes`.
-- Merge-readiness status: pending M11.7 closeout.
+- Merge-readiness status: `notebook_08_merge_ready_with_smoke_notes`.
 
 ## Staging History
 
@@ -85,6 +89,7 @@ Current audited status:
   handoff references.
 - M11.6 recorded the manual Colab smoke result as `colab_smoke_passed_with_notes` from
   an uploaded executed artifact audit.
+- M11.7 records merge readiness in `docs/milestone_11_merge_readiness.md`.
 
 No committed outputs, execution counts, Colab runtime metadata, generated data,
 archive/restore artifacts, plots, logs, session manifests, Drive folders, credentials,
@@ -207,7 +212,7 @@ python -m pytest
 | M11.4 / #88 | Complete - source-readiness/sanitized validation added |
 | M11.5 / #89 | Complete - docs/index/README audit updates |
 | M11.6 / #90 | Complete - Colab smoke passed with notes from uploaded executed artifact |
-| M11.7 / #91 | Pending - merge-readiness closeout |
+| M11.7 / #91 | Complete - merge-readiness closeout |
 
 ## M11.6 Manual Colab Smoke Result
 
@@ -324,4 +329,4 @@ runtime proof.
 
 ## Completion Stance
 
-`notebook_08_colab_smoke_passed_with_notes`
+`notebook_08_merge_ready_with_smoke_notes`
