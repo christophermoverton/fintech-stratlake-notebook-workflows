@@ -100,6 +100,7 @@ These surfaces are review aids, not authoritative performance reports. The commi
 Related classification and coverage:
 
 - [Notebook 09 command surface classification](notebook_09_command_surface_classification.md).
+- [Milestone 12 merge readiness](milestone_12_merge_readiness.md).
 - `tests/test_notebook_09_static_cli_restore_strategy_comparison_coverage.py`.
 - `tests/test_notebook_09_source_readiness.py`.
 - `config/notebook_test.toml`.

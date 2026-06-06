@@ -31,6 +31,7 @@ Use this tracker with:
 - [Notebook 09 Import Audit](notebook_09_import_audit.md)
 - [Milestone 10 Merge Readiness](milestone_10_merge_readiness.md)
 - [Milestone 11 Merge Readiness](milestone_11_merge_readiness.md)
+- [Milestone 12 Merge Readiness](milestone_12_merge_readiness.md)
 
 Do not use this tracker to justify direct imports from Google Drive. Future notebooks should remain outside the repository until they are staged, cleaned, validated, reviewed, and explicitly moved into `notebooks/`.
 
