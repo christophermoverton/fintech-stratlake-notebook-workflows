@@ -505,11 +505,17 @@ tests inspect notebook JSON/source text only. They do not require Colab, Drive, 
 credentials, archive packs, native strategy artifacts, plots, generated reports, or
 Notebook 10 runtime behavior.
 
-Manual Colab smoke for Notebook 09 is pending for M12.6. Until smoke is recorded,
-repository documentation must not claim archive restore success, strategy comparison
-success, all-strategy correctness, authoritative performance results, benchmark alpha,
-plot correctness, artifact discovery correctness, archive checkpoint refresh success, or
-Notebook 10 validation.
+Manual Colab smoke for Notebook 09 is `notebook_09_colab_smoke_passed_with_notes`.
+Issue #99 recorded an executed artifact outside Git where archive restore, native
+strategy comparison, comparison plots, artifact discovery, research summary, archive
+checkpoint refresh, and final handoff rendered. The smoke run attempted 14 strategies,
+completed 11, and captured 3 strategy-level failures as review rows. The executed
+artifact contains outputs, Colab metadata, runtime paths, dataframes, and plots; it must
+not be committed or used to replace the cleaned source notebook.
+
+Repository documentation still must not claim all-strategy correctness, authoritative
+performance results, benchmark alpha, plot correctness beyond rendering, artifact
+inventory completeness, archive checkpoint generality, or Notebook 10 validation.
 
 ## Validation Layer Distinction
 
