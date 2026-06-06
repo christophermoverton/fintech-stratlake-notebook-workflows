@@ -257,3 +257,12 @@ M12.2 is documentation/classification only. The required stance is:
 - Do not claim source import proves runtime correctness.
 
 Notebook 09 remains a native StratLake comparison and research review notebook. It is not a notebook-side strategy framework, notebook-side backtest engine, authoritative strategy-selection notebook, committed performance report, or proof of all-strategy correctness.
+
+## 23. Related Docs and Coverage
+
+- Import audit: [Notebook 09 Import Audit](notebook_09_import_audit.md).
+- Static command/restore/strategy-comparison coverage: `tests/test_notebook_09_static_cli_restore_strategy_comparison_coverage.py`.
+- Source-readiness/sanitized validation coverage: `tests/test_notebook_09_source_readiness.py`.
+- Shared readiness config: `config/notebook_test.toml`.
+
+M12.3 and M12.4 coverage remains source-only. These tests inspect notebook JSON and source text; they do not execute Notebook 09, mount Drive, read credentials, restore archives, run strategy comparison, refresh checkpoints, generate plots, discover live artifacts, or validate Notebook 10 behavior.

@@ -58,8 +58,11 @@ python scripts/validate_notebook_cli_registry.py notebooks/06_stratlake_feature_
 python scripts/validate_notebook_cli_registry.py notebooks/07_stratlake_feature_consumption_baseline_research.ipynb --config config/notebook_cli_registry.toml
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python scripts/validate_notebook_execution_readiness.py notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb
+python scripts/validate_notebook_execution_readiness.py notebooks/09_stratlake_strategy_comparison_and_research_review.ipynb
 python -m pytest tests/test_notebook_08_static_cli_restore_artifact_review.py -q
 python -m pytest tests/test_notebook_08_source_readiness.py -q
+python -m pytest tests/test_notebook_09_static_cli_restore_strategy_comparison_coverage.py -q
+python -m pytest tests/test_notebook_09_source_readiness.py -q
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
 python -m pytest tests/test_notebook_execution.py
@@ -94,6 +97,7 @@ notebooks/05_stratlake_q1_feature_data_generation_with_daily_bars_ingestion.ipyn
 notebooks/06_stratlake_feature_validation_archive_and_handoff.ipynb
 notebooks/07_stratlake_feature_consumption_baseline_research.ipynb
 notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb
+notebooks/09_stratlake_strategy_comparison_and_research_review.ipynb
 ```
 
 ## Pytest Notebook Execution Harness
@@ -446,6 +450,67 @@ output, and a concrete runtime Drive folder value. It must remain outside Git. T
 repository still does not claim archive checkpoint refresh success, all-strategy coverage,
 Notebook 09 validation, or authoritative strategy/backtest performance.
 
+## Notebook 09 Runtime Boundary
+
+Notebook 09 (`notebooks/09_stratlake_strategy_comparison_and_research_review.ipynb`)
+is a native StratLake strategy comparison and research review notebook after Notebook 08.
+It can reattach to the Notebook 07/08 StratLake archive/session shape when a
+user-configured Drive root and archive pack are available. It is not a notebook-side
+strategy framework, not a notebook-side backtest implementation, not an authoritative
+strategy-selection notebook, and not a committed performance report.
+
+Repository validation for Notebook 09 uses source-only static coverage and
+source-readiness tests. It does **not**:
+
+- Install packages from TestPyPI or PyPI.
+- Mount Google Drive.
+- Prompt for or read Alpaca credentials.
+- Run `fintech-init-project` or `stratlake-init-session`.
+- Create Drive session/archive folders.
+- Run `stratlake-session-archive-restore-bootstrap`.
+- Restore Notebook 07/08 archive contents.
+- Inspect live restored configs, features, or artifacts.
+- Run native strategy comparison (`stratlake-run-strategy`).
+- Parse live native strategy stdout.
+- Render strategy comparison dataframes.
+- Generate comparison plots.
+- Discover live native artifacts by run id.
+- Build research decision summaries from live runtime evidence.
+- Run `stratlake-session-archive-bootstrap`.
+- Construct the final Notebook 10 handoff summary from runtime-derived values.
+- Mutate the Notebook 09 source file.
+
+These operations remain manual Colab/runtime-only. The committed source keeps
+`DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"` guarded. Drive/session/archive
+roots are runtime-only and placeholder-derived:
+
+```text
+Path("/content/drive/MyDrive") / DRIVE_FOLDER_NAME
+WORKSPACE_ROOT / "drive" / DRIVE_FOLDER_NAME
+```
+
+Runtime credential variable names may appear in source, but no credential values are
+committed. Live API credentials should be supplied only by runtime mechanisms such as
+Colab Secrets or hidden prompts. Source import does not require live API credentials.
+
+Notebook 09 keeps `RUN_STRATLAKE_ARCHIVE_RESTORE = False` and
+`RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False`; restore and checkpoint refresh are
+manual/off-by-default in committed source. `RUN_NATIVE_STRATEGY_COMPARISON = True` is an
+intended live runtime workflow gate, not source-validation proof.
+
+Notebook 09 source validation is covered by
+`tests/test_notebook_09_static_cli_restore_strategy_comparison_coverage.py`,
+`tests/test_notebook_09_source_readiness.py`, and `config/notebook_test.toml`. These
+tests inspect notebook JSON/source text only. They do not require Colab, Drive, Alpaca
+credentials, archive packs, native strategy artifacts, plots, generated reports, or
+Notebook 10 runtime behavior.
+
+Manual Colab smoke for Notebook 09 is pending for M12.6. Until smoke is recorded,
+repository documentation must not claim archive restore success, strategy comparison
+success, all-strategy correctness, authoritative performance results, benchmark alpha,
+plot correctness, artifact discovery correctness, archive checkpoint refresh success, or
+Notebook 10 validation.
+
 ## Validation Layer Distinction
 
 Repository validation for source notebooks operates at four distinct layers:
@@ -527,6 +592,16 @@ The harness does not execute notebooks. It also skips cells that should not be l
   artifacts (`pd.read_parquet(...)`, `pd.read_csv(...)`), display plots or benchmark
   review outputs, run `stratlake-session-archive-bootstrap`, or construct the final
   Notebook 09 handoff summary from runtime-derived values.
+- Notebook 09 cells that install packages, mount Google Drive (`drive.mount(...)`), read
+  Alpaca credentials (`userdata.get(...)`, `getpass.getpass(...)`), run
+  `fintech-init-project`, run `stratlake-init-session`, create Drive session/archive
+  folders, inspect or restore Notebook 07/08 archive packs, run
+  `stratlake-session-archive-restore-bootstrap`, inspect live restored configs/features/
+  artifacts, inspect native strategy registry from runtime configs, run native strategy
+  comparison (`stratlake-run-strategy`), parse live native stdout, render comparison
+  dataframes, generate plots, discover live native artifacts by run id, build research
+  decision summaries from runtime evidence, run `stratlake-session-archive-bootstrap`,
+  or construct the final Notebook 10 handoff summary from runtime-derived values.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 
