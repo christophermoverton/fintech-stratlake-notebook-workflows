@@ -349,7 +349,7 @@ The runtime checkpoint caveat does not invalidate the smoke run, but it keeps th
 RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False
 ```
 
-Repository safety note: the uploaded executed artifact contains runtime/private state and must not be committed. It includes `DRIVE_FOLDER_NAME = "TEST1"`, `RUN_STRATLAKE_ARCHIVE_RESTORE = True`, `RUN_STRATLAKE_ARCHIVE_CHECKPOINT = True`, Colab metadata, cell IDs, outputs, execution counts, runtime Drive paths, runtime artifacts, and checkpoint outputs.
+Repository safety note: the uploaded executed artifact contains runtime/private state and must not be committed. It includes `DRIVE_FOLDER_NAME = "<REDACTED>"`, `RUN_STRATLAKE_ARCHIVE_RESTORE = True`, `RUN_STRATLAKE_ARCHIVE_CHECKPOINT = True`, Colab metadata, cell IDs, outputs, execution counts, runtime Drive paths, runtime artifacts, and checkpoint outputs.
 
 Interpretation:
 
@@ -496,7 +496,7 @@ Expanded-mode validation is deferred. M13.4 does not run expanded walk-forward w
 
 This audit does not claim that Notebook 10:
 
-- Was executed from committed source.
+- Was executed from committed source by automated repository validation or CI.
 - Was executed by CI.
 - Mounted Google Drive during repository validation.
 - Loaded Alpaca credentials during repository validation.
