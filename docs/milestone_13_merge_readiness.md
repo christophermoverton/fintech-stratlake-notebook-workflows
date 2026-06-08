@@ -237,6 +237,22 @@ The committed source remains guarded/off-by-default with:
 RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False
 ```
 
+## PR Follow-Up Audit Resolution
+
+A late follow-up commit tightened Notebook 10 smoke-audit status logic so smoke mode
+cannot report `pass` when runtime failure, exception/error text, or
+missing-required-column warning categories are present. This preserves the Issue #107
+interpretation while preventing the earlier failed-smoke failure mode from being treated
+as passing.
+
+The follow-up also redacted a private runtime Drive folder value in documentation and
+clarified that automated repository validation and CI did not execute Notebook 10 from
+committed source.
+
+Focused Notebook 10 source tests and shared notebook readiness validation were rerun
+after the notebook-source change. No executed notebooks or runtime artifacts were
+staged.
+
 ## Financial Interpretation And Non-Claims
 
 Notebook 10 smoke mode validates workflow wiring only. It is not promotion-grade
