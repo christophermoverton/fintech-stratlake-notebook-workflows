@@ -577,15 +577,23 @@ tests inspect notebook JSON/source text only. They do not require Colab, Drive, 
 credentials, archive packs, native strategy artifacts, generated reports, promotion
 review outputs, or Notebook 10 runtime execution.
 
-M13 records external Notebook 10 Draft v4 smoke evidence separately from committed source
-validation. The external smoke observed Colab execution, Drive mount, Alpaca secrets
-loaded, Fintech and StratLake session initialization, Notebook 08/09 archive restore,
-native strategy execution, review artifact writing, checkpoint intentionally skipped,
-and final handoff. It produced one smoke window, 14 preflight rows, 11 runnable
-strategies, 3 feature-contract skips, 11 walk-forward rows, no promoted strategies, no
-watchlist strategies, and all evaluated strategies as `needs_review`.
+Issue #107 records an explicit Notebook 10 Colab smoke as
+`colab_smoke_passed_with_notes`. That smoke used a runtime-only copy with archive restore
+enabled and produced review artifacts outside Git. It observed Colab execution, Drive
+mount, Alpaca secrets loaded without printing values, Fintech and StratLake session
+initialization, Notebook 08/09 archive restore, native strategy execution, artifact-json
+metric extraction, review artifact writing, smoke audit summary, and final handoff. It
+produced one smoke window, 14 preflight rows, 11 runnable strategies, 3 feature-contract
+skips, 11 walk-forward rows, no promoted strategies, no watchlist strategies, and all
+evaluated strategies as `needs_review`.
 
-The external smoke result validates workflow wiring only. It is not promotion-grade
+The Issue #107 runtime copy also explicitly enabled archive checkpointing and created a
+checkpoint outside Git. That is recorded as a smoke caveat, not a committed-source
+change. Repository validation still must not execute Notebook 10 cells, restore archives,
+run native strategies, write artifacts, refresh checkpoints, or commit executed notebook
+copies. The committed source remains guarded/off-by-default.
+
+The Issue #107 smoke result validates workflow wiring only. It is not promotion-grade
 financial evidence. Positive excess return from flat/inactive strategies during a
 declining benchmark is benchmark-avoidance outperformance, not alpha. Expanded-mode
 validation remains deferred.
