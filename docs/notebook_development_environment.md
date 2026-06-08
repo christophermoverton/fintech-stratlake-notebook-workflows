@@ -59,10 +59,13 @@ python scripts/validate_notebook_cli_registry.py notebooks/07_stratlake_feature_
 python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
 python scripts/validate_notebook_execution_readiness.py notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb
 python scripts/validate_notebook_execution_readiness.py notebooks/09_stratlake_strategy_comparison_and_research_review.ipynb
+python scripts/validate_notebook_execution_readiness.py notebooks/10_stratlake_walk_forward_robustness_and_promotion_review.ipynb
 python -m pytest tests/test_notebook_08_static_cli_restore_artifact_review.py -q
 python -m pytest tests/test_notebook_08_source_readiness.py -q
 python -m pytest tests/test_notebook_09_static_cli_restore_strategy_comparison_coverage.py -q
 python -m pytest tests/test_notebook_09_source_readiness.py -q
+python -m pytest tests/test_notebook_10_static_source_contracts.py -q
+python -m pytest tests/test_notebook_10_source_readiness.py -q
 python -m pytest tests/test_notebook_cli_contracts.py
 python -m pytest tests/test_notebook_cli_registry.py
 python -m pytest tests/test_notebook_execution.py
@@ -517,6 +520,84 @@ Repository documentation still must not claim all-strategy correctness, authorit
 performance results, benchmark alpha, plot correctness beyond rendering, artifact
 inventory completeness, archive checkpoint generality, or Notebook 10 validation.
 
+## Notebook 10 Runtime Boundary
+
+Notebook 10 (`notebooks/10_stratlake_walk_forward_robustness_and_promotion_review.ipynb`)
+is a StratLake walk-forward robustness and promotion-review notebook after Notebook 08
+and Notebook 09. It can restore or attach to the Notebook 08/09 StratLake archive/session
+shape when a user-configured Drive root and archive pack are available. It is not a
+notebook-side strategy engine, not a promotion engine, not an authoritative financial
+report, and not a committed promotion-grade evidence artifact.
+
+Repository validation for Notebook 10 uses source-only static coverage and
+source-readiness tests. It does **not**:
+
+- Install packages from TestPyPI or PyPI.
+- Mount Google Drive.
+- Prompt for or read Alpaca credentials.
+- Run `fintech-init-project` or `stratlake-init-session`.
+- Create Drive session/archive folders.
+- Run `stratlake-session-archive-restore-bootstrap`.
+- Restore Notebook 08/09 archive contents.
+- Inspect live restored configs, features, prior artifacts, or feature parquet files.
+- Run native walk-forward strategy execution (`stratlake-run-strategy`).
+- Parse live native strategy stdout.
+- Build live robustness summaries.
+- Render walk-forward plots.
+- Apply promotion gates to live results.
+- Write review artifacts under `artifacts/notebook_10_walk_forward_promotion_review/`.
+- Run `stratlake-session-archive-bootstrap`.
+- Construct final handoff values from live runtime state.
+- Mutate the Notebook 10 source file.
+
+These operations remain manual Colab/runtime-only. The committed source keeps
+`DRIVE_FOLDER_NAME = "REPLACE_WITH_DRIVE_FOLDER_NAME"` guarded. Drive/session/archive
+roots are runtime-only and placeholder-derived:
+
+```text
+Path("/content/drive/MyDrive") / DRIVE_FOLDER_NAME
+WORKSPACE_ROOT / "drive" / DRIVE_FOLDER_NAME
+```
+
+Runtime credential variable names may appear in source, but no credential values are
+committed. Live API credentials should be supplied only by runtime mechanisms such as
+Colab Secrets or hidden prompts. Source import does not require live API credentials.
+
+Notebook 10 keeps `RUN_STRATLAKE_ARCHIVE_RESTORE = False` and
+`RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False`; restore and checkpoint refresh are
+manual/off-by-default in committed source. `NOTEBOOK10_MODE = "smoke"` is
+workflow-validation mode only, and `RUN_ONLY_PREFLIGHT_RUNNABLE_STRATEGIES = True`
+keeps feature-contract failures out of native execution. Expanded-mode validation is
+deferred and manual.
+
+Notebook 10 source validation is covered by
+`tests/test_notebook_10_static_source_contracts.py`,
+`tests/test_notebook_10_source_readiness.py`, and `config/notebook_test.toml`. These
+tests inspect notebook JSON/source text only. They do not require Colab, Drive, Alpaca
+credentials, archive packs, native strategy artifacts, generated reports, promotion
+review outputs, or Notebook 10 runtime execution.
+
+Issue #107 records an explicit Notebook 10 Colab smoke as
+`colab_smoke_passed_with_notes`. That smoke used a runtime-only copy with archive restore
+enabled and produced review artifacts outside Git. It observed Colab execution, Drive
+mount, Alpaca secrets loaded without printing values, Fintech and StratLake session
+initialization, Notebook 08/09 archive restore, native strategy execution, artifact-json
+metric extraction, review artifact writing, smoke audit summary, and final handoff. It
+produced one smoke window, 14 preflight rows, 11 runnable strategies, 3 feature-contract
+skips, 11 walk-forward rows, no promoted strategies, no watchlist strategies, and all
+evaluated strategies as `needs_review`.
+
+The Issue #107 runtime copy also explicitly enabled archive checkpointing and created a
+checkpoint outside Git. That is recorded as a smoke caveat, not a committed-source
+change. Repository validation still must not execute Notebook 10 cells, restore archives,
+run native strategies, write artifacts, refresh checkpoints, or commit executed notebook
+copies. The committed source remains guarded/off-by-default.
+
+The Issue #107 smoke result validates workflow wiring only. It is not promotion-grade
+financial evidence. Positive excess return from flat/inactive strategies during a
+declining benchmark is benchmark-avoidance outperformance, not alpha. Expanded-mode
+validation remains deferred.
+
 ## Validation Layer Distinction
 
 Repository validation for source notebooks operates at four distinct layers:
@@ -608,6 +689,17 @@ The harness does not execute notebooks. It also skips cells that should not be l
   dataframes, generate plots, discover live native artifacts by run id, build research
   decision summaries from runtime evidence, run `stratlake-session-archive-bootstrap`,
   or construct the final Notebook 10 handoff summary from runtime-derived values.
+- Notebook 10 cells that install packages, mount Google Drive (`drive.mount(...)`), read
+  Alpaca credentials (`userdata.get(...)`, `getpass.getpass(...)`), run
+  `fintech-init-project`, run `stratlake-init-session`, create Drive session/archive
+  folders, inspect or restore Notebook 08/09 archive packs, run
+  `stratlake-session-archive-restore-bootstrap`, inspect live restored configs/features/
+  artifacts, discover feature columns from runtime data, preflight candidate strategies
+  from restored configs, run native walk-forward strategy execution
+  (`stratlake-run-strategy`), parse live native stdout, build robustness summaries,
+  generate walk-forward plots, apply promotion gates to live results, write review
+  artifacts, discover artifact inventory rows, run `stratlake-session-archive-bootstrap`,
+  or construct final handoff values from runtime-derived state.
 
 Skipped cells still remain subject to output-free, execution-count, secret, and repository cleanliness checks. They are skipped for syntax compilation because they may rely on notebook magics, Colab runtime APIs, credentials, Drive mounts, or native upstream CLIs.
 
