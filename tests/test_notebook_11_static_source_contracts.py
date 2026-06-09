@@ -25,6 +25,11 @@ NB11_PATH = (
     / "notebooks"
     / "11_stratlake_expanded_promotion_evidence_review.ipynb"
 )
+COMMAND_CLASSIFICATION_DOC = (
+    REPO_ROOT / "docs" / "notebook_11_command_surface_classification.md"
+)
+STAGING_CLASSIFICATION_DOC = REPO_ROOT / "docs" / "notebook_11_staging_classification.md"
+IMPORT_AUDIT_DOC = REPO_ROOT / "docs" / "notebook_11_import_audit.md"
 
 
 @pytest.fixture(scope="module")
@@ -57,6 +62,18 @@ def code_cells(notebook: dict[str, Any]) -> list[dict[str, Any]]:
         for cell in notebook.get("cells", [])
         if isinstance(cell, dict) and cell.get("cell_type") == "code"
     ]
+
+
+@pytest.fixture(scope="module")
+def docs_text() -> str:
+    return "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in [
+            COMMAND_CLASSIFICATION_DOC,
+            STAGING_CLASSIFICATION_DOC,
+            IMPORT_AUDIT_DOC,
+        ]
+    )
 
 
 def _has_env_bool_default(code_source: str, name: str, expected: str) -> bool:
@@ -186,3 +203,55 @@ def test_non_claim_and_review_framing_preserved(notebook_source: str) -> None:
     assert "expanded evidence" in notebook_source
     assert "caveat" in notebook_source
     assert "promotion-readiness interpretation" in notebook_source
+
+
+def test_runtime_surface_classification_docs_exist_and_use_expected_taxonomy(
+    docs_text: str,
+) -> None:
+    assert COMMAND_CLASSIFICATION_DOC.exists()
+    assert STAGING_CLASSIFICATION_DOC.exists()
+    assert IMPORT_AUDIT_DOC.exists()
+    for term in [
+        "source_only",
+        "live_manual",
+        "guarded_runtime",
+        "runtime_validation",
+        "artifact_review",
+        "promotion_readiness_review",
+        "out_of_ci_scope",
+    ]:
+        assert term in docs_text
+
+
+@pytest.mark.parametrize(
+    "token",
+    [
+        "pandas-market-calendars",
+        "fintech-market-ingestion",
+        "stratlake-trade-engine",
+        "fintech-init-project",
+        "stratlake-init-session",
+        "stratlake-session-archive-restore-bootstrap",
+        "stratlake-run-strategy",
+        "stratlake-build-evidence-review",
+        "stratlake-run-promotion-governance-report",
+        "stratlake-session-archive-bootstrap",
+    ],
+)
+def test_runtime_surface_classification_docs_reference_key_commands(
+    docs_text: str,
+    token: str,
+) -> None:
+    assert token in docs_text
+
+
+def test_runtime_surface_classification_docs_preserve_boundaries(
+    docs_text: str,
+) -> None:
+    assert "artifacts/notebook_11_expanded_promotion_evidence_review/" in docs_text
+    assert "Notebook 11 interpretive packages are notebook-scoped review aids only" in docs_text
+    assert "Command success is not promotion-grade evidence by itself" in docs_text
+    assert "Metric loading is useful but incomplete without split metrics and promotion" in docs_text
+    assert "Source import is not runtime proof" in docs_text
+    assert "CI validation is not Colab/manual runtime equivalence" in docs_text
+    assert "Notebook 11 does not approve strategies" in docs_text

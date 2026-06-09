@@ -3,7 +3,8 @@
 ## Purpose
 
 This document records the repository staging posture for Notebook 11 after
-Issue #109 / M14.1.
+Issue #109 / M14.1 and the runtime-surface classification posture completed in
+Issue #110 / M14.2.
 
 Notebook 11 is the StratLake expanded promotion evidence review continuation
 after Notebook 10. Its theme is "from confidence review to promotion evidence."
@@ -68,20 +69,28 @@ Notebook 10 artifacts are restored only when intentionally needed.
 
 ## Runtime Surfaces
 
+The detailed reusable surface matrix lives in
+[Notebook 11 command surface classification](notebook_11_command_surface_classification.md).
+The staging-level summary is:
+
 | Surface | Classification | Default/source posture |
 |---|---|---|
 | Package installation | `live_manual`, `out_of_ci_scope` | Source reference only |
-| Colab and Google Drive auth | `live_manual`, `guarded_runtime` | Placeholder guarded |
-| Alpaca credentials | `live_manual`, `guarded_runtime` | Names only; values not committed |
-| Fintech session initialization | `live_manual`, `guarded_runtime` | Notebook 10-style pattern preserved |
-| StratLake session initialization | `live_manual`, `guarded_runtime` | `--notebook-configs` pattern preserved |
-| Notebook 10 archive restore | `live_manual`, `guarded_runtime` | Off by default |
-| Expanded strategy evaluation | `live_manual`, `guarded_runtime` | Off by default |
-| Manual-review candidate execution | `live_manual`, `guarded_runtime` | Off by default |
-| Governance/evidence-review execution | `live_manual`, `guarded_runtime` | Off by default |
-| Existing expanded artifact discovery | `artifact_review`, `guarded_runtime` | Off by default |
-| Notebook 11 review packages | `artifact_review` | Runtime outputs only; not committed |
-| Archive checkpoint | `live_manual`, `guarded_runtime` | Off by default |
+| Colab and Google Drive auth | `live_manual`, `guarded_runtime`, `out_of_ci_scope` | Placeholder guarded |
+| Alpaca credentials | `live_manual`, `guarded_runtime`, `out_of_ci_scope` | Names only; values not committed |
+| Fintech session initialization | `live_manual`, `guarded_runtime`, `runtime_validation` | Notebook 10-style pattern preserved |
+| StratLake session initialization | `live_manual`, `guarded_runtime`, `runtime_validation` | `--notebook-configs` pattern preserved |
+| Notebook 10 archive restore | `live_manual`, `guarded_runtime`, `artifact_review`, `out_of_ci_scope` | Off by default |
+| Notebook 10 artifact/context discovery | `runtime_validation`, `artifact_review`, `promotion_readiness_review` | Files are optional for source validation |
+| Reference-summary fallback | `source_only`, `promotion_readiness_review` | Context only; no expanded rows by default |
+| Expanded strategy evaluation | `live_manual`, `guarded_runtime`, `runtime_validation`, `out_of_ci_scope` | Off by default |
+| Manual-review candidate execution | `live_manual`, `guarded_runtime`, `runtime_validation` | Off by default |
+| Expanded artifact discovery | `artifact_review`, `runtime_validation`, `promotion_readiness_review` | Run-id strict by default; existing artifacts off by default |
+| Governance/evidence-review schema discovery | `live_manual`, `guarded_runtime`, `runtime_validation` | Manual runtime only |
+| Governance/evidence-review execution | `live_manual`, `guarded_runtime`, `artifact_review`, `promotion_readiness_review`, `out_of_ci_scope` | Off by default |
+| Caveat/blocker register | `promotion_readiness_review`, `artifact_review` | Missing split metrics/gates remain caveats |
+| Notebook 11 review packages | `artifact_review`, `promotion_readiness_review`, `out_of_ci_scope` | Runtime outputs only; not committed |
+| Archive checkpoint | `live_manual`, `guarded_runtime`, `out_of_ci_scope` | Off by default |
 
 ## Expected Artifact Path
 

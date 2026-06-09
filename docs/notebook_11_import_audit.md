@@ -78,6 +78,34 @@ cells, invoke CLIs, require Colab, mount Drive, access credentials, restore
 archives, run strategies, run governance jobs, generate plots, write artifacts,
 or refresh archive checkpoints.
 
+## Runtime Surface Classification Summary
+
+Issue #110 completed the Notebook 11 runtime, restore, evidence, governance,
+artifact-discovery, and checkpoint surface classification in
+[Notebook 11 command surface classification](notebook_11_command_surface_classification.md).
+The classification separates source-only validation from manual runtime behavior
+and uses the shared categories `source_only`, `live_manual`, `guarded_runtime`,
+`runtime_validation`, `artifact_review`, `promotion_readiness_review`, and
+`out_of_ci_scope`.
+
+Classified surfaces include package installation, Colab/Drive auth, optional
+Alpaca credentials, Fintech and StratLake session initialization, Notebook 10
+archive restore, Notebook 10 artifact/context discovery, reference-summary
+fallback, expanded strategy execution, manual-review candidate runs, expanded
+artifact discovery, Notebook 11 interpretive review packages,
+governance/evidence-review schema discovery, governance/evidence-review
+execution, the caveat/blocker register, Notebook 11 artifact writing, and
+archive checkpointing.
+
+Repository validation remains source-only. It may inspect JSON, source text,
+controls, command strings, path references, candidate names, non-claim language,
+and artifact paths, but it must not execute notebook cells, install packages,
+mount Drive, prompt for credentials, initialize sessions, restore archives, run
+strategies, run governance jobs, write artifacts, or create checkpoint archives.
+
+Manual runtime validation may perform those actions only when a user explicitly
+enables the relevant gates in a prepared runtime.
+
 ## Raw Audit Context
 
 The companion import document records two useful raw-notebook review paths:
@@ -96,3 +124,16 @@ split metrics and promotion-gate artifacts are absent. The committed source
 does not claim runtime execution, alpha, production readiness, statistical
 significance, strategy approval, complete artifact coverage, checkpoint
 generality, CI/runtime equivalence, or promotion-grade evidence.
+
+Evidence caveats preserved for M14.2:
+
+- Command success is not promotion-grade evidence by itself.
+- Metric loading is useful but incomplete without split metrics and promotion
+  gates.
+- Notebook 11 interpretive packages are notebook-scoped review aids only, not
+  replacements for upstream StratLake promotion-engine outputs.
+- Platform split metrics and promotion gates remain required for complete
+  promotion evidence.
+- Source import is not runtime proof, and CI validation is not Colab/manual
+  runtime equivalence.
+- Notebook 11 does not approve strategies.
