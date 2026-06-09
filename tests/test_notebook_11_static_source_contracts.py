@@ -1,10 +1,12 @@
 """
-Static source-contract tests for Notebook 11.
+Static source-contract and source-readiness tests for Notebook 11.
 
-Scope (M14.1):
+Scope (M14.1-M14.3):
 - Parse committed notebook source only.
 - Verify source-safe controls, guarded runtime surfaces, expanded-run command
-  shape, artifact paths, Notebook 10 context references, and non-claim language.
+  shape, artifact paths, Notebook 10 context references, install fallback
+  pattern, governance guardrails, classification docs, readiness config, and
+  non-claim language.
 - Do not execute notebook cells, CLI commands, package installs, Drive mounts,
   archive restores, strategy runs, governance jobs, artifact writes, or
   checkpoint refreshes.
@@ -30,6 +32,10 @@ COMMAND_CLASSIFICATION_DOC = (
 )
 STAGING_CLASSIFICATION_DOC = REPO_ROOT / "docs" / "notebook_11_staging_classification.md"
 IMPORT_AUDIT_DOC = REPO_ROOT / "docs" / "notebook_11_import_audit.md"
+NOTEBOOK_TEST_CONFIG = REPO_ROOT / "config" / "notebook_test.toml"
+NOTEBOOK11_ARTIFACT_DIR = (
+    REPO_ROOT / "artifacts" / "notebook_11_expanded_promotion_evidence_review"
+)
 
 
 @pytest.fixture(scope="module")
@@ -74,6 +80,11 @@ def docs_text() -> str:
             IMPORT_AUDIT_DOC,
         ]
     )
+
+
+@pytest.fixture(scope="module")
+def notebook_test_config_text() -> str:
+    return NOTEBOOK_TEST_CONFIG.read_text(encoding="utf-8")
 
 
 def _has_env_bool_default(code_source: str, name: str, expected: str) -> bool:
@@ -138,6 +149,32 @@ def test_source_safe_default_controls(code_source: str) -> None:
     )
 
 
+def test_expanded_preview_defensive_shutdowns_preserved(code_source: str) -> None:
+    assert 'elif NOTEBOOK11_MODE == "expanded_preview":' in code_source
+    preview_block = code_source.split('elif NOTEBOOK11_MODE == "expanded_preview":', 1)[1]
+    preview_block = preview_block.split("for path in [FINTECH_ROOT, STRATLAKE_ROOT]:", 1)[0]
+    for assignment in [
+        "RUN_EXPANDED_STRATEGY_EVALUATION = False",
+        "RUN_PROMOTION_GOVERNANCE_REPORT = False",
+        "RUN_EVIDENCE_REVIEW_CLI_BUILD = False",
+        "RUN_PROMOTION_GOVERNANCE_REPORT_CLI = False",
+        "RUN_STRATLAKE_ARCHIVE_CHECKPOINT = False",
+    ]:
+        assert assignment in preview_block
+
+
+def test_install_fallback_pattern_preserved(notebook_source: str) -> None:
+    assert '!pip install -q "pandas-market-calendars>=5.0"' in notebook_source
+    assert (
+        "!pip install -q --index-url https://test.pypi.org/simple/ "
+        "--extra-index-url https://pypi.org/simple/ fintech-market-ingestion"
+    ) in notebook_source
+    assert (
+        "!pip install -q --index-url https://test.pypi.org/simple/ "
+        "--extra-index-url https://pypi.org/simple/ stratlake-trade-engine"
+    ) in notebook_source
+
+
 def test_drive_paths_and_notebook10_initialization_patterns_are_guarded(
     code_source: str,
 ) -> None:
@@ -153,6 +190,34 @@ def test_drive_paths_and_notebook10_initialization_patterns_are_guarded(
     assert "stratlake-session-archive-bootstrap" in code_source
 
 
+def test_alpaca_credentials_are_guarded_and_secret_safe(
+    code_source: str,
+    notebook_source: str,
+) -> None:
+    assert "RUN_LOAD_ALPACA_ENV = False" in code_source
+    assert "if RUN_LOAD_ALPACA_ENV:" in code_source
+    assert "get_secret_or_prompt(\"ALPACA_API_KEY_ID\")" in code_source
+    assert "get_secret_or_prompt(\"ALPACA_API_SECRET_KEY\")" in code_source
+    assert "ALPACA_API_KEY_ID and ALPACA_API_SECRET_KEY are set but not printed" in code_source
+    for forbidden in [
+        "print(alpaca_api_key_id)",
+        "print(alpaca_api_secret_key)",
+        'print(os.environ["ALPACA_API_KEY_ID"])',
+        'print(os.environ["ALPACA_API_SECRET_KEY"])',
+    ]:
+        assert forbidden not in code_source
+    secret_like_patterns = [
+        r"\bPK[A-Z0-9]{16,}\b",
+        r"\bSK[A-Z0-9]{16,}\b",
+        r"api[_-]?secret\s*=\s*['\"][^'\"]{8,}['\"]",
+        r"password\s*=\s*['\"][^'\"]{8,}['\"]",
+        r"token\s*=\s*['\"][^'\"]{8,}['\"]",
+        r"Authorization:\s*Bearer\s+[A-Za-z0-9._~+/\-]{8,}",
+    ]
+    for pattern in secret_like_patterns:
+        assert re.search(pattern, notebook_source, flags=re.IGNORECASE) is None
+
+
 @pytest.mark.parametrize(
     "token",
     [
@@ -164,6 +229,25 @@ def test_drive_paths_and_notebook10_initialization_patterns_are_guarded(
 )
 def test_notebook10_context_references_preserved(notebook_source: str, token: str) -> None:
     assert token in notebook_source
+
+
+@pytest.mark.parametrize(
+    "artifact_name",
+    [
+        "walk_forward_results",
+        "robustness_summary",
+        "promotion_review",
+        "preflight_summary",
+        "artifact_inventory",
+        "summary.json",
+        "smoke_audit_summary.json",
+    ],
+)
+def test_notebook10_expected_artifact_references_preserved(
+    notebook_source: str,
+    artifact_name: str,
+) -> None:
+    assert artifact_name in notebook_source
 
 
 def test_expected_artifact_path_and_expanded_run_command_shape(code_source: str) -> None:
@@ -187,11 +271,30 @@ def test_manual_review_candidates_preserved(notebook_source: str, strategy: str)
     assert strategy in notebook_source
 
 
-def test_expanded_run_documented_but_disabled_by_default(notebook_source: str) -> None:
+def test_expanded_run_documented_but_manual_candidate_execution_disabled_by_default(
+    notebook_source: str,
+    code_source: str,
+) -> None:
     assert "NOTEBOOK11_MODE = \"expanded_run\"" in notebook_source
     assert "RUN_EXPANDED_STRATEGY_EVALUATION = True" in notebook_source
     assert "ALLOW_MANUAL_REVIEW_CANDIDATE_RUNS = True" in notebook_source
     assert "expanded_strategy_execution_not_run_default_off" in notebook_source
+    assert _has_env_bool_default(code_source, "ALLOW_MANUAL_REVIEW_CANDIDATE_RUNS", "False")
+
+
+def test_governance_schema_discovery_and_execution_boundaries_preserved(
+    code_source: str,
+    docs_text: str,
+) -> None:
+    assert _has_env_bool_default(code_source, "RUN_EVIDENCE_REVIEW_CLI_BUILD", "False")
+    assert _has_env_bool_default(code_source, "RUN_PROMOTION_GOVERNANCE_REPORT_CLI", "False")
+    assert "RUN_GOVERNANCE_CLI_SCHEMA_DISCOVERY = env_bool(" in code_source
+    assert '"stratlake-build-evidence-review", "build", "--help"' in code_source
+    assert '"stratlake-run-promotion-governance-report", "--help"' in code_source
+    assert '"stratlake-build-evidence-review"' in code_source
+    assert '"stratlake-run-promotion-governance-report"' in code_source
+    assert "schema discovery" in docs_text
+    assert "Governance/evidence-review CLI execution" in docs_text
 
 
 def test_non_claim_and_review_framing_preserved(notebook_source: str) -> None:
@@ -203,6 +306,27 @@ def test_non_claim_and_review_framing_preserved(notebook_source: str) -> None:
     assert "expanded evidence" in notebook_source
     assert "caveat" in notebook_source
     assert "promotion-readiness interpretation" in notebook_source
+
+
+def test_non_claim_and_evidence_caveat_language_preserved_in_docs(
+    docs_text: str,
+) -> None:
+    for phrase in [
+        "does not approve strategies",
+        "does not prove live package installation",
+        "strategy approval",
+        "statistical significance",
+        "complete platform artifact coverage",
+        "CI/runtime equivalence",
+        "promotion-grade evidence",
+        "Command success is not promotion-grade evidence by itself",
+        "Metric loading is useful but incomplete without split metrics and promotion",
+        "Notebook 11 interpretive packages are notebook-scoped review aids only",
+        "Platform split metrics and promotion gates remain required",
+        "Source import is not runtime proof",
+        "CI validation is not Colab/manual runtime equivalence",
+    ]:
+        assert phrase in docs_text
 
 
 def test_runtime_surface_classification_docs_exist_and_use_expected_taxonomy(
@@ -255,3 +379,30 @@ def test_runtime_surface_classification_docs_preserve_boundaries(
     assert "Source import is not runtime proof" in docs_text
     assert "CI validation is not Colab/manual runtime equivalence" in docs_text
     assert "Notebook 11 does not approve strategies" in docs_text
+
+
+def test_notebook_11_included_in_source_only_readiness_config(
+    notebook_test_config_text: str,
+) -> None:
+    assert "notebooks/11_stratlake_expanded_promotion_evidence_review.ipynb" in notebook_test_config_text
+    assert "require_no_outputs = true" in notebook_test_config_text
+    assert "require_null_execution_counts = true" in notebook_test_config_text
+    assert "compile_python_cells = true" in notebook_test_config_text
+    assert "skip_shell_cells = true" in notebook_test_config_text
+    assert "skip_colab_cells = true" in notebook_test_config_text
+    assert "skip_drive_mount_cells = true" in notebook_test_config_text
+    assert "skip_credential_cells = true" in notebook_test_config_text
+    assert "skip_network_cells = true" in notebook_test_config_text
+    assert "skip_artifact_commands = true" in notebook_test_config_text
+    assert "smoke_execution_enabled = false" in notebook_test_config_text
+
+
+def test_generated_notebook_11_artifacts_are_not_committed() -> None:
+    if not NOTEBOOK11_ARTIFACT_DIR.exists():
+        return
+    committed_payloads = [
+        path
+        for path in NOTEBOOK11_ARTIFACT_DIR.rglob("*")
+        if path.is_file() and ".git" not in path.parts
+    ]
+    assert committed_payloads == []
