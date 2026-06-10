@@ -397,7 +397,7 @@ def test_import_audit_records_m14_closeout_and_validation(repo_docs_text: str) -
     assert "notebook_11_staged_clean_source_safe" in repo_docs_text
     assert "notebook_11_static_source_readiness_covered" in repo_docs_text
     assert "notebook_11_import_audit_docs_index_updated" in repo_docs_text
-    assert "42 passed" in repo_docs_text
+    assert "44 passed" in repo_docs_text
     assert "TestPyPI + PyPI fallback pattern" in repo_docs_text
 
 

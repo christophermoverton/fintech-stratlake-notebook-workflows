@@ -100,7 +100,7 @@ Current verified focused test result:
 
 ```text
 python -m pytest tests/test_notebook_11_static_source_contracts.py -q
-42 passed
+44 passed
 ```
 
 ## Runtime Surface Classification Summary
