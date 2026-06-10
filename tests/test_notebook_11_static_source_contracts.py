@@ -1,7 +1,7 @@
 """
 Static source-contract and source-readiness tests for Notebook 11.
 
-Scope (M14.1-M14.3):
+Scope (M14.1-M14.6):
 - Parse committed notebook source only.
 - Verify source-safe controls, guarded runtime surfaces, expanded-run command
   shape, artifact paths, Notebook 10 context references, install fallback
@@ -392,13 +392,34 @@ def test_runtime_surface_classification_docs_preserve_boundaries(
 
 
 def test_import_audit_records_m14_closeout_and_validation(repo_docs_text: str) -> None:
-    assert "Issues #109 through #112" in repo_docs_text
+    assert "Issues #109 through #114" in repo_docs_text
     assert "Issue #112" in repo_docs_text
+    assert "Issue #114" in repo_docs_text
     assert "notebook_11_staged_clean_source_safe" in repo_docs_text
     assert "notebook_11_static_source_readiness_covered" in repo_docs_text
     assert "notebook_11_import_audit_docs_index_updated" in repo_docs_text
-    assert "44 passed" in repo_docs_text
+    assert "45 passed" in repo_docs_text
     assert "TestPyPI + PyPI fallback pattern" in repo_docs_text
+
+
+def test_issue_114_runtime_smoke_evidence_is_source_documented(
+    repo_docs_text: str,
+) -> None:
+    for token in [
+        "notebook_11_expanded_preview_runtime_smoke_passed_with_expected_blockers",
+        "notebook_11_expanded_run_restored_context_preview_passed_with_execution_not_enabled",
+        "notebook_11_expanded_run_smoke_passed_with_metrics_review_artifacts_incomplete",
+        "expanded_run_completed_with_metrics_review_artifacts_incomplete",
+        "expanded_runs_attempted = 4",
+        "expanded_runs_completed = 4",
+        "expanded_metric_rows = 4",
+        "expanded_split_metric_rows = 0",
+        "expanded_complete_review_artifact_count = 0",
+        "eligible_for_human_watchlist_review_count = 0",
+        "promotion_grade_claim_made = false",
+        "Generated runtime artifacts must stay out of Git",
+    ]:
+        assert token in repo_docs_text
 
 
 def test_notebook_index_and_readme_document_notebook_11_identity(
