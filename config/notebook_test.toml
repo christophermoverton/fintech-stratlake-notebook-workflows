@@ -10,7 +10,8 @@ default_targets = [
   "notebooks/07_stratlake_feature_consumption_baseline_research.ipynb",
   "notebooks/08_stratlake_strategy_backtest_artifact_review.ipynb",
   "notebooks/09_stratlake_strategy_comparison_and_research_review.ipynb",
-  "notebooks/10_stratlake_walk_forward_robustness_and_promotion_review.ipynb"
+  "notebooks/10_stratlake_walk_forward_robustness_and_promotion_review.ipynb",
+  "notebooks/11_stratlake_expanded_promotion_evidence_review.ipynb"
 ]
 require_no_outputs = true
 require_null_execution_counts = true

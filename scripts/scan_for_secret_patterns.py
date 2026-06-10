@@ -153,7 +153,7 @@ def is_variable_or_approved_placeholder(value: str) -> bool:
     cleaned = value.strip().strip("\"',}")
     if cleaned in SAFE_PLACEHOLDER_NAMES:
         return True
-    if cleaned.startswith(("bool(", "re.", "re(", "Path(")):
+    if cleaned.startswith(("bool(", "list(", "re.", "re(", "Path(", "str(")):
         return True
     if re.fullmatch(r"[a-z_][a-z0-9_]*", cleaned):
         return True
@@ -172,6 +172,10 @@ def looks_like_token(value: str) -> bool:
     if value.startswith(("http://", "https://")):
         return False
     if value.startswith(("/content/", "content/")) or value.lower().endswith(".ipynb"):
+        return False
+    if re.fullmatch(r"[A-Z][A-Z0-9_]{7,}", value):
+        return False
+    if "NOTEBOOK" in value.upper() and "_" in value:
         return False
     if value == value.lower():
         return False
