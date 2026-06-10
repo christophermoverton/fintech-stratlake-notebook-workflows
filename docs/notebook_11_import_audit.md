@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This audit records the M14.1 import of Notebook 11 for Issue #109.
+This audit records the M14 import of Notebook 11 for Issues #109 through #112.
 
 - Milestone: M14 - Notebook 11 Expanded Promotion Evidence Review Import.
 - Notebook: Notebook 11 - StratLake Expanded Promotion Evidence Review.
@@ -11,12 +11,24 @@ This audit records the M14.1 import of Notebook 11 for Issue #109.
 - Current source status: source-safe, output-free, execution-count-null,
   metadata-minimized, cell-ID-clean, placeholder-guarded, and source-readiness
   validated.
-- Current stance: `notebook_11_staged_clean_source_safe`.
+- Current stance: `notebook_11_import_audit_docs_index_updated`.
+
+M14 Notebook 11 issue stances:
+
+- #109: `notebook_11_staged_clean_source_safe`.
+- #110: `notebook_11_runtime_surfaces_classified`.
+- #111: `notebook_11_static_source_readiness_covered`.
+- #112: `notebook_11_import_audit_docs_index_updated`.
 
 Notebook 11 is an expanded evidence sufficiency review notebook. It preserves
 the theme "from confidence review to promotion evidence" and interprets
 available evidence, caveats, blockers, and promotion readiness. It does not add
 new StratLake platform behavior and it is not a new promotion decision engine.
+
+Notebook 10 asks whether the restored workflow ran cleanly enough to support
+cautious confidence review. Notebook 11 asks what additional artifact-backed
+evidence would be required before a strategy could responsibly move from
+`needs_review` toward watchlist review or promotion candidacy.
 
 ## Source-Safe Staging Summary
 
@@ -31,6 +43,8 @@ Source facts after staging:
 - Top-level metadata limited to `kernelspec` and `language_info`.
 - Raw draft/future-import wording normalized for committed repository source.
 - `DRIVE_FOLDER_NAME` default restored to `REPLACE_WITH_DRIVE_FOLDER_NAME`.
+- Install cell corrected to the TestPyPI + PyPI fallback pattern for
+  `fintech-market-ingestion` and `stratlake-trade-engine`.
 - No runtime artifacts committed.
 - No notebook cells executed during staging/import.
 - No promotion-grade financial claim made.
@@ -60,7 +74,7 @@ artifacts/notebook_11_expanded_promotion_evidence_review/
 
 ## Coverage Summary
 
-M14.1 added:
+M14.1 through M14.3 added and refined:
 
 - `tests/test_notebook_11_static_source_contracts.py`
 - Notebook 11 inclusion in `config/notebook_test.toml`
@@ -69,14 +83,25 @@ M14.1 added:
 
 Coverage includes JSON parseability, source shape, output-free state,
 execution-count-null state, cell-ID removal, metadata hygiene, source-safe
-default controls, Drive placeholder guard, Notebook 10 initialization/archive
-patterns, expected artifact path, expanded-run command shape, manual-review
-candidates, reference-only preview handoff status, and non-claim language.
+default controls, `expanded_preview` defensive shutdowns, corrected install
+fallback pattern, Drive placeholder guard, Alpaca credential safety, Notebook 10
+initialization/archive patterns, Notebook 10 artifact references, expected
+Notebook 11 artifact path, expanded-run command shape, manual-review candidates,
+governance/evidence-review guardrails, config inclusion, generated-artifact
+absence, reference-only preview handoff status, classification docs, and
+non-claim/evidence-caveat language.
 
 These checks parse notebook JSON and source text only. They do not execute
 cells, invoke CLIs, require Colab, mount Drive, access credentials, restore
 archives, run strategies, run governance jobs, generate plots, write artifacts,
 or refresh archive checkpoints.
+
+Current verified focused test result:
+
+```text
+python -m pytest tests/test_notebook_11_static_source_contracts.py -q
+42 passed
+```
 
 ## Runtime Surface Classification Summary
 
@@ -137,3 +162,37 @@ Evidence caveats preserved for M14.2:
 - Source import is not runtime proof, and CI validation is not Colab/manual
   runtime equivalence.
 - Notebook 11 does not approve strategies.
+
+## Validation Commands
+
+The M14.4 docs/index update was validated with:
+
+```bash
+python scripts/check_notebooks_no_outputs.py notebooks
+python scripts/validate_repo_cleanliness.py .
+python scripts/validate_notebook_execution_readiness.py --config config/notebook_test.toml
+python -m pytest tests/test_notebook_11_static_source_contracts.py -q
+```
+
+These commands are repository/source checks. They do not prove Colab execution,
+Drive availability, restored Notebook 10 artifacts, expanded strategy execution,
+governance execution, checkpoint creation, or generated artifact correctness.
+
+## Documentation And Index Closeout
+
+Issue #112 updated the Notebook 11 import audit, notebook index, README workflow
+summary, and source-only tests so the repository documents Notebook 11 as a
+completed source-safe guarded import.
+
+Notebook 11 is discoverable in:
+
+- [Notebook index](notebook_index.md)
+- [README](../README.md)
+- [Notebook 11 staging classification](notebook_11_staging_classification.md)
+- [Notebook 11 command surface classification](notebook_11_command_surface_classification.md)
+
+Completion stance:
+
+```text
+notebook_11_import_audit_docs_index_updated
+```

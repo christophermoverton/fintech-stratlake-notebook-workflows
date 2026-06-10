@@ -33,6 +33,8 @@ COMMAND_CLASSIFICATION_DOC = (
 STAGING_CLASSIFICATION_DOC = REPO_ROOT / "docs" / "notebook_11_staging_classification.md"
 IMPORT_AUDIT_DOC = REPO_ROOT / "docs" / "notebook_11_import_audit.md"
 NOTEBOOK_TEST_CONFIG = REPO_ROOT / "config" / "notebook_test.toml"
+NOTEBOOK_INDEX_DOC = REPO_ROOT / "docs" / "notebook_index.md"
+README_DOC = REPO_ROOT / "README.md"
 NOTEBOOK11_ARTIFACT_DIR = (
     REPO_ROOT / "artifacts" / "notebook_11_expanded_promotion_evidence_review"
 )
@@ -85,6 +87,14 @@ def docs_text() -> str:
 @pytest.fixture(scope="module")
 def notebook_test_config_text() -> str:
     return NOTEBOOK_TEST_CONFIG.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def repo_docs_text() -> str:
+    return "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in [NOTEBOOK_INDEX_DOC, README_DOC, IMPORT_AUDIT_DOC]
+    )
 
 
 def _has_env_bool_default(code_source: str, name: str, expected: str) -> bool:
@@ -379,6 +389,35 @@ def test_runtime_surface_classification_docs_preserve_boundaries(
     assert "Source import is not runtime proof" in docs_text
     assert "CI validation is not Colab/manual runtime equivalence" in docs_text
     assert "Notebook 11 does not approve strategies" in docs_text
+
+
+def test_import_audit_records_m14_closeout_and_validation(repo_docs_text: str) -> None:
+    assert "Issues #109 through #112" in repo_docs_text
+    assert "Issue #112" in repo_docs_text
+    assert "notebook_11_staged_clean_source_safe" in repo_docs_text
+    assert "notebook_11_static_source_readiness_covered" in repo_docs_text
+    assert "notebook_11_import_audit_docs_index_updated" in repo_docs_text
+    assert "42 passed" in repo_docs_text
+    assert "TestPyPI + PyPI fallback pattern" in repo_docs_text
+
+
+def test_notebook_index_and_readme_document_notebook_11_identity(
+    repo_docs_text: str,
+) -> None:
+    for token in [
+        "Notebook 11",
+        "StratLake Expanded Promotion Evidence Review",
+        "notebooks/11_stratlake_expanded_promotion_evidence_review.ipynb",
+        "From confidence review to promotion evidence",
+        "expanded evidence sufficiency review",
+        "expanded_preview",
+        "expanded_run",
+        "artifacts/notebook_11_expanded_promotion_evidence_review/",
+        "does not approve strategies",
+        "does not claim alpha",
+        "does not claim alpha, production readiness, strategy approval, statistical significance",
+    ]:
+        assert token in repo_docs_text
 
 
 def test_notebook_11_included_in_source_only_readiness_config(
