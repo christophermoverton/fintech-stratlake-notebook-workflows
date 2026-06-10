@@ -11,8 +11,7 @@ This audit records the M14 import of Notebook 11 for Issues #109 through #114.
 - Current source status: source-safe, output-free, execution-count-null,
   metadata-minimized, cell-ID-clean, placeholder-guarded, and source-readiness
   validated.
-- Current stance:
-  `notebook_11_expanded_run_smoke_passed_with_metrics_review_artifacts_incomplete`.
+- Current stance: `notebook_11_import_pr_ready`.
 
 M14 Notebook 11 issue stances:
 
@@ -22,6 +21,7 @@ M14 Notebook 11 issue stances:
 - #112: `notebook_11_import_audit_docs_index_updated`.
 - #114:
   `notebook_11_expanded_run_smoke_passed_with_metrics_review_artifacts_incomplete`.
+- #113: `notebook_11_import_pr_ready`.
 
 Notebook 11 is an expanded evidence sufficiency review notebook. It preserves
 the theme "from confidence review to promotion evidence" and interprets
@@ -382,9 +382,10 @@ Notebook 11 is discoverable in:
 - [README](../README.md)
 - [Notebook 11 staging classification](notebook_11_staging_classification.md)
 - [Notebook 11 command surface classification](notebook_11_command_surface_classification.md)
+- [Milestone 14 merge readiness](milestone_14_merge_readiness.md)
 
 Completion stance:
 
 ```text
-notebook_11_expanded_run_smoke_passed_with_metrics_review_artifacts_incomplete
+notebook_11_import_pr_ready
 ```

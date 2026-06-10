@@ -35,6 +35,9 @@ IMPORT_AUDIT_DOC = REPO_ROOT / "docs" / "notebook_11_import_audit.md"
 NOTEBOOK_TEST_CONFIG = REPO_ROOT / "config" / "notebook_test.toml"
 NOTEBOOK_INDEX_DOC = REPO_ROOT / "docs" / "notebook_index.md"
 README_DOC = REPO_ROOT / "README.md"
+MILESTONE_14_MERGE_READINESS_DOC = (
+    REPO_ROOT / "docs" / "milestone_14_merge_readiness.md"
+)
 NOTEBOOK11_ARTIFACT_DIR = (
     REPO_ROOT / "artifacts" / "notebook_11_expanded_promotion_evidence_review"
 )
@@ -93,7 +96,12 @@ def notebook_test_config_text() -> str:
 def repo_docs_text() -> str:
     return "\n".join(
         path.read_text(encoding="utf-8")
-        for path in [NOTEBOOK_INDEX_DOC, README_DOC, IMPORT_AUDIT_DOC]
+        for path in [
+            NOTEBOOK_INDEX_DOC,
+            README_DOC,
+            IMPORT_AUDIT_DOC,
+            MILESTONE_14_MERGE_READINESS_DOC,
+        ]
     )
 
 
@@ -395,9 +403,13 @@ def test_import_audit_records_m14_closeout_and_validation(repo_docs_text: str) -
     assert "Issues #109 through #114" in repo_docs_text
     assert "Issue #112" in repo_docs_text
     assert "Issue #114" in repo_docs_text
+    assert "Issue #113" in repo_docs_text
     assert "notebook_11_staged_clean_source_safe" in repo_docs_text
     assert "notebook_11_static_source_readiness_covered" in repo_docs_text
     assert "notebook_11_import_audit_docs_index_updated" in repo_docs_text
+    assert "notebook_11_import_pr_ready" in repo_docs_text
+    assert "Notebook 11 import handoff" in repo_docs_text
+    assert "Milestone 14" in repo_docs_text
     assert "45 passed" in repo_docs_text
     assert "TestPyPI + PyPI fallback pattern" in repo_docs_text
 
