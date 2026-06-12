@@ -10,7 +10,7 @@ This audit records the M15 import of Notebook 12 for Issues #117 through #121.
 - Source notebook: `Notebook_12_Stratlake_Campaign_Evidence_Gap_and_Promotion_Readiness_RESEARCH_DRAFT_with_handoff_next_action_precision (4).ipynb`.
 - Source role: source-safe campaign evidence gap review and human-review handoff notebook.
 - Current source status: source-safe, output-free, execution-count-null, metadata-minimized, cell-ID-clean, guarded, and source-only validated.
-- Current stance: `notebook_12_import_docs_and_smoke_audit_documented`.
+- Current stance: `notebook_12_import_pr_ready`.
 
 M15 Notebook 12 issue stances:
 
@@ -19,6 +19,7 @@ M15 Notebook 12 issue stances:
 - #119: `notebook_12_static_source_contracts_covered`.
 - #120: `notebook_12_campaign_context_guardrails_covered`.
 - #121: `notebook_12_import_docs_and_smoke_audit_documented`.
+- #122: `notebook_12_import_pr_ready`.
 
 Notebook 12 reviews campaign evidence gaps, native campaign artifact presence,
 candidate campaign context, caveats, and handoff next actions. It may preview,
