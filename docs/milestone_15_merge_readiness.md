@@ -25,7 +25,7 @@ metrics, promotion gates, governance, or promotion decisions.
 Final stance:
 
 ```text
-notebook_12_import_pr_ready
+notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution
 ```
 
 Notebook 12 does not claim native campaign execution, manual Colab smoke
@@ -43,6 +43,7 @@ or promotion-grade readiness.
 | #120 | `features/m15-4-add-notebook-12-artifact-filter-guardrails` | `notebook_12_campaign_context_guardrails_covered` |
 | #121 | `features/m15-5-add-notebook-12-import-docs-smoke-audit` | `notebook_12_import_docs_and_smoke_audit_documented` |
 | #122 | `features/m15-6-final-notebook-12-import-audit-pr-readiness` | `notebook_12_import_pr_ready` |
+| M15.8 | `features/m15-8-notebook-12-cold-smoke-matrix-doc-cleanup` | `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution` |
 
 ## Files Changed
 
@@ -165,6 +166,32 @@ Missing native artifacts, missing split metrics, missing promotion gates, or
 missing promotion evidence are blockers/caveats or next actions, not success
 states.
 
+## Cold Smoke Matrix Closeout
+
+M15.8 records the completed Notebook 12 cold-smoke guardrail matrix:
+
+| Profile | Result |
+|---|---|
+| `cold_smoke_1_preview` | `notebook_12_cold_smoke_1_preview_passed_with_expected_caveats` |
+| `cold_smoke_5_command_shape_readiness` | `notebook_12_cold_smoke_5_command_shape_readiness_passed_with_expected_caveats` |
+| `cold_smoke_4_strict_missing_filter_guardrail` | `notebook_12_cold_smoke_4_strict_missing_filter_guardrail_passed` |
+| `campaign_smoke_preview` | `notebook_12_campaign_smoke_preview_passed_with_expected_caveats` |
+| `campaign_smoke_dry_run` | `notebook_12_campaign_smoke_dry_run_blocked_no_verified_native_dry_run_surface` |
+| `campaign_smoke_dry_run_allow_provisional` | `notebook_12_campaign_smoke_dry_run_allow_provisional_blocked_no_verified_native_dry_run_surface` |
+| `campaign_smoke_execute_allow_provisional_no_dry_run` | Intentionally skipped pending a separate runtime/native campaign execution issue |
+
+Final cold-smoke matrix stance:
+
+```text
+notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution
+```
+
+The cold-smoke matrix verified preview behavior, command-shape readiness, strict
+missing-filter guardrails, campaign smoke preview, dry-run blocking, and
+provisional-config dry-run blocking. It did not run native campaign execution,
+did not complete native dry-run execution, did not load complete native campaign
+artifact context, and did not introduce promotion-grade claims.
+
 ## Static And Source-Only Coverage
 
 Issue #119 added source-contract coverage in:
@@ -207,6 +234,17 @@ Final M15.6 validation result:
 check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
 validate_repo_cleanliness.py . -> passed
 scan_for_secret_patterns.py . -> passed
+pytest -> 902 passed, 5 warnings
+```
+
+M15.8 post-smoke documentation cleanup validation result:
+
+```text
+check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
+validate_repo_cleanliness.py . -> passed
+scan_for_secret_patterns.py . -> passed
+python -m pytest tests/test_notebook_12_source_contracts.py -q -> 45 passed
+python -m pytest tests/test_notebook_12_artifact_filter_guardrails.py -q -> 45 passed
 pytest -> 902 passed, 5 warnings
 ```
 

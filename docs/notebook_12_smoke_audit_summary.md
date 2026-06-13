@@ -3,9 +3,10 @@
 ## Purpose
 
 This document summarizes the Notebook 12 smoke-audit posture after Issues #117
-through #121. It records source-safe validation, command-shape readiness, known
-caveats, and remaining manual/runtime next actions. It does not record completed
-native campaign execution.
+through #122 and the M15.8 post-smoke cleanup pass. It records source-safe
+validation, command-shape readiness, completed cold-smoke guardrail profiles,
+known caveats, and remaining manual/runtime next actions. It does not record
+completed native campaign execution.
 
 Notebook title: Notebook 12 — StratLake Campaign Evidence Gap and Promotion
 Readiness Review.
@@ -51,12 +52,58 @@ or prove manual Colab/native runtime behavior.
 | Governance/report command previews | Source guarded and preview-oriented | Native outputs remain source of truth |
 | Promotion readiness | Interpretive/caveat review only | No promotion-grade readiness claim |
 
+Final cold-smoke matrix stance:
+
+```text
+notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution
+```
+
+This stance means:
+
+- No native campaign execution occurred.
+- No promotion-grade readiness was claimed.
+- No complete native campaign artifact context was loaded.
+- Dry-run execution remained blocked because no native dry-run option was
+  advertised.
+- Provisional config use remained bounded by the dry-run guard.
+- Notebook 12 review artifacts were not treated as native campaign evidence.
+
 Manual smoke profiles preserved in source:
 
 - `campaign_smoke_preview`
 - `campaign_smoke_dry_run`
 - `campaign_smoke_dry_run_allow_provisional`
 - `campaign_smoke_execute_allow_provisional_no_dry_run`
+
+## Completed Cold Smoke Matrix
+
+| Profile | Purpose | Execution posture | Native command execution status | Dry-run support result | Config classification result | Campaign context/artifact result | Expected caveats | Final profile stance |
+|---|---|---|---|---|---|---|---|---|
+| `cold_smoke_1_preview` | Baseline source-safe preview with no restore, campaign run, governance run, or checkpoint. | Source-safe preview. | Not executed. | Not required. | No native smoke execution config selected for execution. | No complete native campaign context loaded; missing artifacts expected. | Missing campaign context and native artifacts remain caveats. | `notebook_12_cold_smoke_1_preview_passed_with_expected_caveats` |
+| `cold_smoke_5_command_shape_readiness` | Command-shape readiness while execution stays disabled. | Source-safe command-shape/preview posture. | Not executed. | Native dry-run surface not verified. | Config source fields remain source-auditable; generated configs remain `notebook12_generated_smoke_config` when present. | No complete native campaign context loaded. | Command-shape readiness is not runtime proof. | `notebook_12_cold_smoke_5_command_shape_readiness_passed_with_expected_caveats` |
+| `cold_smoke_4_strict_missing_filter_guardrail` | Verify strict restored-discovery missing-filter guardrail. | Guardrail smoke; strict discovery without required campaign/run filter. | Not executed. | Not required. | Not applicable. | Strict missing-filter guardrail blocked context review instead of fabricating context. | Missing campaign/run filter remains an expected blocker. | `notebook_12_cold_smoke_4_strict_missing_filter_guardrail_passed` |
+| `campaign_smoke_preview` | Prepare and preview guarded native campaign command shape. | Preview only. | Not executed. | Not executed; dry-run support still not verified. | Generated provisional config remains `notebook12_generated_smoke_config`, not `native_campaign_template`. | No complete native campaign context loaded. | Preview is not campaign execution and not artifact completeness. | `notebook_12_campaign_smoke_preview_passed_with_expected_caveats` |
+| `campaign_smoke_dry_run` | Attempt guarded native dry-run smoke only when native CLI advertises dry-run support. | Guarded dry-run profile. | Blocked before execution. | No verified native dry-run option was advertised. | Native template/config source boundaries preserved. | No native dry-run artifacts produced; no complete native campaign context loaded. | Dry-run remains blocked until the native CLI advertises a dry-run surface. | `notebook_12_campaign_smoke_dry_run_blocked_no_verified_native_dry_run_surface` |
+| `campaign_smoke_dry_run_allow_provisional` | Attempt guarded dry-run using a validated Notebook 12-generated provisional config. | Guarded provisional dry-run profile. | Blocked before execution. | No verified native dry-run option was advertised. | Provisional config remained `notebook12_generated_smoke_config`; it was not treated as a native template. | No native dry-run artifacts produced; no complete native campaign context loaded. | Provisional config use remains bounded by dry-run support and does not authorize non-dry-run execution. | `notebook_12_campaign_smoke_dry_run_allow_provisional_blocked_no_verified_native_dry_run_surface` |
+| `campaign_smoke_execute_allow_provisional_no_dry_run` | Explicit non-dry-run smoke profile. | Intentionally skipped. | Not executed. | Not applicable because the profile was not run. | Not promoted to native template. | No native campaign artifacts produced. | Requires a separate runtime/native campaign execution issue before use. | `notebook_12_campaign_smoke_execute_allow_provisional_no_dry_run_intentionally_skipped` |
+
+The matrix distinguishes source-safe verification, preview/guardrail smoke,
+blocked dry-run smoke, and true native runtime execution. True native runtime
+execution is not claimed by this audit.
+
+## Post-Smoke Cleanup Result
+
+The committed notebook source was restored/validated as source-safe after the
+cold-smoke audits:
+
+- Outputs remain cleared.
+- Execution counts remain `null`.
+- Cell IDs remain removed.
+- Metadata remains minimized.
+- No generated review artifacts, temporary configs, checkpoint artifacts,
+  Colab outputs, Drive/session outputs, or native campaign artifacts were
+  committed.
+- Notebook 12 review artifacts remain excluded from native campaign evidence.
 
 ## Validation History
 
@@ -65,6 +112,8 @@ Recorded validation history:
 - #117: `pytest` -> `812 passed`.
 - #119: `pytest` -> `857 passed`.
 - #120: `pytest` -> `902 passed`.
+- M15.8: focused Notebook 12 checks -> `45 passed` and `45 passed`;
+  full `pytest` -> `902 passed`.
 
 Required validation commands:
 
@@ -73,6 +122,17 @@ python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
 python scripts/scan_for_secret_patterns.py .
 pytest
+```
+
+M15.8 validation result:
+
+```text
+python scripts/check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
+python scripts/validate_repo_cleanliness.py . -> passed
+python scripts/scan_for_secret_patterns.py . -> passed
+python -m pytest tests/test_notebook_12_source_contracts.py -q -> 45 passed
+python -m pytest tests/test_notebook_12_artifact_filter_guardrails.py -q -> 45 passed
+pytest -> 902 passed, 5 warnings
 ```
 
 ## Classification And Coverage Artifacts

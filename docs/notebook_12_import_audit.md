@@ -10,7 +10,7 @@ This audit records the M15 import of Notebook 12 for Issues #117 through #121.
 - Source notebook: `Notebook_12_Stratlake_Campaign_Evidence_Gap_and_Promotion_Readiness_RESEARCH_DRAFT_with_handoff_next_action_precision (4).ipynb`.
 - Source role: source-safe campaign evidence gap review and human-review handoff notebook.
 - Current source status: source-safe, output-free, execution-count-null, metadata-minimized, cell-ID-clean, guarded, and source-only validated.
-- Current stance: `notebook_12_import_pr_ready`.
+- Current stance: `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution`.
 
 M15 Notebook 12 issue stances:
 
@@ -20,6 +20,7 @@ M15 Notebook 12 issue stances:
 - #120: `notebook_12_campaign_context_guardrails_covered`.
 - #121: `notebook_12_import_docs_and_smoke_audit_documented`.
 - #122: `notebook_12_import_pr_ready`.
+- M15.8: `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution`.
 
 Notebook 12 reviews campaign evidence gaps, native campaign artifact presence,
 candidate campaign context, caveats, and handoff next actions. It may preview,
@@ -159,6 +160,38 @@ Notebook 12 preserves these source-visible boundaries:
 Missing campaign context, missing native artifacts, missing split metrics,
 missing promotion gates, or missing promotion evidence remain caveats or next
 actions.
+
+## Cold Smoke Matrix Summary
+
+M15.8 records the completed Notebook 12 cold-smoke matrix:
+
+- `cold_smoke_1_preview`:
+  `notebook_12_cold_smoke_1_preview_passed_with_expected_caveats`.
+- `cold_smoke_5_command_shape_readiness`:
+  `notebook_12_cold_smoke_5_command_shape_readiness_passed_with_expected_caveats`.
+- `cold_smoke_4_strict_missing_filter_guardrail`:
+  `notebook_12_cold_smoke_4_strict_missing_filter_guardrail_passed`.
+- `campaign_smoke_preview`:
+  `notebook_12_campaign_smoke_preview_passed_with_expected_caveats`.
+- `campaign_smoke_dry_run`:
+  `notebook_12_campaign_smoke_dry_run_blocked_no_verified_native_dry_run_surface`.
+- `campaign_smoke_dry_run_allow_provisional`:
+  `notebook_12_campaign_smoke_dry_run_allow_provisional_blocked_no_verified_native_dry_run_surface`.
+- `campaign_smoke_execute_allow_provisional_no_dry_run`:
+  intentionally skipped pending a separate runtime/native campaign execution
+  issue.
+
+Final cold-smoke matrix stance:
+
+```text
+notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution
+```
+
+The matrix records no native campaign execution, no manual non-dry-run smoke,
+no complete native campaign artifact context, and no promotion-grade readiness
+claim. Dry-run execution remained blocked because no native dry-run option was
+advertised. Provisional config use remained bounded by the dry-run guard, and
+Notebook 12 review artifacts were not treated as native campaign evidence.
 
 ## Non-Claims
 
