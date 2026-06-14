@@ -20,6 +20,8 @@ M15 Notebook 12 issue stances:
 - #120: `notebook_12_campaign_context_guardrails_covered`.
 - #121: `notebook_12_import_docs_and_smoke_audit_documented`.
 - #122: `notebook_12_import_pr_ready`.
+- #123 / M15.7:
+  `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution`.
 - M15.8: `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution`.
 
 Notebook 12 reviews campaign evidence gaps, native campaign artifact presence,
@@ -128,6 +130,8 @@ Recorded M15 validation history:
 - #117: `pytest` -> `812 passed`.
 - #119: `pytest` -> `857 passed`.
 - #120: `pytest` -> `902 passed`.
+- #123 / M15.7: focused Notebook 12 checks -> `45 passed` and
+  `45 passed`; full `pytest` -> `902 passed`.
 
 Required validation commands:
 
@@ -136,6 +140,17 @@ python scripts/check_notebooks_no_outputs.py notebooks
 python scripts/validate_repo_cleanliness.py .
 python scripts/scan_for_secret_patterns.py .
 pytest
+```
+
+M15.7 validation result:
+
+```text
+python scripts/check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
+python scripts/validate_repo_cleanliness.py . -> passed
+python scripts/scan_for_secret_patterns.py . -> passed
+python -m pytest tests/test_notebook_12_source_contracts.py -q -> 45 passed
+python -m pytest tests/test_notebook_12_artifact_filter_guardrails.py -q -> 45 passed
+pytest -> 902 passed, 5 warnings
 ```
 
 ## Artifact And Context Boundaries
@@ -161,9 +176,9 @@ Missing campaign context, missing native artifacts, missing split metrics,
 missing promotion gates, or missing promotion evidence remain caveats or next
 actions.
 
-## Cold Smoke Matrix Summary
+## M15.7 Cold Smoke Matrix Summary
 
-M15.8 records the completed Notebook 12 cold-smoke matrix:
+Issue #123 / M15.7 records the completed Notebook 12 cold-smoke matrix:
 
 - `cold_smoke_1_preview`:
   `notebook_12_cold_smoke_1_preview_passed_with_expected_caveats`.
@@ -181,7 +196,7 @@ M15.8 records the completed Notebook 12 cold-smoke matrix:
   intentionally skipped pending a separate runtime/native campaign execution
   issue.
 
-Final cold-smoke matrix stance:
+M15.7 cold-smoke matrix stance:
 
 ```text
 notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution

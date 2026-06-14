@@ -43,6 +43,7 @@ or promotion-grade readiness.
 | #120 | `features/m15-4-add-notebook-12-artifact-filter-guardrails` | `notebook_12_campaign_context_guardrails_covered` |
 | #121 | `features/m15-5-add-notebook-12-import-docs-smoke-audit` | `notebook_12_import_docs_and_smoke_audit_documented` |
 | #122 | `features/m15-6-final-notebook-12-import-audit-pr-readiness` | `notebook_12_import_pr_ready` |
+| #123 / M15.7 | `features/m15-7-notebook-12-cold-smoke-verification-docs` | `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution` |
 | M15.8 | `features/m15-8-notebook-12-cold-smoke-matrix-doc-cleanup` | `notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution` |
 
 ## Files Changed
@@ -166,9 +167,10 @@ Missing native artifacts, missing split metrics, missing promotion gates, or
 missing promotion evidence are blockers/caveats or next actions, not success
 states.
 
-## Cold Smoke Matrix Closeout
+## M15.7 Cold Smoke Matrix Verification
 
-M15.8 records the completed Notebook 12 cold-smoke guardrail matrix:
+Issue #123 / M15.7 records the completed Notebook 12 cold-smoke guardrail
+matrix:
 
 | Profile | Result |
 |---|---|
@@ -180,7 +182,7 @@ M15.8 records the completed Notebook 12 cold-smoke guardrail matrix:
 | `campaign_smoke_dry_run_allow_provisional` | `notebook_12_campaign_smoke_dry_run_allow_provisional_blocked_no_verified_native_dry_run_surface` |
 | `campaign_smoke_execute_allow_provisional_no_dry_run` | Intentionally skipped pending a separate runtime/native campaign execution issue |
 
-Final cold-smoke matrix stance:
+M15.7 cold-smoke matrix stance:
 
 ```text
 notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution
@@ -234,6 +236,17 @@ Final M15.6 validation result:
 check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
 validate_repo_cleanliness.py . -> passed
 scan_for_secret_patterns.py . -> passed
+pytest -> 902 passed, 5 warnings
+```
+
+M15.7 cold-smoke documentation validation result:
+
+```text
+check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
+validate_repo_cleanliness.py . -> passed
+scan_for_secret_patterns.py . -> passed
+python -m pytest tests/test_notebook_12_source_contracts.py -q -> 45 passed
+python -m pytest tests/test_notebook_12_artifact_filter_guardrails.py -q -> 45 passed
 pytest -> 902 passed, 5 warnings
 ```
 

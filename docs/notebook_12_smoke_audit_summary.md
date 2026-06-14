@@ -3,7 +3,7 @@
 ## Purpose
 
 This document summarizes the Notebook 12 smoke-audit posture after Issues #117
-through #122 and the M15.8 post-smoke cleanup pass. It records source-safe
+through #123 and the M15.8 post-smoke cleanup pass. It records source-safe
 validation, command-shape readiness, completed cold-smoke guardrail profiles,
 known caveats, and remaining manual/runtime next actions. It does not record
 completed native campaign execution.
@@ -52,7 +52,7 @@ or prove manual Colab/native runtime behavior.
 | Governance/report command previews | Source guarded and preview-oriented | Native outputs remain source of truth |
 | Promotion readiness | Interpretive/caveat review only | No promotion-grade readiness claim |
 
-Final cold-smoke matrix stance:
+Issue #123 / M15.7 cold-smoke verification stance:
 
 ```text
 notebook_12_cold_smoke_guardrail_matrix_passed_with_no_native_campaign_execution
@@ -75,7 +75,11 @@ Manual smoke profiles preserved in source:
 - `campaign_smoke_dry_run_allow_provisional`
 - `campaign_smoke_execute_allow_provisional_no_dry_run`
 
-## Completed Cold Smoke Matrix
+## M15.7 Completed Cold Smoke Matrix
+
+Issue #123 / M15.7 records the controlled Notebook 12 cold-smoke verification
+matrix. These results verify preview behavior and guardrail behavior only. They
+do not claim native campaign execution or native dry-run execution.
 
 | Profile | Purpose | Execution posture | Native command execution status | Dry-run support result | Config classification result | Campaign context/artifact result | Expected caveats | Final profile stance |
 |---|---|---|---|---|---|---|---|---|
@@ -112,6 +116,9 @@ Recorded validation history:
 - #117: `pytest` -> `812 passed`.
 - #119: `pytest` -> `857 passed`.
 - #120: `pytest` -> `902 passed`.
+- #123 / M15.7: cold-smoke guardrail matrix recorded with no native campaign
+  execution; focused Notebook 12 checks -> `45 passed` and `45 passed`;
+  full `pytest` -> `902 passed`.
 - M15.8: focused Notebook 12 checks -> `45 passed` and `45 passed`;
   full `pytest` -> `902 passed`.
 
@@ -124,7 +131,7 @@ python scripts/scan_for_secret_patterns.py .
 pytest
 ```
 
-M15.8 validation result:
+M15.7 validation result:
 
 ```text
 python scripts/check_notebooks_no_outputs.py notebooks -> passed; checked 13 notebook(s)
