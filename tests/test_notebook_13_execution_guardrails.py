@@ -125,6 +125,10 @@ def test_native_campaign_command_shape_and_execution_blockers(code_source: str) 
         "notebook-generated",
         "execution-candidate",
         "native_template: false",
+        "provenance: notebook-generated",
+        "config_role: execution-candidate",
+        "requires_user_review_before_execution: true",
+        "requires_notebook_generated_config_execution_allow: true",
         "campaign_config_is_native_template = False",
     ],
 )
@@ -179,11 +183,16 @@ def test_strategy_and_catalog_guardrails_are_source_visible(
         "/content/stratlake/configs/alphas.yml",
         "NOTEBOOK13_NATIVE_STRATEGY_ALIASES",
         "resolve_notebook13_execution_strategies",
+        "strategy_resolution_blocked",
+        "strategy_resolution_blocker",
+        "strategy_resolution_caveats",
+        "default_strategy_used",
         "unknown_execution_candidate_strategies",
         "Unresolved requested strategies",
         "native alpha catalog path unavailable while alpha targets are requested",
         "generated an empty alpha catalog for a strategy-only campaign",
         "strategy-only fallback",
+        "catalog_readiness_blocked",
     ]:
         assert token in combined
 
@@ -196,6 +205,26 @@ def test_empty_alpha_catalog_fallback_is_strategy_only(code_source: str) -> None
     assert "notebook13_generated_empty_alpha_catalog.yml" in resolver
     assert '"source": "notebook13_generated_empty_alpha_catalog_for_strategy_only_campaign"' in resolver
     assert '"generated": True' in resolver
+    assert '"strategy_only_fallback": True' in resolver
+    assert '"requires_real_alpha_catalog_for_requested_alpha_targets": True' in resolver
+    assert "requires_real_alpha_catalog_for_requested_alpha_targets: true" in code_source
+
+
+def test_native_execution_blockers_cover_config_catalog_strategy_and_inputs(
+    code_source: str,
+) -> None:
+    for token in [
+        "campaign config execution readiness is false",
+        "universe config execution readiness is false",
+        "feature input root is not marked reviewed for native execution",
+        "feature input root is not ready for native execution",
+        "catalog, strategy, or alpha readiness blockers are present",
+        "campaign_execution_result[\"execution_blockers\"] = execution_blockers",
+        "catalog_readiness_blocked",
+        "strategy_resolution_blocker",
+        "alpha_catalog_blocker",
+    ]:
+        assert token in code_source
 
 
 def test_native_command_discovery_records_caveats_without_requiring_cli(

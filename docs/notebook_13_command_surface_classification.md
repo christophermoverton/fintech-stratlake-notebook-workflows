@@ -158,6 +158,10 @@ enabled, but those files remain notebook-generated artifacts:
 Generated configs use the native `research_campaign` schema so they can be
 preflighted and, after review, executed by the native command. They are not
 canonical upstream StratLake templates and must not be documented as such.
+Their source metadata and comments should preserve `notebook-generated`,
+`execution-candidate`, `native_template: false`,
+`requires_user_review_before_execution: true`, and generated-config execution
+allow requirements.
 
 Executing a generated campaign or universe config requires:
 
@@ -181,10 +185,18 @@ Strategy alias/default handling allows common short names to resolve to native
 catalog names such as `momentum_v1`. Unresolved requested strategies are hard
 blockers.
 
+Preflight and handoff summaries should carry requested strategies, resolved
+strategies, alias/default substitutions, unknown strategies, catalog readiness
+blockers, and any strategy-resolution caveats so fallback behavior remains
+visible to reviewers.
+
 Alpha catalog handling is intentionally conservative. If no alpha targets are
 requested and no real alpha catalog exists, Notebook 13 may generate a
 notebook-local empty alpha catalog for a strategy-only campaign. If alpha
 targets are requested, a missing real alpha catalog is a hard blocker.
+The fallback is not alpha readiness, alpha validation, promotion evidence, or a
+substitute for a real alpha catalog when `NOTEBOOK13_CAMPAIGN_ALPHAS` requests
+alpha targets.
 
 ## Artifact And Handoff Boundaries
 
@@ -209,6 +221,9 @@ Artifact discovery is not itself proof of current-session execution. The
 execution summary must remain the source for whether Notebook 13 actually ran
 `stratlake-run-research-campaign` in the current session, and success should be
 claimed only when the native return code is 0.
+Handoff summaries should preserve execution requested/enabled/status/succeeded
+fields, execution blockers, catalog/strategy/alpha blockers, caveats, and
+explicit non-claim flags.
 
 ## Optional Governance, Reporting, And Checkpoint Surfaces
 

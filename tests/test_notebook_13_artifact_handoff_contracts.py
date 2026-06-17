@@ -167,13 +167,31 @@ def test_handoff_summary_preserves_reviewable_artifact_and_nonclaim_fields(
         "notebook_13_native_campaign_execution_blocked_with_caveats",
         "notebook_13_native_campaign_execution_import_ready_runtime_execution_manual",
         "campaign_execution_succeeded",
+        "campaign_execution_status",
+        "campaign_execution_blockers",
         "native_campaign_artifact_rows",
         "campaign_report_available",
         "evidence_review_available",
         "promotion_governance_available",
+        "catalog_readiness_blocked",
+        "strategy_resolution_blocked",
+        "strategy_resolution_blocker",
+        "alpha_catalog_blocked",
+        "alpha_catalog_blocker",
+        "alpha_catalog_strategy_only_fallback",
         "promotion_grade_claim_made\": False",
         "production_readiness_claim_made\": False",
         "statistical_significance_claim_made\": False",
+    ]:
+        assert token in code_source
+
+
+def test_alpha_fallback_caveat_prevents_readiness_claims(code_source: str) -> None:
+    for token in [
+        "empty alpha catalog fallback is notebook-local, strategy-only",
+        "is not alpha readiness, alpha validation, promotion evidence",
+        "substitute for a real alpha catalog when alpha targets are requested",
+        "alpha_catalog_strategy_only_fallback",
     ]:
         assert token in code_source
 
