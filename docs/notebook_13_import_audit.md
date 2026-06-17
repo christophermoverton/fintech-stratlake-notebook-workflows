@@ -2,7 +2,8 @@
 
 ## Purpose
 
-This audit records the M16 import of Notebook 13 for Issues #126 through #130.
+This audit records the M16 import of Notebook 13 for Issues #126 through #130
+and the optional M16.7 runtime smoke evidence recorded in Issue #132.
 
 - Milestone: M16 - Notebook 13 Native Campaign Execution and Artifact
   Generation Import.
@@ -14,7 +15,7 @@ This audit records the M16 import of Notebook 13 for Issues #126 through #130.
   workflow.
 - Current source status: source-safe, output-free, execution-count-null,
   guarded, statically validated, and non-claiming.
-- Current stance: `notebook_13_import_docs_and_smoke_audit_ready`.
+- Current stance: `notebook_13_runtime_smoke_verified_without_committed_outputs`.
 
 M16 Notebook 13 issue stances:
 
@@ -23,6 +24,7 @@ M16 Notebook 13 issue stances:
 - #128: `notebook_13_source_static_contracts_covered`.
 - #129: `notebook_13_native_execution_guardrails_ready`.
 - #130: `notebook_13_import_docs_and_smoke_audit_ready`.
+- #132: `notebook_13_runtime_smoke_verified_without_committed_outputs`.
 
 Notebook 13 extends Notebook 12 from campaign evidence gap review into guarded
 native StratLake campaign execution and artifact generation. It restores
@@ -194,6 +196,51 @@ were detected. That smoke evidence is manual/runtime context only:
 The committed notebook was restored to `campaign_execution_preview` before
 import and remains output-free and execution-count-null.
 
+## M16.7 Evidence Addendum
+
+Issue #132 / M16.7 directly audited optional manual runtime smoke across three
+profiles:
+
+- `campaign_execution_preview`
+- `campaign_execution_preflight`
+- `campaign_execution_run`
+
+The preview profile verified source-safe defaults: archive restore was not
+requested, native execution was not requested, checkpointing was not requested,
+and the expected preview blocker was recorded for unavailable native strategy
+config in the preview context.
+
+The preflight profile verified gated restore and input readiness without native
+execution: StratLake init succeeded, archive restore returned code 0, preflight
+succeeded, native execution input readiness was true, and
+`campaign_execution_status=not_requested`.
+
+The run profile verified full native runtime smoke: archive restore returned
+code 0, native preflight succeeded, `stratlake-run-research-campaign` returned
+code 0, execution blockers were empty, native campaign artifacts were detected,
+and the handoff status was
+`notebook_13_native_campaign_execution_smoke_passed_with_artifacts`.
+
+These executed notebook artifacts remain outside Git. They are manual runtime
+evidence only and are not committed notebook output, source-only validation
+evidence, or CI evidence. Generated runtime configs, native campaign artifacts,
+restored archive material, Google Drive material, credentials, and Colab outputs
+remain excluded from source control.
+
+The M16.7 combined stance is:
+
+```text
+notebook_13_runtime_smoke_verified_without_committed_outputs
+```
+
+Claim boundaries remain unchanged: preview/preflight evidence is not native
+campaign execution evidence; artifact discovery alone does not prove
+current-session execution; governance rows were 0, so no governance readiness
+claim is made; split metric rows were 0, so no split-metric completeness claim
+is made; and Notebook 13 still makes no production, strategy approval,
+promotion, statistical significance, alpha validation, upstream-template, or
+source/runtime equivalence claim.
+
 ## Static Coverage Summary
 
 Issue #128 added source-only Notebook 13 static coverage:
@@ -213,7 +260,7 @@ artifacts, depend on Colab, depend on network access, or depend on secrets.
 
 ## Validation History
 
-Latest local validation recorded in M16.4:
+Latest local validation recorded in M16.7:
 
 ```text
 python scripts/check_notebooks_no_outputs.py notebooks -> passed; checked 14 notebook(s)
@@ -245,5 +292,5 @@ The committed Notebook 13 source and this audit do not claim:
 Completion stance:
 
 ```text
-notebook_13_import_docs_and_smoke_audit_ready
+notebook_13_runtime_smoke_verified_without_committed_outputs
 ```

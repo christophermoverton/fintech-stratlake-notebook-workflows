@@ -3,7 +3,8 @@
 ## Purpose
 
 This document summarizes the Notebook 13 smoke-audit posture after Issues #126
-through #130. It records source-safe validation, manual runtime smoke context,
+through #130 and the optional M16.7 runtime smoke verification. It records
+source-safe validation, manual runtime smoke context,
 guardrails, caveats, and remaining claim boundaries for:
 
 ```text
@@ -47,11 +48,190 @@ write artifacts, or prove live Colab/manual runtime behavior.
 | Optional governance/reporting | Manual/runtime | May be discovered or run only when enabled; missing governance remains a caveat |
 | Artifact discovery | Runtime review surface | Does not prove current-session native execution |
 
+## M16.7 Optional Runtime Smoke Verification
+
+Issue #132 / M16.7 records optional manual runtime smoke verification across
+three audited profiles. The executed notebook artifacts contained outputs and
+execution counts and are valid smoke evidence, but they remain outside Git and
+are not committed source.
+
+Combined M16.7 stance:
+
+```text
+notebook_13_runtime_smoke_verified_without_committed_outputs
+```
+
+### Profile Results
+
+| Profile | Evidence type | Key observed result | Stance |
+|---|---|---|---|
+| `campaign_execution_preview` | Source-safe preview evidence | Verified source-safe defaults, archive restore not requested, native execution not requested, checkpoint not requested, and one expected preflight blocker for missing native strategy config in preview context. | `notebook_13_preview_profile_verified_source_safe_no_native_execution` |
+| `campaign_execution_preflight` | Review-gated preflight evidence | Verified StratLake init succeeded, archive restore returned code 0, preflight succeeded, runtime inputs were ready, and native execution remained not requested. | `notebook_13_preflight_profile_verified_restore_and_input_readiness_no_native_execution` |
+| `campaign_execution_run` | Full native runtime smoke evidence | Verified archive restore returned code 0, native preflight succeeded, `stratlake-run-research-campaign` returned code 0, execution blockers were empty, and native campaign artifacts were detected. | `notebook_13_native_campaign_execution_smoke_passed_with_artifacts` |
+
+### Preview Profile Evidence
+
+The preview run used `NOTEBOOK13_TEST_PROFILE=campaign_execution_preview`.
+
+Observed source-safe controls:
+
+- `default_profile_is_source_safe=True`.
+- `allow_native_execution=False`.
+- `allow_archive_restore=False`.
+- `allow_archive_checkpoint=False`.
+- `allow_notebook_generated_config_execution=False`.
+- `mark_inputs_user_reviewed=False`.
+
+Observed non-execution state:
+
+- `archive_restore_requested=False`.
+- `archive_restore_enabled=False`.
+- `archive_restore_status=not_requested`.
+- `campaign_execution_requested=False`.
+- `campaign_execution_enabled=False`.
+- `campaign_execution_returncode=None`.
+- `campaign_execution_succeeded=False`.
+- `campaign_execution_claim_made=False`.
+- `campaign_execution_status=not_requested`.
+- `archive_checkpoint_requested=False`.
+- `archive_checkpoint_enabled=False`.
+- `archive_status=not_requested`.
+
+Observed preview preflight state:
+
+- `campaign_command_shape_preflight_succeeded=True`.
+- `campaign_runtime_input_preflight_succeeded=True`.
+- `native_execution_input_ready=False`.
+- `campaign_preflight_succeeded=False`.
+- `preflight_hard_blocker_count=1`.
+- Blocker: native strategy config path unavailable for generated campaign
+  config.
+
+Preview evidence verifies the committed source-safe/non-executing posture. It is
+not native campaign execution evidence.
+
+### Preflight Profile Evidence
+
+The preflight run used `NOTEBOOK13_TEST_PROFILE=campaign_execution_preflight`.
+
+Observed review gates:
+
+- `allow_native_execution=False`.
+- `allow_archive_restore=True`.
+- `allow_archive_checkpoint=False`.
+- `allow_notebook_generated_config_execution=True`.
+- `mark_inputs_user_reviewed=True`.
+
+Observed restore and readiness state:
+
+- `selected_stratlake_init_succeeded=True`.
+- `archive_restore_requested=True`.
+- `archive_restore_enabled=True`.
+- `archive_restore_returncode=0`.
+- `archive_restore_succeeded=True`.
+- `archive_restore_status=succeeded`.
+- `restore_archive_id=notebook-session-001`.
+- `restore_target_root=/content/stratlake`.
+- `campaign_preflight_requested=True`.
+- `campaign_preflight_succeeded=True`.
+- `campaign_command_shape_preflight_succeeded=True`.
+- `campaign_runtime_input_preflight_succeeded=True`.
+- `native_execution_input_ready=True`.
+- `primary_campaign_command_available=True`.
+- `preflight_hard_blocker_count=0`.
+- `preflight_hard_blockers=[]`.
+
+Observed native execution state:
+
+- `campaign_execution_requested=False`.
+- `campaign_execution_enabled=False`.
+- `campaign_execution_returncode=None`.
+- `campaign_execution_succeeded=False`.
+- `campaign_execution_claim_made=False`.
+- `campaign_execution_status=not_requested`.
+
+Observed artifact inventory context:
+
+- `campaign_artifact_rows=13`.
+- `native_campaign_artifact_rows=0`.
+- `candidate_campaign_context_rows=6`.
+- `report_rows=2`.
+- `governance_rows=0`.
+- `log_rows=2`.
+
+Preflight evidence verifies restore and runtime input readiness without native
+campaign execution.
+
+### Full Native Run Profile Evidence
+
+The run used `NOTEBOOK13_TEST_PROFILE=campaign_execution_run`.
+
+Observed review gates:
+
+- `allow_native_execution=True`.
+- `allow_archive_restore=True`.
+- `allow_archive_checkpoint=False`.
+- `allow_notebook_generated_config_execution=True`.
+- `mark_inputs_user_reviewed=True`.
+
+Observed restore and preflight state:
+
+- `archive_restore_requested=True`.
+- `archive_restore_enabled=True`.
+- `archive_restore_returncode=0`.
+- `archive_restore_succeeded=True`.
+- `archive_restore_status=succeeded`.
+- `restore_archive_id=notebook-session-001`.
+- `restore_target_root=/content/stratlake`.
+- `restore_overwrite_policy=overwrite_allowed`.
+- `archive_restore_runtime_seconds=2.505193`.
+- `campaign_preflight_requested=True`.
+- `campaign_preflight_succeeded=True`.
+- `campaign_command_shape_preflight_succeeded=True`.
+- `campaign_runtime_input_preflight_succeeded=True`.
+- `native_execution_input_ready=True`.
+- `primary_campaign_command=stratlake-run-research-campaign`.
+- `primary_campaign_command_available=True`.
+- `primary_campaign_command_help_checked=True`.
+- `preflight_hard_blocker_count=0`.
+- `preflight_hard_blockers=[]`.
+
+Observed native execution state:
+
+- `campaign_execution_requested=True`.
+- `campaign_execution_enabled=True`.
+- `campaign_execution_returncode=0`.
+- `campaign_execution_succeeded=True`.
+- `campaign_execution_runtime_seconds=6.372137`.
+- `campaign_execution_status=succeeded`.
+- `execution_blockers=[]`.
+
+Observed artifact inventory context:
+
+- `campaign_artifact_rows=37`.
+- `native_campaign_artifact_rows=13`.
+- `native_campaign_marker_rows=18`.
+- `candidate_campaign_context_rows=18`.
+- `campaign_context_loaded=True`.
+- `campaign_review_rows=6`.
+- `manifest_rows=4`.
+- `run_registry_rows=1`.
+- `metrics_rows=2`.
+- `split_metrics_rows=0`.
+- `report_rows=3`.
+- `governance_rows=0`.
+- `log_rows=3`.
+
+Native execution smoke passed with artifacts detected because
+`campaign_execution_returncode=0`. Governance rows were 0, so no governance
+readiness claim is made. Split metric rows were 0, so no split-metric
+completeness claim is made.
+
 ## Manual Native Smoke Context
 
-The development companion records a manual runtime smoke where:
+The development companion and M16.7 audit record manual runtime smoke where:
 
-- `stratlake-run-research-campaign` returned code 0.
+- `stratlake-run-research-campaign` returned code 0 in the full run profile.
 - Native campaign artifacts were detected.
 - Archive restore had succeeded in the runtime context.
 - Handoff status was recorded as a Notebook 13 native campaign execution smoke
@@ -65,8 +245,11 @@ This smoke context is intentionally conservative:
 - Native campaign artifacts are not committed.
 - Restored archives and Google Drive material are not committed.
 - The smoke is not CI evidence.
+- Preview/preflight evidence is not native campaign execution evidence.
+- Artifact discovery alone is not proof of current-session execution.
 - The smoke is not production, promotion, governance, alpha, or statistical
   evidence.
+- The smoke does not prove artifact completeness.
 
 ## Guardrails Preserved
 
@@ -123,7 +306,7 @@ non-claim flags. They are runtime review artifacts and remain outside Git.
 
 ## Validation Summary
 
-Latest local validation recorded in M16.4:
+Latest local validation recorded in M16.7:
 
 ```text
 python scripts/check_notebooks_no_outputs.py notebooks -> passed; checked 14 notebook(s)
@@ -150,6 +333,13 @@ This smoke audit does not claim:
 - Alpha validation.
 - Generated configs are upstream native templates.
 - Runtime smoke evidence is committed notebook output.
+- Executed notebook artifacts are committed source.
+- Generated runtime configs are committed source artifacts.
+- Native campaign artifacts are committed.
+- Restored archives or Google Drive material are committed.
+- Artifact discovery alone proves current-session execution.
+- Split-metric completeness.
+- Artifact completeness.
 - Source-only validation is equivalent to live Colab/manual runtime validation.
 
 ## Remaining Manual Runtime Next Actions
@@ -168,5 +358,5 @@ Remaining manual/runtime actions, when desired:
 Completion stance:
 
 ```text
-notebook_13_import_docs_and_smoke_audit_ready
+notebook_13_runtime_smoke_verified_without_committed_outputs
 ```
