@@ -30,6 +30,7 @@ NB14_PATH = (
 )
 CLASSIFICATION_DOC = REPO_ROOT / "docs" / "notebook_14_command_surface_classification.md"
 IMPORTATION_GUIDE = REPO_ROOT / "docs" / "notebook_14_importation_guide.md"
+IMPORT_AUDIT = REPO_ROOT / "docs" / "notebook_14_import_audit.md"
 README_PATH = REPO_ROOT / "README.md"
 
 PRIMARY_PROFILES = [
@@ -98,6 +99,11 @@ def docs_text() -> str:
 @pytest.fixture(scope="module")
 def importation_guide_text() -> str:
     return IMPORTATION_GUIDE.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def import_audit_text() -> str:
+    return IMPORT_AUDIT.read_text(encoding="utf-8")
 
 
 @pytest.fixture(scope="module")
@@ -618,10 +624,91 @@ def test_notebook_14_readme_integration_points_to_docs(readme_text: str) -> None
         "notebooks/14_stratlake_campaign_evidence_review_pack_and_governance_audit.ipynb",
         "docs/notebook_14_importation_guide.md",
         "docs/notebook_14_command_surface_classification.md",
+        "docs/notebook_14_import_audit.md",
         "source-safe campaign-evidence review pack and governance-observation companion",
         "defaults to `evidence_governance_preview`",
         "without replacing native validation or governance",
         "without",
         "claiming approval, promotion, readiness, deployment, production, alpha validity, statistical significance, live-trading suitability",
+        "optional runtime smoke verification remains separate",
     ]:
         assert token in normalized
+
+
+def test_notebook_14_import_audit_preserves_final_source_safe_anchors(
+    import_audit_text: str,
+) -> None:
+    normalized = _normalized(import_audit_text).lower()
+    assert IMPORT_AUDIT.exists()
+    for token in [
+        "notebook 14 import audit and pr readiness review",
+        "notebooks/14_stratlake_campaign_evidence_review_pack_and_governance_audit.ipynb",
+        "#141",
+        "#142",
+        "#143",
+        "#144",
+        "#145",
+        "#146",
+        "#147",
+        "evidence_governance_preview",
+        "campaign_feature_restore_and_generation_run",
+        "existing_campaign_evidence_governance_review",
+        "source posture only",
+        "does not establish runtime behavior or source/runtime equivalence",
+        "derived_evidence_review_pack_non_authoritative",
+        "evidence_review_repo_root = campaign_artifact_root.parent",
+        "lazy bounded iterator",
+        "one additional entry may be observed only to detect truncation",
+        "truncation disables automatic selection",
+        "notebook14_review_id",
+        "native strict validation remains authoritative",
+        "engine-owned package, contract-resource, validator, or version-compatibility follow-up",
+        "review promotion state is review-owned",
+        "campaign promotion state is campaign-owned",
+        "canonical promotion-state construction, serialization, validation, and emission are engine-owned",
+        "reported local validation results, not independently rerun by this audit",
+        "not ci results",
+        "notebook 14 is source-safe import-audit ready for pr review",
+        "not a runtime-readiness, production-readiness, promotion-readiness, deployment-readiness, or live-trading-readiness determination",
+    ]:
+        assert token in normalized
+    assert "No promotion policy was configured; no promotion decision was made." in import_audit_text
+    assert (
+        "Native strict validation reported a failure; Notebook 14 did not repair, "
+        "bypass, or reinterpret the native result."
+    ) in _normalized(import_audit_text)
+
+
+def test_notebook_14_import_audit_validation_record_is_reported_not_ci(
+    import_audit_text: str,
+) -> None:
+    normalized = _normalized(import_audit_text).lower()
+    for token in [
+        ".venv\\scripts\\python.exe -m pytest tests\\test_notebook_14_source_contracts.py -q",
+        "python scripts/check_notebooks_no_outputs.py notebooks",
+        "python scripts/validate_repo_cleanliness.py .",
+        "python scripts/scan_for_secret_patterns.py .",
+        "focused notebook 14 source contracts",
+        "30 passed",
+        "full pytest",
+        "991 passed, 5 existing warnings",
+        "github commit-status checks were attached",
+    ]:
+        assert token in normalized
+
+
+def test_notebook_14_import_audit_has_no_readiness_or_merge_claim(
+    import_audit_text: str,
+) -> None:
+    normalized = _normalized(import_audit_text).lower()
+    for prohibited_claim in [
+        "runtime smoke success",
+        "engine validation success",
+        "native command availability is confirmed",
+        "canonical promotion-state completeness is confirmed",
+        "merge decision has been made",
+        "production readiness is established",
+        "deployment readiness is established",
+        "live-trading readiness is established",
+    ]:
+        assert prohibited_claim not in normalized
