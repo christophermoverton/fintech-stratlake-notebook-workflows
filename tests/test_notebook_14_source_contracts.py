@@ -29,6 +29,8 @@ NB14_PATH = (
     / "14_stratlake_campaign_evidence_review_pack_and_governance_audit.ipynb"
 )
 CLASSIFICATION_DOC = REPO_ROOT / "docs" / "notebook_14_command_surface_classification.md"
+IMPORTATION_GUIDE = REPO_ROOT / "docs" / "notebook_14_importation_guide.md"
+README_PATH = REPO_ROOT / "README.md"
 
 PRIMARY_PROFILES = [
     "evidence_governance_preview",
@@ -91,6 +93,16 @@ def code_source(code_cells: list[dict[str, Any]]) -> str:
 @pytest.fixture(scope="module")
 def docs_text() -> str:
     return CLASSIFICATION_DOC.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def importation_guide_text() -> str:
+    return IMPORTATION_GUIDE.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def readme_text() -> str:
+    return README_PATH.read_text(encoding="utf-8")
 
 
 def _normalized(text: str) -> str:
@@ -543,5 +555,73 @@ def test_notebook_14_preserves_native_validation_failure_boundary(
         "bounded operational caveat",
         "display-only and non-authoritative",
         "no notebook validation, repair, or fallback was performed",
+    ]:
+        assert token in normalized
+
+
+def test_notebook_14_importation_guide_preserves_required_anchors(
+    importation_guide_text: str,
+) -> None:
+    normalized = _normalized(importation_guide_text).lower()
+    for token in [
+        "source-safe, gated, read-only companion for campaign evidence review packs and governance observation",
+        "evidence_governance_preview",
+        "campaign_feature_restore_and_generation_run",
+        "existing_campaign_evidence_governance_review",
+        "sole committed default",
+        "derived_evidence_review_pack_non_authoritative",
+        "evidence_review_repo_root = campaign_artifact_root.parent",
+        "existing-pack discovery is lazy and bounded",
+        "one additional directory entry may be observed only to determine whether scanning was truncated",
+        "ambiguity or truncation requires explicit `notebook14_review_id`",
+        "review promotion state is review-owned",
+        "campaign promotion state is campaign-owned",
+        "canonical promotion-state construction, serialization, validation, and emission are engine-owned",
+        "notebook 14 governance is observational, read-only, display-oriented, non-authoritative, and non-repairing",
+        "native strict validation remains authoritative",
+        "must not replace native validation",
+        "copy engine schemas",
+        "bypass native failure",
+        "assert a root cause",
+        "engine-owned package, contract-resource, validator, or version-compatibility follow-up",
+        "route a verified dependency issue to `christophermoverton/stratlake-trade-engine`",
+    ]:
+        assert token in normalized
+    assert "No promotion policy was configured; no promotion decision was made." in importation_guide_text
+    assert (
+        "Native strict validation reported a failure; Notebook 14 did not repair, "
+        "bypass, or reinterpret the native result."
+    ) in _normalized(importation_guide_text)
+
+
+def test_notebook_14_importation_guide_has_no_outcome_claims(
+    importation_guide_text: str,
+) -> None:
+    normalized = _normalized(importation_guide_text).lower()
+    for prohibited_claim in [
+        "notebook 14 proves production readiness",
+        "notebook 14 proves deployment readiness",
+        "notebook 14 approves",
+        "notebook 14 promotes",
+        "notebook 14 validates alpha",
+        "notebook 14 confirms statistical significance",
+        "notebook 14 is live-trading suitable",
+        "notebook 14 confirms review-pack completeness",
+    ]:
+        assert prohibited_claim not in normalized
+
+
+def test_notebook_14_readme_integration_points_to_docs(readme_text: str) -> None:
+    normalized = _normalized(readme_text).lower()
+    for token in [
+        "notebook 14 is imported",
+        "notebooks/14_stratlake_campaign_evidence_review_pack_and_governance_audit.ipynb",
+        "docs/notebook_14_importation_guide.md",
+        "docs/notebook_14_command_surface_classification.md",
+        "source-safe campaign-evidence review pack and governance-observation companion",
+        "defaults to `evidence_governance_preview`",
+        "without replacing native validation or governance",
+        "without",
+        "claiming approval, promotion, readiness, deployment, production, alpha validity, statistical significance, live-trading suitability",
     ]:
         assert token in normalized
