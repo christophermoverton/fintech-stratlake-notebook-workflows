@@ -27,7 +27,7 @@ Notebook 14 import work is recorded across these issues and commits:
 | #144 | Added derived-pack, native-validation, and governance-observation guardrails. | `e988e108d3e3ca87646c51d16323f0ea89ac4539`; `6ddc91b47288b34c53778f4cb80786ead4541ea0`; `c1b822e144bbe036d0b5f494c1fc1ed7292f5c83` |
 | #145 | Added importation guide and native-validation caveat summary. | `2f87bcbd844252484943df50071ed9f86532b26c` |
 | #146 | Final source-safe import audit and PR-readiness review. | This document. |
-| #147 | Optional runtime smoke verification. | Intentionally deferred and separate. |
+| #147 | Optional runtime smoke verification. | Separate preview-only runtime evidence in [Notebook 14 runtime smoke audit summary](notebook_14_runtime_smoke_audit_summary.md). |
 
 These references describe the local branch history reviewed for source-safe
 import posture. They do not imply that the commits have already been merged.
@@ -160,7 +160,8 @@ Most recent reported results from #145:
 
 ## Residual Caveats/Deferred Work
 
-- #147 remains the optional runtime smoke-verification path.
+- #147 remains a separate optional runtime smoke-verification record and is not
+  source-safe import proof.
 - Runtime behavior, native command availability, external storage access,
   actual evidence-pack generation, strict-validation behavior, and governance
   report behavior are not established by this source audit.

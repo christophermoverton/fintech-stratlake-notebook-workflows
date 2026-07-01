@@ -31,6 +31,7 @@ NB14_PATH = (
 CLASSIFICATION_DOC = REPO_ROOT / "docs" / "notebook_14_command_surface_classification.md"
 IMPORTATION_GUIDE = REPO_ROOT / "docs" / "notebook_14_importation_guide.md"
 IMPORT_AUDIT = REPO_ROOT / "docs" / "notebook_14_import_audit.md"
+RUNTIME_SMOKE_AUDIT = REPO_ROOT / "docs" / "notebook_14_runtime_smoke_audit_summary.md"
 README_PATH = REPO_ROOT / "README.md"
 
 PRIMARY_PROFILES = [
@@ -104,6 +105,11 @@ def importation_guide_text() -> str:
 @pytest.fixture(scope="module")
 def import_audit_text() -> str:
     return IMPORT_AUDIT.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def runtime_smoke_audit_text() -> str:
+    return RUNTIME_SMOKE_AUDIT.read_text(encoding="utf-8")
 
 
 @pytest.fixture(scope="module")
@@ -625,12 +631,16 @@ def test_notebook_14_readme_integration_points_to_docs(readme_text: str) -> None
         "docs/notebook_14_importation_guide.md",
         "docs/notebook_14_command_surface_classification.md",
         "docs/notebook_14_import_audit.md",
+        "docs/notebook_14_runtime_smoke_audit_summary.md",
         "source-safe campaign-evidence review pack and governance-observation companion",
         "defaults to `evidence_governance_preview`",
         "without replacing native validation or governance",
         "without",
         "claiming approval, promotion, readiness, deployment, production, alpha validity, statistical significance, live-trading suitability",
-        "optional runtime smoke verification remains separate",
+        "runtime smoke observation occurred outside committed notebook source",
+        "notebook_14_runtime_smoke_preview_only_observed",
+        "remains separate from source-safe import evidence",
+        "does not establish readiness or source/runtime equivalence",
     ]:
         assert token in normalized
 
@@ -710,5 +720,81 @@ def test_notebook_14_import_audit_has_no_readiness_or_merge_claim(
         "production readiness is established",
         "deployment readiness is established",
         "live-trading readiness is established",
+    ]:
+        assert prohibited_claim not in normalized
+
+
+def test_notebook_14_runtime_smoke_audit_records_external_observation(
+    runtime_smoke_audit_text: str,
+) -> None:
+    normalized = _normalized(runtime_smoke_audit_text).lower()
+    assert RUNTIME_SMOKE_AUDIT.exists()
+    for token in [
+        "notebook 14 runtime smoke audit summary",
+        "#147",
+        "run outside committed source",
+        "temporary notebook copy",
+        "committed notebook 14 source remains output-free, unexecuted, preview-default, and gated",
+        "runtime observation only",
+        "not ci evidence",
+        "not source/runtime-equivalence proof",
+        "notebook_14_import_audit.md",
+        "evidence_governance_preview",
+        "intentionally enabled gates",
+        "none",
+        "run_stratlake_init",
+        "run_archive_restore",
+        "run_native_campaign_generation",
+        "run_evidence_review_pack_build",
+        "run_evidence_review_pack_validate",
+        "run_promotion_governance_report",
+        "run_catalog_lineage_export",
+        "run_archive_checkpoint",
+        "run_notebook_runtime_summary_write",
+        "no restore/generation profile",
+        "existing-campaign review was not attempted",
+        "native strict validation was not attempted",
+        "native governance reporting was not attempted",
+        "no validation result is claimed",
+        "no governance approval or decision is claimed",
+        "notebook_14_runtime_smoke_preview_only_observed",
+    ]:
+        assert token in normalized
+
+
+def test_notebook_14_runtime_smoke_audit_preserves_non_claim_boundaries(
+    runtime_smoke_audit_text: str,
+) -> None:
+    normalized = _normalized(runtime_smoke_audit_text).lower()
+    for token in [
+        "review-pack completeness",
+        "canonical evidence completeness",
+        "engine correctness",
+        "policy compliance",
+        "promotion eligibility",
+        "promotion approval",
+        "governance approval",
+        "production readiness",
+        "deployment readiness",
+        "live-trading suitability",
+        "source/runtime equivalence",
+        "christophermoverton/stratlake-trade-engine",
+        "does not assert an engine, package, schema, artifact, validator, or version-compatibility root cause",
+    ]:
+        assert token in normalized
+    for prohibited_claim in [
+        "runtime smoke passed",
+        "runtime smoke approved",
+        "runtime smoke validated",
+        "production readiness is established",
+        "deployment readiness is established",
+        "promotion approval is established",
+        "governance approval is established",
+        "live-trading readiness is established",
+        "source/runtime equivalence is established",
+        "engine correctness is established",
+        "review-pack completeness is established",
+        "canonical evidence completeness is established",
+        "native strict validation reported a failure; notebook 14 did not repair, bypass, or reinterpret the native result",
     ]:
         assert prohibited_claim not in normalized
