@@ -53,15 +53,16 @@ completeness, schema validity, or engine/runtime equivalence.
 
 ## Primary Profile Model
 
-Notebook 14 has three primary operational profiles. All committed source
-defaults remain preview-only; runtime actions require a profile that requests
-the action plus explicit boolean gates and reviewed operator inputs.
+Notebook 14 has three primary operational profiles. `evidence_governance_preview`
+is the sole committed default. All committed source defaults remain
+preview-only; runtime actions require a profile that requests the action plus
+explicit boolean gates and reviewed operator inputs.
 
 | Profile | Status | Source-safe default status | Prerequisites | Permitted actions | Prohibited actions | Explicit gates | Required operator confirmations | Expected handoff outputs | Classification |
 |---|---|---|---|---|---|---|---|---|---|
 | `evidence_governance_preview` | Supported and committed default. | Sole default; no-write/no-execution. | None beyond valid notebook source. | Read source configuration, define helpers, compute disabled runtime controls, display intended command/review posture when executed without mutation. | Workspace initialization, Drive mount, archive restore, feature discovery/adoption, campaign input/config candidate creation, campaign execution, review-pack build/validation, governance report, catalog/lineage export, checkpoint creation, runtime summary writes. | All runtime gates remain false/unset; profile flags for init, drive, restore, campaign, review, governance, lineage, and checkpoint are false. | None. Real run IDs, review IDs, roots, archive IDs, paths, credentials, logs, and artifacts must not be committed. | No committed output. In a live preview execution, only in-memory diagnostics are expected. | `primary`, `source_safe` |
 | `campaign_feature_restore_and_generation_run` | Supported first-run temporary-runtime path. | Not default; inert unless selected and gated. | Temporary runtime; reviewed archive/root values; explicit permission to initialize, mount Drive if needed, restore, discover/adopt feature roots, mark campaign inputs reviewed, and run native campaign. | Initialize native workspace/session, mount Drive only when explicitly allowed and needed, restore archive into an isolated target root, discover restored native feature artifacts, adopt a feature root only under gates, run native campaign preflight, run native research campaign, conservatively inspect resulting artifacts. | Governance decisions, promotion-state repair, review-pack canonicalization, ungated generated-config execution, unreviewed feature adoption, notebook fabrication of feature data, readiness or approval claims. | `NOTEBOOK14_ALLOW_STRATLAKE_INIT`, `RUN_STRATLAKE_INIT`, `NOTEBOOK14_ALLOW_DRIVE_MOUNT`, `NOTEBOOK14_ALLOW_ARCHIVE_RESTORE`, `RUN_ARCHIVE_RESTORE`, `NOTEBOOK14_DISCOVER_FEATURE_INPUTS`, `NOTEBOOK14_ALLOW_DISCOVERED_FEATURE_ROOT_ADOPTION`, `NOTEBOOK14_MARK_CAMPAIGN_INPUTS_USER_REVIEWED`, `NOTEBOOK14_ALLOW_NATIVE_CAMPAIGN_RUN`, `RUN_NATIVE_CAMPAIGN_GENERATION`, and generated-config gates when generated candidates are used. | Confirm archive source, isolated restore target, feature root adoption, campaign artifact root, campaign inputs, generated execution candidates if any, and no-use of committed real credentials or IDs. | Native command diagnostics, bounded artifact inventory, campaign preflight status, campaign result metadata, caveats, and optional runtime summary only when `NOTEBOOK14_WRITE_RUNTIME_SUMMARY=true`. | `primary`, `temporary_runtime_only` |
-| `existing_campaign_evidence_governance_review` | Supported review-only continuation path. | Not default; inert unless selected and gated. | Operator-confirmed existing campaign run identity and configured artifact root; optional reviewed review identity. | Initialize native workspace/session, select the existing confirmed run identity, build native derived evidence-review pack when absent, resolve pack root only under configured artifact root, run native strict validation, run native read-only governance report, optionally observe catalog/lineage. | Archive restore, Drive mount for archive restoration, campaign creation, execution-candidate work, campaign configuration generation, feature discovery/adoption, campaign-preparation caveats, borrowing campaign-generation state as review state, guessed run/review identities. | `NOTEBOOK14_ALLOW_STRATLAKE_INIT`, `RUN_STRATLAKE_INIT`, `NOTEBOOK14_ALLOW_EVIDENCE_REVIEW`, `RUN_EVIDENCE_REVIEW_PACK_BUILD`, `RUN_EVIDENCE_REVIEW_PACK_VALIDATE`, `NOTEBOOK14_ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION`, `NOTEBOOK14_ALLOW_GOVERNANCE_REPORT`, `RUN_PROMOTION_GOVERNANCE_REPORT`, optional catalog/lineage gates. | Confirm selected run ID, optional review ID, campaign artifact root, pack overwrite policy, existing-pack validation permission, and catalog/lineage scope if used. | Native evidence build result, native strict validation result, display-only validation artifact observation, native read-only governance command result, bounded artifact classifications, caveats. | `primary`, `temporary_runtime_only`, `read_only_observation` |
+| `existing_campaign_evidence_governance_review` | Supported review-only continuation path and recommended review-only temporary-runtime path. | Not default; inert unless selected and gated. | Operator-confirmed existing campaign run identity and configured artifact root; optional reviewed review identity. | Initialize native workspace/session, select the existing confirmed run identity, build native derived evidence-review pack when absent, resolve pack root only under configured artifact root, run native strict validation, run native read-only governance report, optionally observe catalog/lineage. | Archive restore, Drive mount for archive restoration, campaign creation, execution-candidate work, campaign configuration generation, feature discovery/adoption, campaign-preparation caveats, borrowing campaign-generation state as review state, guessed run/review identities. | `NOTEBOOK14_ALLOW_STRATLAKE_INIT`, `RUN_STRATLAKE_INIT`, `NOTEBOOK14_ALLOW_EVIDENCE_REVIEW`, `RUN_EVIDENCE_REVIEW_PACK_BUILD`, `RUN_EVIDENCE_REVIEW_PACK_VALIDATE`, `NOTEBOOK14_ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION`, `NOTEBOOK14_ALLOW_GOVERNANCE_REPORT`, `RUN_PROMOTION_GOVERNANCE_REPORT`, optional catalog/lineage gates. | Confirm selected run ID, optional review ID, campaign artifact root, pack overwrite policy, existing-pack validation permission, and catalog/lineage scope if used. | Native evidence build result, native strict validation result, display-only validation artifact observation, native read-only governance command result, bounded artifact classifications, caveats. | `primary`, `temporary_runtime_only`, `read_only_observation` |
 
 ## Legacy Profile Audit
 
@@ -111,10 +112,10 @@ Notebook 14 preserves these ownership rules:
   non-repairing.
 
 Notebook 14 must not create, backfill, repair, normalize, or rewrite canonical
-`promotion_gates.json`; replay policy or gate evaluation; treat a derived
-evidence-review pack as canonical governance evidence; borrow review promotion
-state as campaign promotion state; borrow campaign promotion state as review
-promotion state; or treat `not_reviewed` as eligibility, approval, promotion,
+`promotion_gates.json`; must not replay policy or gate evaluation; treat a derived
+evidence-review pack as canonical governance evidence; must not borrow review
+promotion state as campaign promotion state; must not borrow campaign promotion
+state as review promotion state; or treat `not_reviewed` as eligibility, approval, promotion,
 readiness, deployment suitability, production suitability, or live-trading
 suitability.
 
@@ -146,7 +147,7 @@ runtime material from being mistaken for canonical governance evidence.
 |---|---|---|
 | `canonical_engine_owned_promotion_state_candidate` | Exact-filename `promotion_gates.json` candidate discovered by bounded inspection. | Display-only candidate; engine validation and native governance output remain authoritative. |
 | `native_governance_output_candidate` | Native governance report output candidate. | Read-only observation; not notebook-generated promotion evidence. |
-| `derived_evidence_review_pack_non_authoritative` | Native derived evidence-review pack artifact. | Non-authoritative for governance; must not be copied, moved, rewritten, normalized, or treated as canonical promotion state. |
+| `derived_evidence_review_pack_non_authoritative` | Native derived evidence-review pack artifact. | Non-authoritative for governance; must not be copied, moved, rewritten, normalized, repaired, or treated as canonical promotion state. |
 | `catalog_or_lineage_observability_artifact` | Catalog or lineage output used for observability. | Observational only; not governance evidence. |
 | `restored_feature_or_qa_artifact_non_governance` | Restored feature or QA artifact found after archive restore. | Input/QA context only; not campaign approval or governance evidence. |
 | `notebook_runtime_noncanonical_excluded` | Notebook-local runtime output under `_notebook_14_runtime` or equivalent notebook namespace. | Excluded from reviewable evidence discovery. |
@@ -229,4 +230,3 @@ boundaries:
 - Native strict-validation failures remain native failures; the notebook does
   not provide fallback validation, schema copying, JSON repair, or root-cause
   assertions.
-
