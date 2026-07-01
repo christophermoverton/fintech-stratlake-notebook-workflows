@@ -401,13 +401,20 @@ def test_notebook_14_existing_pack_discovery_is_bounded_and_runtime_excluding(
     assert 'NOTEBOOK14_EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT' in code_source
     assert 'derived_root = (CAMPAIGN_ARTIFACT_ROOT / "_derived" / "evidence_review").resolve()' in code_source
     assert 'not path_is_within(derived_root, CAMPAIGN_ARTIFACT_ROOT)' in code_source
-    assert 'if len(candidates) >= EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT:' in code_source
+    assert 'EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT = 0' in code_source
+    assert 'EVIDENCE_PACK_DISCOVERY_TRUNCATED = False' in code_source
+    assert 'if EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT >= EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT:' in code_source
+    assert 'EVIDENCE_PACK_DISCOVERY_TRUNCATED = True' in code_source
+    assert 'EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT += 1' in code_source
+    assert 'if len(candidates) >= EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT:' not in code_source
     assert 'if is_notebook_runtime_artifact_path(candidate):' in code_source
     assert 'if not candidate.is_dir() or not path_is_within(candidate, CAMPAIGN_ARTIFACT_ROOT):' in code_source
     normalized = _normalized(docs_text).lower()
     assert "bounded by `notebook14_existing_evidence_pack_discovery_limit`" in normalized
     assert "confined to `campaign_artifact_root`" in normalized
     assert "excludes notebook runtime namespaces" in normalized
+    assert "the limit bounds inspected filesystem entries, not merely matching candidates returned" in normalized
+    assert "a runtime-namespace entry counts as inspected once reached" in normalized
 
 
 def test_notebook_14_existing_pack_outcomes_and_ambiguity_guardrails(
@@ -422,18 +429,24 @@ def test_notebook_14_existing_pack_outcomes_and_ambiguity_guardrails(
         'EVIDENCE_PACK_DISCOVERY_OUTCOME = "explicit_existing_review_id_resolved"',
         'EVIDENCE_PACK_DISCOVERY_OUTCOME = "exactly_one_existing_pack_resolved"',
         'EVIDENCE_PACK_DISCOVERY_OUTCOME = "multiple_existing_packs_require_operator_selection"',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "existing_pack_discovery_truncated_requires_operator_selection"',
         'EVIDENCE_PACK_DISCOVERY_OUTCOME = "no_existing_pack_found"',
         'EVIDENCE_PACK_DISCOVERY_CANDIDATE_COUNT = len(candidates)',
-        'if len(candidates) == 1:',
-        'if len(candidates) > 1:',
+        'if EVIDENCE_PACK_DISCOVERY_TRUNCATED:',
+        'elif len(candidates) == 1:',
+        'elif len(candidates) > 1:',
+        'Existing evidence-review pack discovery reached its configured',
+        'pack was selected from the truncated scan.',
         'Set NOTEBOOK14_REVIEW_ID explicitly; no pack was selected.',
     ]:
         assert token in code_source
     normalized = _normalized(docs_text).lower()
     for token in [
-        "automatic existing-pack resolution is permitted only when exactly one valid matching candidate exists",
+        "automatic existing-pack resolution is permitted only when exactly one valid matching candidate exists after a non-truncated bounded scan",
         "zero candidates remain a conservative `no_existing_pack_found` outcome",
         "multiple matching candidates remain a `multiple_existing_packs_require_operator_selection` outcome",
+        "truncated discovery remains an `existing_pack_discovery_truncated_requires_operator_selection` outcome",
+        "ambiguity or truncation requires operator selection through `notebook14_review_id`",
         "unknown or unclassified candidates are not treated as review packs",
         "discovery must not copy, relocate, rewrite, or mutate candidates",
     ]:
@@ -455,6 +468,9 @@ def test_notebook_14_existing_pack_preservation_and_overwrite_policy(
     assert "existing derived pack will not be replaced" in normalized_code
     assert '"allow_existing_evidence_pack_validation": ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION' in code_source
     assert '"allow_evidence_review_pack_overwrite": ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE' in code_source
+    assert '"existing_pack_discovery_candidate_count": EVIDENCE_PACK_DISCOVERY_CANDIDATE_COUNT' in code_source
+    assert '"existing_pack_discovery_inspected_count": EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT' in code_source
+    assert '"existing_pack_discovery_truncated": EVIDENCE_PACK_DISCOVERY_TRUNCATED' in code_source
     assert '"allow_pack_overwrite": ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE' in code_source
     normalized = _normalized(docs_text).lower()
     for token in [

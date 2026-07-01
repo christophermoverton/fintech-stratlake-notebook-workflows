@@ -185,13 +185,22 @@ outside the configured artifact tree.
 
 Existing-pack discovery is bounded by `NOTEBOOK14_EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT`,
 confined to `CAMPAIGN_ARTIFACT_ROOT`, and excludes notebook runtime namespaces
-such as `_notebook_14_runtime`. Automatic existing-pack resolution is permitted
-only when exactly one valid matching candidate exists. Zero candidates remain a
-conservative `no_existing_pack_found` outcome. Multiple matching candidates
-remain a `multiple_existing_packs_require_operator_selection` outcome and
-require operator selection through `NOTEBOOK14_REVIEW_ID`. Unknown or
-unclassified candidates are not treated as review packs, and discovery must not
-copy, relocate, rewrite, or mutate candidates.
+such as `_notebook_14_runtime`. The limit bounds inspected filesystem entries,
+not merely matching candidates returned. A runtime-namespace entry counts as
+inspected once reached and is then excluded without recursion. Discovery may be
+incomplete when the scan truncates.
+
+Automatic existing-pack resolution is permitted only when exactly one valid
+matching candidate exists after a non-truncated bounded scan. Zero candidates
+remain a conservative `no_existing_pack_found` outcome. Multiple matching
+candidates remain a `multiple_existing_packs_require_operator_selection`
+outcome. Truncated discovery remains an
+`existing_pack_discovery_truncated_requires_operator_selection` outcome even
+when one matching candidate was found before the limit. Ambiguity or truncation
+requires operator selection through `NOTEBOOK14_REVIEW_ID` or an explicitly
+reviewed higher inspection limit. Unknown or unclassified candidates are not
+treated as review packs, and discovery must not copy, relocate, rewrite, or
+mutate candidates.
 
 Existing packs are preserved by default. `NOTEBOOK14_ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE`
 defaults to false and is separate from `NOTEBOOK14_ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION`.
