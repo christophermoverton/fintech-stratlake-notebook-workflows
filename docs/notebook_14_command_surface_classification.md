@@ -159,6 +159,46 @@ read-only, and runtime-namespace-excluding. Runtime artifacts under
 catalog/lineage output, and restored feature/QA artifacts do not become
 canonical governance evidence through notebook discovery.
 
+## Derived Review Pack Guardrails
+
+Derived evidence-review packs are review artifacts only. They are classified as
+`derived_evidence_review_pack_non_authoritative` and remain non-authoritative
+for promotion governance. Notebook 14 must not treat a derived review pack as
+canonical promotion-state evidence, synthesize or backfill missing canonical
+evidence from pack contents, infer promotion eligibility or decision status
+from a pack, or copy, move, normalize, repair, rewrite, or mutate derived
+review-pack JSON.
+
+The default evidence-review repository root convention remains:
+
+```text
+EVIDENCE_REVIEW_REPO_ROOT = CAMPAIGN_ARTIFACT_ROOT.parent
+```
+
+When a native command reports a repository-relative pack root, Notebook 14
+resolves it relative to `EVIDENCE_REVIEW_REPO_ROOT`, canonicalizes the resolved
+path, and accepts it only when it remains under `CAMPAIGN_ARTIFACT_ROOT`.
+Repository-relative output roots must not be resolved against the notebook
+process working directory. A reported pack root outside the configured artifact
+root remains an integrity caveat; Notebook 14 must not create a fallback root
+outside the configured artifact tree.
+
+Existing-pack discovery is bounded by `NOTEBOOK14_EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT`,
+confined to `CAMPAIGN_ARTIFACT_ROOT`, and excludes notebook runtime namespaces
+such as `_notebook_14_runtime`. Automatic existing-pack resolution is permitted
+only when exactly one valid matching candidate exists. Zero candidates remain a
+conservative `no_existing_pack_found` outcome. Multiple matching candidates
+remain a `multiple_existing_packs_require_operator_selection` outcome and
+require operator selection through `NOTEBOOK14_REVIEW_ID`. Unknown or
+unclassified candidates are not treated as review packs, and discovery must not
+copy, relocate, rewrite, or mutate candidates.
+
+Existing packs are preserved by default. `NOTEBOOK14_ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE`
+defaults to false and is separate from `NOTEBOOK14_ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION`.
+Building a new pack must not silently overwrite an existing pack. Rebuilding,
+overwriting, or validating an existing pack requires explicit runtime gates,
+and preview mode must not discover, validate, overwrite, or build packs.
+
 ## Native Command Authority
 
 The following native surfaces are authoritative only when explicitly gated and
@@ -189,6 +229,11 @@ The notebook repository must not copy engine contract schemas, rewrite or
 normalize review-pack JSON, bypass strict validation, replace native
 validation, weaken native failure results, or assert an unverified root cause.
 Notebook 14 may record the condition only as a bounded operational caveat.
+When native strict validation reports a failure, the conservative handoff is:
+
+```text
+Native strict validation reported a failure; Notebook 14 did not repair, bypass, or reinterpret the native result.
+```
 
 ## Issue #143 Static-Test Handoff
 

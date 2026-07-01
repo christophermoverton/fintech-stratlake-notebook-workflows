@@ -388,6 +388,83 @@ def test_notebook_14_preserves_evidence_review_root_containment(
     normalized = _normalized(docs_text)
     assert "EVIDENCE_REVIEW_REPO_ROOT = CAMPAIGN_ARTIFACT_ROOT.parent" in normalized
     assert "under the configured campaign artifact root" in normalized
+    assert "(EVIDENCE_REVIEW_REPO_ROOT / reported_root).resolve()" in code_source
+    assert "Repository-relative output roots must not be resolved against the notebook process working directory" in normalized
+    assert "must not create a fallback root outside the configured artifact tree" in normalized
+
+
+def test_notebook_14_existing_pack_discovery_is_bounded_and_runtime_excluding(
+    code_source: str,
+    docs_text: str,
+) -> None:
+    assert 'EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT = max(' in code_source
+    assert 'NOTEBOOK14_EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT' in code_source
+    assert 'derived_root = (CAMPAIGN_ARTIFACT_ROOT / "_derived" / "evidence_review").resolve()' in code_source
+    assert 'not path_is_within(derived_root, CAMPAIGN_ARTIFACT_ROOT)' in code_source
+    assert 'if len(candidates) >= EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT:' in code_source
+    assert 'if is_notebook_runtime_artifact_path(candidate):' in code_source
+    assert 'if not candidate.is_dir() or not path_is_within(candidate, CAMPAIGN_ARTIFACT_ROOT):' in code_source
+    normalized = _normalized(docs_text).lower()
+    assert "bounded by `notebook14_existing_evidence_pack_discovery_limit`" in normalized
+    assert "confined to `campaign_artifact_root`" in normalized
+    assert "excludes notebook runtime namespaces" in normalized
+
+
+def test_notebook_14_existing_pack_outcomes_and_ambiguity_guardrails(
+    code_source: str,
+    docs_text: str,
+) -> None:
+    for token in [
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "not_requested"',
+        'EVIDENCE_PACK_DISCOVERY_CANDIDATE_COUNT = 0',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "existing_pack_validation_not_allowed"',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "existing_pack_outside_configured_artifact_root"',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "explicit_existing_review_id_resolved"',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "exactly_one_existing_pack_resolved"',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "multiple_existing_packs_require_operator_selection"',
+        'EVIDENCE_PACK_DISCOVERY_OUTCOME = "no_existing_pack_found"',
+        'EVIDENCE_PACK_DISCOVERY_CANDIDATE_COUNT = len(candidates)',
+        'if len(candidates) == 1:',
+        'if len(candidates) > 1:',
+        'Set NOTEBOOK14_REVIEW_ID explicitly; no pack was selected.',
+    ]:
+        assert token in code_source
+    normalized = _normalized(docs_text).lower()
+    for token in [
+        "automatic existing-pack resolution is permitted only when exactly one valid matching candidate exists",
+        "zero candidates remain a conservative `no_existing_pack_found` outcome",
+        "multiple matching candidates remain a `multiple_existing_packs_require_operator_selection` outcome",
+        "unknown or unclassified candidates are not treated as review packs",
+        "discovery must not copy, relocate, rewrite, or mutate candidates",
+    ]:
+        assert token in normalized
+
+
+def test_notebook_14_existing_pack_preservation_and_overwrite_policy(
+    code_source: str,
+    docs_text: str,
+) -> None:
+    assert 'ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION = env_true(' in code_source
+    assert '"NOTEBOOK14_ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION"' in code_source
+    assert 'ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE = env_true(' in code_source
+    assert '"NOTEBOOK14_ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE"' in code_source
+    assert 'if ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE:' in code_source
+    assert 'evidence_cmd.append("--overwrite")' in code_source
+    normalized_code = _normalized(code_source)
+    assert "overwrite is disabled" in normalized_code
+    assert "existing derived pack will not be replaced" in normalized_code
+    assert '"allow_existing_evidence_pack_validation": ALLOW_EXISTING_EVIDENCE_PACK_VALIDATION' in code_source
+    assert '"allow_evidence_review_pack_overwrite": ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE' in code_source
+    assert '"allow_pack_overwrite": ALLOW_EVIDENCE_REVIEW_PACK_OVERWRITE' in code_source
+    normalized = _normalized(docs_text).lower()
+    for token in [
+        "existing packs are preserved by default",
+        "`notebook14_allow_evidence_review_pack_overwrite` defaults to false",
+        "separate from `notebook14_allow_existing_evidence_pack_validation`",
+        "building a new pack must not silently overwrite an existing pack",
+        "preview mode must not discover, validate, overwrite, or build packs",
+    ]:
+        assert token in normalized
 
 
 def test_notebook_14_preserves_native_command_authority_boundaries(
@@ -417,9 +494,18 @@ def test_notebook_14_preserves_native_command_authority_boundaries(
 
 
 def test_notebook_14_preserves_native_validation_failure_boundary(
+    notebook_source: str,
     docs_text: str,
 ) -> None:
-    normalized = _normalized(docs_text).lower()
+    exact = (
+        "Native strict validation reported a failure; Notebook 14 did not repair, "
+        "bypass, or reinterpret the native result."
+    )
+    normalized_notebook = _normalized(notebook_source)
+    assert "Native strict validation reported a failure; Notebook 14 did not repair," in normalized_notebook
+    assert "bypass, or reinterpret the native result." in normalized_notebook
+    assert exact in _normalized(docs_text)
+    normalized = _normalized(notebook_source + "\n" + docs_text).lower()
     for token in [
         "native evidence-review pack build may succeed while native strict validation reports invalid schema-governed review-pack json files",
         "engine-owned package, contract-resource, validator, or version-compatibility follow-up",
@@ -430,5 +516,7 @@ def test_notebook_14_preserves_native_validation_failure_boundary(
         "weaken native failure results",
         "assert an unverified root cause",
         "bounded operational caveat",
+        "display-only and non-authoritative",
+        "no notebook validation, repair, or fallback was performed",
     ]:
         assert token in normalized
