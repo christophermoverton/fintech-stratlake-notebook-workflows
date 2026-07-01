@@ -186,9 +186,12 @@ outside the configured artifact tree.
 Existing-pack discovery is bounded by `NOTEBOOK14_EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT`,
 confined to `CAMPAIGN_ARTIFACT_ROOT`, and excludes notebook runtime namespaces
 such as `_notebook_14_runtime`. The limit bounds inspected filesystem entries,
-not merely matching candidates returned. A runtime-namespace entry counts as
-inspected once reached and is then excluded without recursion. Discovery may be
-incomplete when the scan truncates.
+not merely matching candidates returned. Discovery uses a lazy bounded iterator
+so the configured inspection limit applies before full directory
+materialization. One additional entry may be observed only to determine whether
+the scan truncated. A runtime-namespace entry counts as inspected once reached
+and is then excluded without recursion. Discovery may be incomplete when the
+scan truncates.
 
 Automatic existing-pack resolution is permitted only when exactly one valid
 matching candidate exists after a non-truncated bounded scan. Zero candidates

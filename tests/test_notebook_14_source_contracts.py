@@ -403,6 +403,12 @@ def test_notebook_14_existing_pack_discovery_is_bounded_and_runtime_excluding(
     assert 'not path_is_within(derived_root, CAMPAIGN_ARTIFACT_ROOT)' in code_source
     assert 'EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT = 0' in code_source
     assert 'EVIDENCE_PACK_DISCOVERY_TRUNCATED = False' in code_source
+    assert 'from itertools import islice' in code_source
+    assert 'sorted(derived_root.iterdir()' not in code_source
+    assert 'entries = islice(' in code_source
+    assert 'derived_root.iterdir(),' in code_source
+    assert 'EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT + 1' in code_source
+    assert 'for candidate in entries:' in code_source
     assert 'if EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT >= EXISTING_EVIDENCE_PACK_DISCOVERY_LIMIT:' in code_source
     assert 'EVIDENCE_PACK_DISCOVERY_TRUNCATED = True' in code_source
     assert 'EVIDENCE_PACK_DISCOVERY_INSPECTED_COUNT += 1' in code_source
@@ -414,6 +420,9 @@ def test_notebook_14_existing_pack_discovery_is_bounded_and_runtime_excluding(
     assert "confined to `campaign_artifact_root`" in normalized
     assert "excludes notebook runtime namespaces" in normalized
     assert "the limit bounds inspected filesystem entries, not merely matching candidates returned" in normalized
+    assert "discovery uses a lazy bounded iterator" in normalized
+    assert "applies before full directory materialization" in normalized
+    assert "one additional entry may be observed only to determine whether the scan truncated" in normalized
     assert "a runtime-namespace entry counts as inspected once reached" in normalized
 
 
