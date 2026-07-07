@@ -159,7 +159,7 @@ schema defect, artifact defect, or any specific root cause.
 Use this conservative statement:
 
 ```text
-Native strict validation reported a failure; Notebook 14 did not repair, bypass, or reinterpret the native result.
+Native strict validation reported a warning; Notebook 14 did not repair, bypass, or reinterpret the native result.
 ```
 
 Expected handoff path:

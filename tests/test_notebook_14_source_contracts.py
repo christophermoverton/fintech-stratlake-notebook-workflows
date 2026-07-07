@@ -547,11 +547,11 @@ def test_notebook_14_preserves_native_validation_failure_boundary(
     docs_text: str,
 ) -> None:
     exact = (
-        "Native strict validation reported a failure; Notebook 14 did not repair, "
+        "Native strict validation reported a warning; Notebook 14 did not repair, "
         "bypass, or reinterpret the native result."
     )
     normalized_notebook = _normalized(notebook_source)
-    assert "Native strict validation reported a failure; Notebook 14 did not repair," in normalized_notebook
+    assert "Native strict validation reported a warning; Notebook 14 did not repair," in normalized_notebook
     assert "bypass, or reinterpret the native result." in normalized_notebook
     assert exact in _normalized(docs_text)
     normalized = _normalized(notebook_source + "\n" + docs_text).lower()
@@ -601,7 +601,7 @@ def test_notebook_14_importation_guide_preserves_required_anchors(
         assert token in normalized
     assert "No promotion policy was configured; no promotion decision was made." in importation_guide_text
     assert (
-        "Native strict validation reported a failure; Notebook 14 did not repair, "
+        "Native strict validation reported a warning; Notebook 14 did not repair, "
         "bypass, or reinterpret the native result."
     ) in _normalized(importation_guide_text)
 
@@ -684,7 +684,7 @@ def test_notebook_14_import_audit_preserves_final_source_safe_anchors(
         assert token in normalized
     assert "No promotion policy was configured; no promotion decision was made." in import_audit_text
     assert (
-        "Native strict validation reported a failure; Notebook 14 did not repair, "
+        "Native strict validation reported a warning; Notebook 14 did not repair, "
         "bypass, or reinterpret the native result."
     ) in _normalized(import_audit_text)
 
@@ -740,6 +740,8 @@ def test_notebook_14_runtime_smoke_audit_records_external_observation(
         "not source/runtime-equivalence proof",
         "notebook_14_import_audit.md",
         "evidence_governance_preview",
+        "campaign_feature_restore_and_generation_run",
+        "existing_campaign_evidence_governance_review",
         "intentionally enabled gates",
         "none",
         "run_stratlake_init",
@@ -751,13 +753,10 @@ def test_notebook_14_runtime_smoke_audit_records_external_observation(
         "run_catalog_lineage_export",
         "run_archive_checkpoint",
         "run_notebook_runtime_summary_write",
-        "no restore/generation profile",
-        "existing-campaign review was not attempted",
-        "native strict validation was not attempted",
-        "native governance reporting was not attempted",
-        "no validation result is claimed",
+        "native strict validation reported a warning",
+        "native governance reporting was observed",
         "no governance approval or decision is claimed",
-        "notebook_14_runtime_smoke_preview_only_observed",
+        "notebook_14_runtime_smoke_multi_session_observed",
     ]:
         assert token in normalized
 

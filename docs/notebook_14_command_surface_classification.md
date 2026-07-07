@@ -244,7 +244,7 @@ Notebook 14 may record the condition only as a bounded operational caveat.
 When native strict validation reports a failure, the conservative handoff is:
 
 ```text
-Native strict validation reported a failure; Notebook 14 did not repair, bypass, or reinterpret the native result.
+Native strict validation reported a warning; Notebook 14 did not repair, bypass, or reinterpret the native result.
 ```
 
 ## Issue #143 Static-Test Handoff
